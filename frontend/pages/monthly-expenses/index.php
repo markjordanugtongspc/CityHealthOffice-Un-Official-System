@@ -7,7 +7,7 @@ require_once __DIR__ . '/../../../config/db.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Budget - City Health Office</title>
+    <title>Monthly Expenses Summary - City Health Office</title>
 
     <!-- Vite Assets -->
     <?= Vite::assets('backend/js/main.js') ?>
@@ -34,8 +34,8 @@ require_once __DIR__ . '/../../../config/db.php';
                         </svg>
                     </button>
                     <div>
-                        <h1 class="text-xl font-bold text-slate-900">YTD Budget Summary</h1>
-                        <h3 class="text-sm text-slate-600">Actual vs Budget overview for <span id="budgetCurrentYear" class="font-semibold text-slate-900"></span></h3>
+                        <h1 class="text-xl font-bold text-slate-900">Monthly Expenses Summary</h1>
+                        <h3 class="text-sm text-slate-600">Monthly expenses overview for <span id="monthlyExpensesCurrentYear" class="font-semibold text-slate-900"></span></h3>
                     </div>
                 </div>
 
@@ -88,29 +88,92 @@ require_once __DIR__ . '/../../../config/db.php';
 
             <!-- Content Area (Scrollable) -->
             <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
-                <!-- Intro section -->
+                <!-- Header Section with Standard Graphics -->
                 <section class="mb-6">
-                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6">
-                        <h2 class="text-xl md:text-2xl font-semibold text-slate-900 mb-2">
-                            Actual vs Budget Year-to-Date
-                        </h2>
-                        <p class="text-sm md:text-base text-slate-600">
-                            This view compares the City Health Office&apos;s actual expenses against the approved budget for
-                            <span id="budgetCurrentYearInline" class="font-semibold text-slate-900"></span>.
-                            It highlights remaining funds in pesos and percentage to help you quickly identify overspending and
-                            underutilized allocations across G/L accounts.
-                        </p>
+                    <div class="relative bg-gradient-to-br from-[#224796] to-[#163473] rounded-2xl shadow-xl overflow-hidden">
+                        <!-- Static Background Pattern -->
+                        <div class="absolute inset-0 opacity-10">
+                            <div class="absolute top-0 left-0 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-3xl"></div>
+                            <div class="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full mix-blend-overlay filter blur-3xl"></div>
+                        </div>
+                        
+                        <!-- Content -->
+                        <div class="relative z-10 p-6 md:p-8 lg:p-10">
+                            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                                <!-- Left: Title and Description -->
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-3 mb-3">
+                                        <div class="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
+                                            <svg class="w-8 h-8 md:w-10 md:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                            </svg>
+                                        </div>
+                                        <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-white tracking-tight">
+                                            Monthly Expenses Summary
+                                        </h2>
+                                    </div>
+                                    <p class="text-white/90 text-sm md:text-base ml-14 md:ml-16">
+                                        Track and manage your monthly financial expenses with detailed insights
+                                    </p>
+                                </div>
+                                
+                                <!-- Right: Standard Graphics -->
+                                <div class="flex items-center gap-4 lg:gap-6">
+                                    <!-- Chart Icon -->
+                                    <div class="hidden md:flex flex-col items-center gap-2 p-4 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
+                                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <span class="text-xs text-white/80 font-medium">Analytics</span>
+                                    </div>
+                                    
+                                    <!-- Expense Icon -->
+                                    <div class="hidden md:flex flex-col items-center gap-2 p-4 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
+                                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span class="text-xs text-white/80 font-medium">Expenses</span>
+                                    </div>
+                                    
+                                    <!-- Standard Decorative Bars -->
+                                    <div class="flex flex-col gap-2">
+                                        <div class="flex gap-2">
+                                            <div class="w-3 h-8 bg-white/30 rounded-full"></div>
+                                            <div class="w-3 h-6 bg-white/40 rounded-full"></div>
+                                            <div class="w-3 h-10 bg-white/25 rounded-full"></div>
+                                        </div>
+                                        <div class="flex gap-2 ml-2">
+                                            <div class="w-3 h-6 bg-white/35 rounded-full"></div>
+                                            <div class="w-3 h-8 bg-white/30 rounded-full"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Bottom Accent Line -->
+                        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
                     </div>
                 </section>
 
                 <!-- Filters & Actions -->
                 <section class="mb-4">
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-5">
+                        <!-- Account Title Filter -->
+                        <div class="mb-4">
+                            <label class="block text-xs font-medium text-slate-500 mb-2">
+                                Account Title
+                            </label>
+                            <div id="accountTitleFilters" class="flex flex-wrap gap-2">
+                                <!-- Account title filters populated by JavaScript -->
+                            </div>
+                        </div>
+
                         <div class="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
                             <!-- Search -->
                             <div class="w-full md:flex-1">
-                                <label for="budgetSearch" class="block text-xs font-medium text-slate-500 mb-1">
-                                    Search by G/L Code or Account Title
+                                <label for="monthlyExpensesSearch" class="block text-xs font-medium text-slate-500 mb-1">
+                                    Search by Account Title or G/L Code
                                 </label>
                                 <div class="relative">
                                     <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -119,7 +182,7 @@ require_once __DIR__ . '/../../../config/db.php';
                                         </svg>
                                     </span>
                                     <input
-                                        id="budgetSearch"
+                                        id="monthlyExpensesSearch"
                                         type="text"
                                         placeholder="Search accounts..."
                                         class="block w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796]"
@@ -130,44 +193,19 @@ require_once __DIR__ . '/../../../config/db.php';
                             <!-- Right controls -->
                             <div class="flex flex-col sm:flex-row gap-3 md:gap-4 md:items-center">
                                 <div class="flex items-center gap-3">
-                                    <label for="budgetYear" class="text-sm font-medium text-slate-700 whitespace-nowrap">
+                                    <label for="monthlyExpensesYear" class="text-sm font-medium text-slate-700 whitespace-nowrap">
                                         Year
                                     </label>
                                     <select
-                                        id="budgetYear"
+                                        id="monthlyExpensesYear"
                                         class="rounded-lg border border-slate-300 bg-white py-2.5 px-4 text-sm text-slate-900 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] cursor-pointer"
                                     >
                                         <!-- Options populated by JavaScript -->
                                     </select>
                                 </div>
                                 <div class="flex items-center gap-3">
-                                    <label for="budgetSort" class="text-sm font-medium text-slate-700 whitespace-nowrap">
-                                        Sort by
-                                    </label>
-                                    <select
-                                        id="budgetSort"
-                                        class="rounded-lg border border-slate-300 bg-white py-2.5 px-4 text-sm text-slate-900 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] cursor-pointer"
-                                    >
-                                        <option value="">None</option>
-                                        <option value="actual">Actual</option>
-                                        <option value="budget">Budget</option>
-                                        <option value="remainingAmount">Remaining ₱</option>
-                                        <option value="remainingPercent">Remaining %</option>
-                                    </select>
                                     <button
-                                        id="budgetSortDirection"
-                                        type="button"
-                                        class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 cursor-pointer transition-colors"
-                                    >
-                                        <svg id="budgetSortDirectionIcon" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
-                                        </svg>
-                                    </button>
-                                </div>
-
-                                <div class="flex items-center gap-3">
-                                    <button
-                                        id="budgetAddBtn"
+                                        id="monthlyExpensesAddBtn"
                                         type="button"
                                         class="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-white px-4 py-2.5 text-sm font-medium text-emerald-600 shadow-sm hover:bg-emerald-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-1 cursor-pointer transition-colors"
                                     >
@@ -177,7 +215,7 @@ require_once __DIR__ . '/../../../config/db.php';
                                         Add
                                     </button>
                                     <button
-                                        id="budgetCalculateBtn"
+                                        id="monthlyExpensesCalculateBtn"
                                         type="button"
                                         class="inline-flex items-center justify-center rounded-lg bg-[#224796] px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-colors"
                                     >
@@ -196,53 +234,82 @@ require_once __DIR__ . '/../../../config/db.php';
                 <section>
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
                         <div class="overflow-x-auto">
-                            <table id="budgetTable" class="min-w-full divide-y divide-slate-200 text-sm">
+                            <table id="monthlyExpensesTable" class="min-w-full divide-y divide-slate-200 text-sm">
                                 <thead class="bg-slate-50">
                                     <tr>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                        <th scope="col" class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 sticky left-0 bg-slate-50 z-10">
                                             G/L Code
                                         </th>
-                                        <th scope="col" class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                        <th scope="col" class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 sticky left-12 bg-slate-50 z-10">
                                             Account Title
                                         </th>
-                                        <th scope="col" class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            Actual
+                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            January
                                         </th>
-                                        <th scope="col" class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            Budget
+                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            February
                                         </th>
-                                        <th scope="col" class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            Remaining ₱
+                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            March
                                         </th>
-                                        <th scope="col" class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            Remaining %
+                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            April
+                                        </th>
+                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            May
+                                        </th>
+                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            June
+                                        </th>
+                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            July
+                                        </th>
+                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            August
+                                        </th>
+                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            September
+                                        </th>
+                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            October
+                                        </th>
+                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            November
+                                        </th>
+                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                            December
+                                        </th>
+                                        <th scope="col" class="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 w-16">
+                                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
                                         </th>
                                     </tr>
                                 </thead>
-                                <tbody id="budgetTableBody" class="divide-y divide-slate-100 bg-white">
-                                    <!-- Rows rendered by budget.js -->
+                                <tbody id="monthlyExpensesTableBody" class="divide-y divide-slate-100 bg-white">
+                                    <!-- Rows rendered by monthly-expenses.js -->
                                 </tbody>
                             </table>
                         </div>
 
                         <!-- Pagination -->
                         <div class="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 md:flex-row md:items-center md:justify-between">
-                            <p class="text-xs text-slate-600" id="budgetPaginationSummary">
+                            <p class="text-xs text-slate-600" id="monthlyExpensesPaginationSummary">
                                 Showing 0 to 0 of 0 entries
                             </p>
                             <div class="flex items-center justify-end gap-1">
                                 <button
-                                    id="budgetPrevPage"
+                                    id="monthlyExpensesPrevPage"
                                     type="button"
                                     class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors"
                                 >
                                     Prev
                                 </button>
-                                <div id="budgetPageNumbers" class="flex items-center gap-1 text-xs">
-                                    <!-- Page buttons rendered by budget.js -->
+                                <div id="monthlyExpensesPageNumbers" class="flex items-center gap-1 text-xs">
+                                    <!-- Page buttons rendered by monthly-expenses.js -->
                                 </div>
                                 <button
-                                    id="budgetNextPage"
+                                    id="monthlyExpensesNextPage"
                                     type="button"
                                     class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors"
                                 >
@@ -257,4 +324,3 @@ require_once __DIR__ . '/../../../config/db.php';
 
 </body>
 </html>
-

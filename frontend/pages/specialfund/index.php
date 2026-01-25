@@ -129,6 +129,17 @@ require_once __DIR__ . '/../../../config/db.php';
                             <!-- Right controls -->
                             <div class="flex flex-col sm:flex-row gap-3 md:gap-4 md:items-center">
                                 <div class="flex items-center gap-3">
+                                    <label for="specialFundYear" class="text-sm font-medium text-slate-700 whitespace-nowrap">
+                                        Year
+                                    </label>
+                                    <select
+                                        id="specialFundYear"
+                                        class="rounded-lg border border-slate-300 bg-white py-2.5 px-4 text-sm text-slate-900 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] cursor-pointer"
+                                    >
+                                        <!-- Options populated by JavaScript -->
+                                    </select>
+                                </div>
+                                <div class="flex items-center gap-3">
                                     <label for="specialFundSort" class="text-sm font-medium text-slate-700 whitespace-nowrap">
                                         Sort by
                                     </label>

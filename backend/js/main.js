@@ -21,6 +21,7 @@ import { init as initDashboard } from './dashboard.js';
 import { init as initCharts } from './charts.js';
 import { init as initBudget } from './budget.js';
 import { init as initSpecialFund } from './specialfund.js';
+import { init as initMonthlyExpenses } from './monthly-expenses.js';
 import { init as initExport } from './modules/export.js';
 import { initSidebar } from './sidebar.js';
 
@@ -46,6 +47,9 @@ export async function init() {
 
     // Initialize special fund page if special fund elements exist
     initSpecialFund();
+
+    // Initialize monthly expenses page if monthly expenses elements exist
+    initMonthlyExpenses();
 
     // Initialize export page if export elements exist
     initExport();

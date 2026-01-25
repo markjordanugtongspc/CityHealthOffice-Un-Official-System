@@ -116,7 +116,7 @@
                 </button>
                 <!-- Dropdown Content -->
                 <div id="expenses-dropdown" class="dropdown-content overflow-hidden transition-all duration-300 max-h-0 opacity-0 mt-1">
-                    <a href="#" data-tooltip="Monthly Expenses Summary" class="nav-item nav-subitem flex items-center gap-2.5 px-3 py-2 ml-6 rounded-lg text-white/70 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all cursor-pointer touch-manipulation">
+                    <a href="../monthly-expenses/" data-tooltip="Monthly Expenses Summary" class="nav-item nav-subitem flex items-center gap-2.5 px-3 py-2 ml-6 rounded-lg text-white/70 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all cursor-pointer touch-manipulation">
                         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 18V9m4 9V5m4 14v-7m4 7v-3"></path>
                         </svg>

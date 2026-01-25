@@ -1,4 +1,5 @@
 import Swal from 'sweetalert2';
+import { initInlineEdit } from './modules/inline-edit.js';
 
 // Hierarchical Special Program Fund data model
 const specialFundData = [
@@ -53,6 +54,7 @@ const rowsPerPage = 10;
 let sortField = '';
 let sortDirection = 'desc';
 let searchTerm = '';
+let selectedYear = new Date().getFullYear();
 
 // Formatters
 const currencyFormatter = new Intl.NumberFormat('en-PH', {
@@ -165,18 +167,20 @@ function renderTable() {
 
             const programPadding = row.type === 'subitem' ? 'pl-8' : row.type === 'program' ? 'pl-4' : 'pl-0';
 
+            const rowId = row.type === 'category' ? `category-${row.category || index}` : row.type === 'program' ? `program-${row.program}` : `subitem-${row.glCode || index}`;
+            
             return `
-                <tr class="${rowClass} hover:bg-slate-100 transition-colors">
+                <tr class="${rowClass} hover:bg-slate-100 transition-colors" data-row-id="${rowId}" data-row-type="${row.type}" data-gl-code="${row.glCode || ''}" data-row-index="${startIndex + index}">
                     <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm ${textClass} ${fontWeight}">
                         ${row.glCode || '-'}
                     </td>
-                    <td class="px-4 py-2 text-xs md:text-sm ${textClass} ${fontWeight} ${programPadding}">
+                    <td class="px-4 py-2 text-xs md:text-sm ${textClass} ${fontWeight} ${programPadding}" ${row.type !== 'category' ? `data-editable="program" data-type="text" data-value="${row.program}"` : ''}>
                         ${row.program}
                     </td>
-                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right ${textClass} ${fontWeight}">
+                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right ${textClass} ${fontWeight}" ${row.type !== 'category' ? `data-editable="actual" data-type="currency" data-value="${row.actual}"` : ''}>
                         ${row.type === 'category' ? '-' : formatCurrency(row.actual)}
                     </td>
-                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right ${textClass} ${fontWeight}">
+                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right ${textClass} ${fontWeight}" ${row.type !== 'category' ? `data-editable="budget" data-type="currency" data-value="${row.budget}"` : ''}>
                         ${row.type === 'category' ? '-' : formatCurrency(row.budget)}
                     </td>
                     <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right ${fontWeight} ${row.type === 'category' ? textClass : remainingClass}">
@@ -197,6 +201,9 @@ function renderTable() {
     }
 
     renderPagination(total, totalPages);
+    
+    // Initialize inline editing for editable cells
+    initInlineEditing();
 }
 
 function renderPagination(total, totalPages) {
@@ -249,7 +256,7 @@ function calculateRemaining(actual, budget) {
 }
 
 function handleAddClick() {
-    const year = getCurrentYearFromGlobal();
+    const year = selectedYear || getCurrentYearFromGlobal();
     
     Swal.fire({
         title: `Add Program Entry (${year})`,
@@ -341,9 +348,9 @@ function handleAddClick() {
             popup: 'rounded-2xl shadow-xl border border-slate-200 max-w-md md:max-w-2xl',
             htmlContainer: 'text-left',
             confirmButton:
-                'inline-flex items-center justify-center rounded-lg bg-[#224796] px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-colors',
+                'inline-flex items-center justify-center rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 cursor-pointer transition-colors',
             cancelButton:
-                'inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1 cursor-pointer transition-colors',
+                'inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1 cursor-pointer transition-colors',
         },
         didOpen: () => {
             const actualInput = document.getElementById('swal-actual');
@@ -475,7 +482,7 @@ function buildCsvAndTotals() {
 }
 
 function handleCalculateClick() {
-    const year = getCurrentYearFromGlobal();
+    const year = selectedYear || getCurrentYearFromGlobal();
     const { csvString, totals } = buildCsvAndTotals();
 
     const html = `
@@ -540,7 +547,7 @@ function handleCalculateClick() {
             confirmButton:
                 'inline-flex items-center justify-center rounded-lg bg-[#224796] px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-colors',
             cancelButton:
-                'inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1 cursor-pointer transition-colors',
+                'inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1 cursor-pointer transition-colors',
         },
         didOpen: () => {
             const popup = Swal.getPopup();
@@ -574,8 +581,42 @@ function handleCalculateClick() {
     });
 }
 
+function renderYearSelector() {
+    const yearSelect = document.getElementById('specialFundYear');
+    if (!yearSelect) return;
+
+    const currentYear = getCurrentYearFromGlobal();
+    selectedYear = currentYear;
+
+    // Generate years (current year ± 5 years)
+    yearSelect.innerHTML = '';
+    for (let year = currentYear - 5; year <= currentYear + 5; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        option.selected = year === currentYear;
+        yearSelect.appendChild(option);
+    }
+
+    yearSelect.addEventListener('change', (e) => {
+        selectedYear = parseInt(e.target.value);
+        // Update year display
+        const headerYear = document.getElementById('specialFundCurrentYear');
+        const inlineYear = document.getElementById('specialFundCurrentYearInline');
+        if (headerYear) {
+            headerYear.textContent = String(selectedYear);
+        }
+        if (inlineYear) {
+            inlineYear.textContent = String(selectedYear);
+        }
+        // Re-render table (in future, this would filter by year from backend)
+        renderTable();
+    });
+}
+
 function applyYearBindings() {
     const year = getCurrentYearFromGlobal();
+    selectedYear = year;
 
     const headerYear = document.getElementById('specialFundCurrentYear');
     const inlineYear = document.getElementById('specialFundCurrentYearInline');
@@ -652,6 +693,99 @@ function bindEvents() {
     }
 }
 
+/**
+ * Initialize inline editing for table cells
+ */
+function initInlineEditing() {
+    const editableCells = document.querySelectorAll('#specialFundTableBody [data-editable]');
+    
+    editableCells.forEach(cell => {
+        const row = cell.closest('tr');
+        const rowId = row?.getAttribute('data-row-id') || '';
+        const rowType = row?.getAttribute('data-row-type') || '';
+        const glCode = row?.getAttribute('data-gl-code') || '';
+        const fieldName = cell.getAttribute('data-editable');
+        const fieldType = cell.getAttribute('data-type') || 'text';
+        
+        // Skip category rows
+        if (rowType === 'category') return;
+        
+        // Find the row data using row index from visible rows
+        const rowIndex = parseInt(row?.getAttribute('data-row-index') || '-1');
+        const visibleRows = getFilteredAndSortedRows();
+        let rowData = null;
+        
+        if (rowIndex >= 0 && rowIndex < visibleRows.length) {
+            rowData = visibleRows[rowIndex];
+        } else {
+            // Fallback: find by rowId and type
+            if (rowType === 'program') {
+                const programName = rowId.replace('program-', '');
+                rowData = specialFundRows.find(r => r.type === 'program' && r.program === programName);
+            } else if (rowType === 'subitem') {
+                if (glCode) {
+                    rowData = specialFundRows.find(r => r.type === 'subitem' && r.glCode === glCode);
+                } else {
+                    const programName = rowId.replace('subitem-', '');
+                    rowData = specialFundRows.find(r => r.type === 'subitem' && r.program === programName);
+                }
+            }
+        }
+        
+        if (!rowData) return;
+        
+        initInlineEdit(cell, {
+            type: fieldType,
+            rowData: rowData,
+            fieldName: fieldName,
+            onSave: (newValue, oldValue, rowData, fieldName) => {
+                // Update the row data
+                if (fieldName === 'program') {
+                    rowData.program = newValue;
+                } else if (fieldName === 'actual') {
+                    rowData.actual = parseFloat(newValue) || 0;
+                    // Recalculate remaining
+                    const remaining = calculateRemaining(rowData.actual, rowData.budget);
+                    rowData.remainingAmount = remaining.remainingAmount;
+                    rowData.remainingPercent = remaining.remainingPercent;
+                } else if (fieldName === 'budget') {
+                    rowData.budget = parseFloat(newValue) || 0;
+                    // Recalculate remaining
+                    const remaining = calculateRemaining(rowData.actual, rowData.budget);
+                    rowData.remainingAmount = remaining.remainingAmount;
+                    rowData.remainingPercent = remaining.remainingPercent;
+                }
+                
+                // Also update in specialFundData if it exists there
+                const dataIndex = specialFundData.findIndex(d => 
+                    d.type === rowData.type && 
+                    d.program === rowData.program && 
+                    (d.glCode === rowData.glCode || (!d.glCode && !rowData.glCode))
+                );
+                if (dataIndex >= 0) {
+                    if (fieldName === 'program') {
+                        specialFundData[dataIndex].program = newValue;
+                    } else if (fieldName === 'actual') {
+                        specialFundData[dataIndex].actual = rowData.actual;
+                        specialFundData[dataIndex].remainingAmount = rowData.remainingAmount;
+                        specialFundData[dataIndex].remainingPercent = rowData.remainingPercent;
+                    } else if (fieldName === 'budget') {
+                        specialFundData[dataIndex].budget = rowData.budget;
+                        specialFundData[dataIndex].remainingAmount = rowData.remainingAmount;
+                        specialFundData[dataIndex].remainingPercent = rowData.remainingPercent;
+                    }
+                }
+                
+                // Re-render table to update calculated values
+                renderTable();
+            },
+            onCancel: (originalValue, rowData, fieldName) => {
+                // Edit was cancelled, no action needed
+            }
+        });
+    });
+}
+
 export function init() {
     const table = document.getElementById('specialFundTable');
     if (!table) return;
@@ -665,6 +799,7 @@ export function init() {
     }
 
     applyYearBindings();
+    renderYearSelector();
     bindEvents();
     renderTable();
 }

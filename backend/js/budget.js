@@ -1,4 +1,5 @@
 import Swal from 'sweetalert2';
+import { initInlineEdit } from './modules/inline-edit.js';
 
 // Static budget data model
 let budgetRows = [
@@ -106,6 +107,7 @@ const rowsPerPage = 10;
 let sortField = '';
 let sortDirection = 'desc';
 let searchTerm = '';
+let selectedYear = new Date().getFullYear();
 
 // Formatters
 const currencyFormatter = new Intl.NumberFormat('en-PH', {
@@ -194,17 +196,17 @@ function renderTable() {
                     : 'text-slate-700';
 
             return `
-                <tr class="${isStriped ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-100 transition-colors">
+                <tr class="${isStriped ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-100 transition-colors" data-row-index="${index}" data-gl-code="${row.glCode}">
                     <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm font-medium text-slate-900">
                         ${row.glCode}
                     </td>
-                    <td class="px-4 py-2 text-xs md:text-sm text-slate-700">
+                    <td class="px-4 py-2 text-xs md:text-sm text-slate-700" data-editable="accountTitle" data-type="text" data-value="${row.accountTitle}">
                         ${row.accountTitle}
                     </td>
-                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right text-slate-700">
+                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right text-slate-700" data-editable="actual" data-type="currency" data-value="${row.actual}">
                         ${formatCurrency(row.actual)}
                     </td>
-                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right text-slate-700">
+                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right text-slate-700" data-editable="budget" data-type="currency" data-value="${row.budget}">
                         ${formatCurrency(row.budget)}
                     </td>
                     <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right font-semibold ${remainingClass}">
@@ -225,6 +227,9 @@ function renderTable() {
     }
 
     renderPagination(total, totalPages);
+    
+    // Initialize inline editing for editable cells
+    initInlineEditing();
 }
 
 function renderPagination(total, totalPages) {
@@ -277,7 +282,7 @@ function calculateRemaining(actual, budget) {
 }
 
 function handleAddClick() {
-    const year = getCurrentYearFromGlobal();
+    const year = selectedYear || getCurrentYearFromGlobal();
     
     Swal.fire({
         title: `Add Budget Entry (${year})`,
@@ -357,9 +362,9 @@ function handleAddClick() {
             popup: 'rounded-2xl shadow-xl border border-slate-200 max-w-md md:max-w-2xl',
             htmlContainer: 'text-left',
             confirmButton:
-                'inline-flex items-center justify-center rounded-lg bg-[#224796] px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-colors',
+                'inline-flex items-center justify-center rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 cursor-pointer transition-colors',
             cancelButton:
-                'inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1 cursor-pointer transition-colors',
+                'inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1 cursor-pointer transition-colors',
         },
         didOpen: () => {
             const actualInput = document.getElementById('swal-actual');
@@ -556,7 +561,7 @@ function buildCsvAndTotals() {
 }
 
 function handleCalculateClick() {
-    const year = getCurrentYearFromGlobal();
+    const year = selectedYear || getCurrentYearFromGlobal();
     const { csvString, totals } = buildCsvAndTotals();
 
     const html = `
@@ -621,7 +626,7 @@ function handleCalculateClick() {
             confirmButton:
                 'inline-flex items-center justify-center rounded-lg bg-[#224796] px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-colors',
             cancelButton:
-                'inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1 cursor-pointer transition-colors',
+                'inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1 cursor-pointer transition-colors',
         },
         didOpen: () => {
             const popup = Swal.getPopup();
@@ -655,8 +660,42 @@ function handleCalculateClick() {
     });
 }
 
+function renderYearSelector() {
+    const yearSelect = document.getElementById('budgetYear');
+    if (!yearSelect) return;
+
+    const currentYear = getCurrentYearFromGlobal();
+    selectedYear = currentYear;
+
+    // Generate years (current year ± 5 years)
+    yearSelect.innerHTML = '';
+    for (let year = currentYear - 5; year <= currentYear + 5; year++) {
+        const option = document.createElement('option');
+        option.value = year;
+        option.textContent = year;
+        option.selected = year === currentYear;
+        yearSelect.appendChild(option);
+    }
+
+    yearSelect.addEventListener('change', (e) => {
+        selectedYear = parseInt(e.target.value);
+        // Update year display
+        const headerYear = document.getElementById('budgetCurrentYear');
+        const inlineYear = document.getElementById('budgetCurrentYearInline');
+        if (headerYear) {
+            headerYear.textContent = String(selectedYear);
+        }
+        if (inlineYear) {
+            inlineYear.textContent = String(selectedYear);
+        }
+        // Re-render table (in future, this would filter by year from backend)
+        renderTable();
+    });
+}
+
 function applyYearBindings() {
     const year = getCurrentYearFromGlobal();
+    selectedYear = year;
 
     const headerYear = document.getElementById('budgetCurrentYear');
     const inlineYear = document.getElementById('budgetCurrentYearInline');
@@ -669,6 +708,54 @@ function applyYearBindings() {
     }
 }
 
+/**
+ * Initialize inline editing for table cells
+ */
+function initInlineEditing() {
+    const editableCells = document.querySelectorAll('#budgetTableBody [data-editable]');
+    
+    editableCells.forEach(cell => {
+        const row = cell.closest('tr');
+        const glCode = row?.getAttribute('data-gl-code') || '';
+        const fieldName = cell.getAttribute('data-editable');
+        const fieldType = cell.getAttribute('data-type') || 'text';
+        
+        // Find the row data
+        const rowData = budgetRows.find(r => r.glCode === glCode);
+        if (!rowData) return;
+        
+        initInlineEdit(cell, {
+            type: fieldType,
+            rowData: rowData,
+            fieldName: fieldName,
+            onSave: (newValue, oldValue, rowData, fieldName) => {
+                // Update the row data
+                if (fieldName === 'accountTitle') {
+                    rowData.accountTitle = newValue;
+                } else if (fieldName === 'actual') {
+                    rowData.actual = parseFloat(newValue) || 0;
+                    // Recalculate remaining
+                    const remaining = calculateRemaining(rowData.actual, rowData.budget);
+                    rowData.remainingAmount = remaining.remainingAmount;
+                    rowData.remainingPercent = remaining.remainingPercent;
+                } else if (fieldName === 'budget') {
+                    rowData.budget = parseFloat(newValue) || 0;
+                    // Recalculate remaining
+                    const remaining = calculateRemaining(rowData.actual, rowData.budget);
+                    rowData.remainingAmount = remaining.remainingAmount;
+                    rowData.remainingPercent = remaining.remainingPercent;
+                }
+                
+                // Re-render table to update calculated values
+                renderTable();
+            },
+            onCancel: (originalValue, rowData, fieldName) => {
+                // Edit was cancelled, no action needed
+            }
+        });
+    });
+}
+
 export function init() {
     const table = document.getElementById('budgetTable');
     if (!table) return;
@@ -679,6 +766,7 @@ export function init() {
     }
 
     applyYearBindings();
+    renderYearSelector();
     bindEvents();
     renderTable();
 }

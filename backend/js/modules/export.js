@@ -154,7 +154,8 @@ function loadDataSources() {
     const sources = [
         { value: 'dashboard', label: 'Dashboard Charts' },
         { value: 'budget', label: 'Budget Data' },
-        { value: 'specialFund', label: 'Special Program Fund' }
+        { value: 'specialFund', label: 'Special Program Fund' },
+        { value: 'monthlyExpenses', label: 'Monthly Expenses Summary' }
     ];
 
     const select = document.getElementById('exportDataSource');
@@ -242,6 +243,49 @@ async function getDataSource(source) {
                     'Remaining ₱': formatCurrency(row.remainingAmount || 0),
                     'Remaining %': row.remainingPercent || '0%'
                 }));
+            }
+            return [];
+        case 'monthlyExpenses':
+            // Try to get monthly expenses data from getter function or window
+            let monthlyExpensesData = null;
+            try {
+                // Try importing the getter function
+                const monthlyExpensesModule = await import('../monthly-expenses.js');
+                if (monthlyExpensesModule && typeof monthlyExpensesModule.getMonthlyExpensesData === 'function') {
+                    monthlyExpensesData = monthlyExpensesModule.getMonthlyExpensesData();
+                }
+            } catch (error) {
+                // If import fails, try window property
+                console.log('Could not import monthly-expenses module, trying window.monthlyExpensesRows');
+            }
+            
+            // Fallback to window property
+            if (!monthlyExpensesData && window.monthlyExpensesRows) {
+                monthlyExpensesData = window.monthlyExpensesRows;
+            }
+            
+            // Map to export format with currency formatting
+            if (monthlyExpensesData && Array.isArray(monthlyExpensesData) && monthlyExpensesData.length > 0) {
+                return monthlyExpensesData.map(row => {
+                    const exportRow = {
+                        'G/L Code': row.glCode || '',
+                        'Account Title': row.accountTitle || '',
+                    };
+                    
+                    // Add monthly columns
+                    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                    const monthKeys = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+                    
+                    monthKeys.forEach((monthKey, index) => {
+                        const value = row.months && row.months[monthKey] ? row.months[monthKey] : 0;
+                        exportRow[monthNames[index]] = value > 0 ? formatCurrency(value) : '-';
+                    });
+                    
+                    // Add total
+                    exportRow['Total'] = formatCurrency(row.total || 0);
+                    
+                    return exportRow;
+                });
             }
             return [];
         default:
