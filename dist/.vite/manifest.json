@@ -1,0 +1,19 @@
+{
+  "_apexcharts.common-DgGwFXOw.js": {
+    "file": "assets/apexcharts.common-DgGwFXOw.js",
+    "name": "apexcharts.common",
+    "isDynamicEntry": true
+  },
+  "backend/js/main.js": {
+    "file": "assets/main-DAQVYqBX.js",
+    "name": "main",
+    "src": "backend/js/main.js",
+    "isEntry": true,
+    "dynamicImports": [
+      "_apexcharts.common-DgGwFXOw.js"
+    ],
+    "css": [
+      "assets/main-CpNYcowD.css"
+    ]
+  }
+}
