@@ -5,7 +5,7 @@
     "isDynamicEntry": true
   },
   "backend/js/main.js": {
-    "file": "assets/main-DAQVYqBX.js",
+    "file": "assets/main-grW5Rut8.js",
     "name": "main",
     "src": "backend/js/main.js",
     "isEntry": true,
@@ -13,7 +13,7 @@
       "_apexcharts.common-DgGwFXOw.js"
     ],
     "css": [
-      "assets/main-CpNYcowD.css"
+      "assets/main-BbLCNKrZ.css"
     ]
   }
 }
