@@ -1,19 +1,28 @@
 {
-  "_apexcharts.common-DgGwFXOw.js": {
-    "file": "assets/apexcharts.common-DgGwFXOw.js",
+  "_apexcharts.common.js": {
+    "file": "assets/apexcharts.common.js",
     "name": "apexcharts.common",
     "isDynamicEntry": true
   },
   "backend/js/main.js": {
-    "file": "assets/main-DEeW0ObW.js",
+    "file": "assets/main.js",
     "name": "main",
     "src": "backend/js/main.js",
     "isEntry": true,
     "dynamicImports": [
-      "_apexcharts.common-DgGwFXOw.js"
-    ],
-    "css": [
-      "assets/main-B8FQFWou.css"
+      "_apexcharts.common.js",
+      "backend/js/modules/cache-manager.js",
+      "backend/js/modules/cache-manager.js"
     ]
+  },
+  "backend/js/modules/cache-manager.js": {
+    "file": "assets/cache-manager.js",
+    "name": "cache-manager",
+    "src": "backend/js/modules/cache-manager.js",
+    "isDynamicEntry": true
+  },
+  "style.css": {
+    "file": "assets/style.css",
+    "src": "style.css"
   }
 }

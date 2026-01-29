@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . '/../../../config/vite_helper.php';
 require_once __DIR__ . '/../../../config/db.php';
+require_once __DIR__ . '/../../../config/session.php';
+
+// Require authentication
+requireAuth();
 ?>
 <!DOCTYPE html>
 <html lang="en">

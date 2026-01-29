@@ -40,7 +40,9 @@ function getBasePath() {
     if (idx === -1) {
         return '/';
     }
-    return path.slice(0, idx + 1);
+    // Return path up to but NOT including '/frontend/', ensure trailing slash
+    const base = path.slice(0, idx);
+    return base.endsWith('/') ? base : base + '/';
 }
 
 const exportBasePath = getBasePath();

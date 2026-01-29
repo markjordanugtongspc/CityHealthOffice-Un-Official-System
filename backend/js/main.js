@@ -155,7 +155,10 @@ import { init as initMonthlyExpenses } from './monthly-expenses.js';
 import { init as initExport } from './modules/export.js';
 import { init as initScrollToTop } from './modules/scroll-to-top.js';
 import { init as initAbout } from './about.js';
+import { init as initAdmin } from './admin.js';
 import { initSidebar } from './sidebar.js';
+import { initAuthCheck } from './modules/auth-check.js';
+import { loadUserInfo } from './modules/user-info.js';
 
 /**
  * Remove page loader once assets are loaded
@@ -262,6 +265,12 @@ export async function init() {
     // Initialize sidebar navigation (must be first)
     initSidebar();
 
+    // Check authentication for protected pages (must be early)
+    await initAuthCheck();
+
+    // Load and display user info in header (for all pages)
+    loadUserInfo();
+
     // Initialize authentication if login form exists
     initAuth();
 
@@ -285,6 +294,9 @@ export async function init() {
 
     // Initialize about page if about elements exist
     initAbout();
+
+    // Initialize admin page if admin elements exist
+    initAdmin();
 
     // Floating scroll-to-top button (mobile/desktop)
     initScrollToTop();

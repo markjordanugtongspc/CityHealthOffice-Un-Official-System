@@ -36,6 +36,10 @@ export default defineConfig({
             output: {
                 // Optimize chunk splitting
                 manualChunks: undefined, // Single bundle for faster initial load
+                // Use relative paths for assets
+                assetFileNames: 'assets/[name].[ext]',
+                chunkFileNames: 'assets/[name].js',
+                entryFileNames: 'assets/[name].js',
             },
         },
         // Optimize build performance
@@ -45,5 +49,7 @@ export default defineConfig({
                 drop_console: false, // Keep console logs in dev
             },
         },
+        // Ensure assets are copied correctly
+        assetsInclude: ['**/*.png', '**/*.jpg', '**/*.jpeg', '**/*.gif', '**/*.svg'],
     },
 });

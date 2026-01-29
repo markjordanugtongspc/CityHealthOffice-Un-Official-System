@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/config/vite_helper.php';
 require_once __DIR__ . '/config/db.php';
+require_once __DIR__ . '/config/image_helper.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -33,7 +34,7 @@ require_once __DIR__ . '/config/db.php';
                 <!-- Actual round logo -->
                 <div class="w-48 h-48 mx-auto rounded-full overflow-hidden bg-transparent flex items-center justify-center mb-6">
                     <img
-                        src="frontend/images/ch-logo.png"
+                        src="<?php echo htmlspecialchars(getImagePath('frontend/images/ch-logo.png')); ?>"
                         alt="City Health Office Logo"
                         class="w-full h-full object-contain"
                     />
@@ -48,10 +49,10 @@ require_once __DIR__ . '/config/db.php';
     <div class="flex w-full md:w-1/2 items-center justify-center bg-slate-50 px-4 py-6 sm:px-6 md:p-10">
         <div class="w-full max-w-md bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border border-slate-200 px-5 py-6 sm:p-8 space-y-5">
             <!-- Mobile Logo (shows only on mobile) -->
-            <div class="md:hidden flex justify-center">
+                <div class="md:hidden flex justify-center">
                 <div class="w-20 h-20 rounded-full overflow-hidden bg-transparent ring-1 ring-slate-200 shadow-sm">
                     <img
-                        src="frontend/images/ch-logo.png"
+                        src="<?php echo htmlspecialchars(getImagePath('frontend/images/ch-logo.png')); ?>"
                         alt="City Health Office Logo"
                         class="w-full h-full object-contain"
                     />

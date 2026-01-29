@@ -1,6 +1,10 @@
 <?php
 require_once __DIR__ . '/../../../config/vite_helper.php';
 require_once __DIR__ . '/../../../config/db.php';
+require_once __DIR__ . '/../../../config/session.php';
+
+// Require authentication
+requireAuth();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -44,11 +48,11 @@ require_once __DIR__ . '/../../../config/db.php';
                 <div class="relative">
                     <button id="userMenuButton" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-100 transition cursor-pointer">
                         <div class="w-10 h-10 bg-[#224796] rounded-full flex items-center justify-center">
-                            <span class="text-white font-semibold text-sm">A</span>
+                            <span id="userInitial" class="text-white font-semibold text-sm">...</span>
                         </div>
                         <div class="hidden md:block text-left">
-                            <p class="text-sm font-medium text-slate-900">admin</p>
-                            <p class="text-xs text-slate-500">Administrator</p>
+                            <p id="userUsername" class="text-sm font-medium text-slate-900">...</p>
+                            <p id="userRole" class="text-xs text-slate-500">...</p>
                         </div>
                         <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -100,7 +104,7 @@ require_once __DIR__ . '/../../../config/db.php';
                         
                         <!-- Content -->
                         <div class="relative z-10 p-4 md:p-6 lg:p-8">
-                            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 md:gap-6">
                                 <!-- Left: Title and Description -->
                                 <div class="flex-1">
                                     <div class="flex items-center gap-3 mb-3">

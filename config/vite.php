@@ -74,9 +74,15 @@ class Vite
 
     private static function getProductionAssets($entry)
     {
-        // Calculate the base path (e.g., /Project/)
+        // Calculate the base path dynamically
         $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
-        $basePath = rtrim($scriptDir, '/') . '/';
+        // Remove 'frontend/pages/...' or 'frontend/components' from path to get project root
+        $basePath = preg_replace('#/frontend/(pages|components)/.*$#', '', $scriptDir);
+        $basePath = rtrim($basePath, '/') . '/';
+        // Ensure basePath starts with /
+        if (!str_starts_with($basePath, '/')) {
+            $basePath = '/' . $basePath;
+        }
 
         if (self::$manifest === null) {
             $manifestPath = __DIR__ . '/../dist/.vite/manifest.json';
@@ -97,12 +103,12 @@ class Vite
         // Load CSS
         if (isset($item['css'])) {
             foreach ($item['css'] as $cssFile) {
-                $html .= '<link rel="stylesheet" href="' . $basePath . 'dist/' . $cssFile . '">';
+                $html .= '<link rel="stylesheet" href="' . htmlspecialchars($basePath . 'dist/' . $cssFile) . '">';
             }
         }
 
         // Load JS
-        $html .= '<script type="module" src="' . $basePath . 'dist/' . $item['file'] . '"></script>';
+        $html .= '<script type="module" src="' . htmlspecialchars($basePath . 'dist/' . $item['file']) . '"></script>';
 
         return $html;
     }

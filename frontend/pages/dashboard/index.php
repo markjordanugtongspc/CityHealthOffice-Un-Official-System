@@ -1,7 +1,10 @@
 <?php
 require_once __DIR__ . '/../../../config/vite_helper.php';
 require_once __DIR__ . '/../../../config/db.php';
-// TODO: Add session check for authentication
+require_once __DIR__ . '/../../../config/session.php';
+
+// Require authentication
+requireAuth();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -37,7 +40,7 @@ require_once __DIR__ . '/../../../config/db.php';
                     </button>
                     <div>
                         <h1 class="text-xl font-bold text-slate-900">Dashboard</h1>
-                        <h3 class="text-sm text-slate-600">Welcome back, admin</h3>
+                        <h3 id="dashboardWelcomeText" class="text-sm text-slate-600">Welcome back, <span class="user-full-name font-semibold text-[#224796]">...</span></h3>
                     </div>
                 </div>
 
@@ -45,11 +48,11 @@ require_once __DIR__ . '/../../../config/db.php';
                 <div class="relative">
                     <button id="userMenuButton" class="flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-100 transition cursor-pointer">
                         <div class="w-10 h-10 bg-[#224796] rounded-full flex items-center justify-center">
-                            <span class="text-white font-semibold text-sm">A</span>
+                            <span id="userInitial" class="text-white font-semibold text-sm">...</span>
                         </div>
                         <div class="hidden md:block text-left">
-                            <p class="text-sm font-medium text-slate-900">admin</p>
-                            <p class="text-xs text-slate-500">Administrator</p>
+                            <p id="userUsername" class="text-sm font-medium text-slate-900">...</p>
+                            <p id="userRole" class="text-xs text-slate-500">...</p>
                         </div>
                         <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
@@ -90,47 +93,47 @@ require_once __DIR__ . '/../../../config/db.php';
 
             <!-- Content Area (Scrollable) -->
             <main class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-24">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Stats Card 1 -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200 hover:scale-105 hover:shadow-lg transition-transform duration-300">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+                    <!-- Stats Card 1: Total Vouchers -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 border border-slate-200 hover:scale-105 hover:shadow-lg transition-transform duration-300 cursor-pointer">
                         <div class="flex items-start justify-between">
                             <div class="flex-1">
-                                <p class="text-3xl font-bold text-slate-900 mb-2">1,234</p>
-                                <p class="text-sm text-slate-600">Total Patients</p>
+                                <p class="text-2xl md:text-3xl font-bold text-slate-900 mb-2" id="dashboardTotalVouchers">3,789</p>
+                                <p class="text-sm text-slate-600">Total Vouchers</p>
                             </div>
                             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                                 <svg class="w-6 h-6 text-[#224796]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Stats Card 2 -->
-                    <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200 hover:scale-105 hover:shadow-lg transition-transform duration-300">
+                    <!-- Stats Card 2: Total Transactions -->
+                    <div class="bg-white rounded-xl shadow-sm p-4 md:p-6 border border-slate-200 hover:scale-105 hover:shadow-lg transition-transform duration-300 cursor-pointer">
                         <div class="flex items-start justify-between">
                             <div class="flex-1">
-                                <p class="text-3xl font-bold text-slate-900 mb-2">567</p>
-                                <p class="text-sm text-slate-600">Appointments</p>
+                                <p class="text-2xl md:text-3xl font-bold text-slate-900 mb-2" id="dashboardTotalTransactions">15,234</p>
+                                <p class="text-sm text-slate-600">Total Transactions</p>
                             </div>
-                            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                 </svg>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Stats Card 3 -->
-                    <a href="../budget/index.php" class="block bg-white rounded-xl shadow-sm p-6 border border-slate-200 hover:scale-105 hover:shadow-lg transition-transform duration-300 cursor-pointer">
+                    <!-- Stats Card 3: Budget Entries -->
+                    <a href="../budget/index.php" class="block bg-white rounded-xl shadow-sm p-4 md:p-6 border border-slate-200 hover:scale-105 hover:shadow-lg transition-transform duration-300 cursor-pointer">
                         <div class="flex items-start justify-between">
                             <div class="flex-1">
-                                <p class="text-3xl font-bold text-slate-900 mb-2">89</p>
-                                <p class="text-sm text-slate-600">YTD Budget Summarys</p>
+                                <p class="text-2xl md:text-3xl font-bold text-slate-900 mb-2" id="dashboardBudgetEntries">12</p>
+                                <p class="text-sm text-slate-600">Budget Entries</p>
                             </div>
                             <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
                                 <svg class="w-6 h-6 text-[#FCF350]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                             </div>
                         </div>
@@ -183,7 +186,7 @@ require_once __DIR__ . '/../../../config/db.php';
                     </div>
 
                     <!-- Page 1: Vouchers Charts -->
-                    <div id="chart-page-1" class="chart-page grid grid-cols-1 lg:grid-cols-2 gap-6 pb-4">
+                    <div id="chart-page-1" class="chart-page grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 pb-4">
                     <!-- Monthly Vouchers Donut Chart -->
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6 relative isolate overflow-hidden">
                         <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-3">
@@ -283,13 +286,13 @@ require_once __DIR__ . '/../../../config/db.php';
                     </div>
 
                     <!-- Weekly Vouchers Line Chart -->
-                    <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
+                    <div class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                         <div class="flex items-center justify-between mb-6">
                             <div>
                                 <h3 class="text-xl font-bold text-slate-900 mb-1">Weekly Vouchers</h3>
                                 <p class="text-sm text-slate-500">Last 8 weeks trend</p>
                             </div>
-                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#224796] to-[#163473] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                            <div class="w-12 h-12 rounded-xl bg-linear-to-br from-[#224796] to-[#163473] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
                                 </svg>
@@ -299,16 +302,16 @@ require_once __DIR__ . '/../../../config/db.php';
                     </div>
 
                     <!-- Daily Vouchers Column Chart -->
-                    <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group relative isolate">
+                    <div class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group relative isolate">
                         <div class="flex justify-between pb-4 mb-4 border-b border-slate-200">
                             <div class="flex items-center">
-                                <div class="w-12 h-12 bg-gradient-to-br from-[#FCF350] to-[#E5D800] border border-slate-200 flex items-center justify-center rounded-full me-3 shadow-md">
+                                <div class="w-12 h-12 bg-linear-to-br from-[#FCF350] to-[#E5D800] border border-slate-200 flex items-center justify-center rounded-full me-3 shadow-md">
                                     <svg class="w-7 h-7 text-slate-900" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M4.5 17H4a1 1 0 0 1-1-1 3 3 0 0 1 3-3h1m0-3.05A2.5 2.5 0 1 1 9 5.5M19.5 17h.5a1 1 0 0 0 1-1 3 3 0 0 0-3-3h-1m0-3.05a2.5 2.5 0 1 0-2-4.45m.5 13.5h-7a1 1 0 0 1-1-1 3 3 0 0 1 3-3h3a3 3 0 0 1 3 3 1 1 0 0 1-1 1Zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z"/>
                                     </svg>
                                 </div>
                                 <div>
-                                    <h5 class="text-2xl font-semibold text-slate-900" id="dailyTotalVouchers">132</h5>
+                                    <h5 class="text-xl md:text-2xl font-semibold text-slate-900" id="dailyTotalVouchers">132</h5>
                                     <p class="text-sm text-slate-500">Vouchers generated this week</p>
                                 </div>
                             </div>
@@ -375,13 +378,13 @@ require_once __DIR__ . '/../../../config/db.php';
                     </div>
 
                     <!-- Yearly Chart 2016-2026 -->
-                    <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group">
+                    <div class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group">
                         <div class="flex items-center justify-between mb-6">
                             <div>
                                 <h3 class="text-xl font-bold text-slate-900 mb-1">Yearly Overview</h3>
                                 <p class="text-sm text-slate-500">Historical data from 2016-2026</p>
                             </div>
-                            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#224796] to-[#163473] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                            <div class="w-12 h-12 rounded-xl bg-linear-to-br from-[#224796] to-[#163473] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                 </svg>
@@ -393,15 +396,15 @@ require_once __DIR__ . '/../../../config/db.php';
 
                     <!-- Page 2: Daily Transactions Charts -->
                     <div id="chart-page-2" class="chart-page hidden pb-4">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                         <!-- Daily Transactions Line Chart -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
+                        <div class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Daily Transactions</h3>
                                     <p class="text-sm text-slate-500">Last 30 days overview</p>
                                 </div>
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#224796] to-[#163473] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <div class="w-12 h-12 rounded-xl bg-linear-to-br from-[#224796] to-[#163473] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                     </svg>
@@ -411,13 +414,13 @@ require_once __DIR__ . '/../../../config/db.php';
                         </div>
 
                         <!-- Transaction Volume Chart -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
+                        <div class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Transaction Volume</h3>
                                     <p class="text-sm text-slate-500">Daily transaction count</p>
                                 </div>
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FCF350] to-[#E5D800] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <div class="w-12 h-12 rounded-xl bg-linear-to-br from-[#FCF350] to-[#E5D800] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-6 h-6 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
                                     </svg>
@@ -430,15 +433,15 @@ require_once __DIR__ . '/../../../config/db.php';
 
                     <!-- Page 3: Monthly/Weekly Transactions Charts -->
                     <div id="chart-page-3" class="chart-page hidden pb-4">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                         <!-- Monthly Transactions Chart -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
+                        <div class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Monthly Transactions</h3>
                                     <p class="text-sm text-slate-500">Current year monthly data</p>
                                 </div>
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#224796] to-[#163473] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <div class="w-12 h-12 rounded-xl bg-linear-to-br from-[#224796] to-[#163473] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                     </svg>
@@ -448,13 +451,13 @@ require_once __DIR__ . '/../../../config/db.php';
                         </div>
 
                         <!-- Weekly Transactions Chart -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
+                        <div class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Weekly Transactions</h3>
                                     <p class="text-sm text-slate-500">Last 12 weeks trend</p>
                                 </div>
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FCF350] to-[#E5D800] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <div class="w-12 h-12 rounded-xl bg-linear-to-br from-[#FCF350] to-[#E5D800] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-6 h-6 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"></path>
                                     </svg>
@@ -467,7 +470,7 @@ require_once __DIR__ . '/../../../config/db.php';
 
                     <!-- Page 4: Quarterly Transactions Charts -->
                     <div id="chart-page-4" class="chart-page hidden pb-4">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                         <!-- Quarterly Transactions Donut Chart -->
                         <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6 overflow-hidden">
                             <div class="flex justify-between mb-3">
@@ -479,13 +482,13 @@ require_once __DIR__ . '/../../../config/db.php';
                         </div>
 
                         <!-- Quarterly Comparison Chart -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
+                        <div class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Quarterly Comparison</h3>
                                     <p class="text-sm text-slate-500">Year-over-year analysis</p>
                                 </div>
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#224796] to-[#163473] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <div class="w-12 h-12 rounded-xl bg-linear-to-br from-[#224796] to-[#163473] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                     </svg>
@@ -498,15 +501,15 @@ require_once __DIR__ . '/../../../config/db.php';
 
                     <!-- Page 5: Expenses Charts -->
                     <div id="chart-page-5" class="chart-page hidden pb-4">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                         <!-- Expenses Overview Chart -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
+                        <div class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Expenses Overview</h3>
                                     <p class="text-sm text-slate-500">Monthly expenses breakdown</p>
                                 </div>
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#DC2626] to-[#B91C1C] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <div class="w-12 h-12 rounded-xl bg-linear-to-br from-[#DC2626] to-[#B91C1C] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                     </svg>
@@ -529,15 +532,15 @@ require_once __DIR__ . '/../../../config/db.php';
 
                     <!-- Page 6: Fund Downloaded Charts -->
                     <div id="chart-page-6" class="chart-page hidden pb-4">
-                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
                         <!-- Fund Downloaded Timeline -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
+                        <div class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Fund Downloaded Timeline</h3>
                                     <p class="text-sm text-slate-500">Monthly fund downloads</p>
                                 </div>
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#16A34A] to-[#15803D] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <div class="w-12 h-12 rounded-xl bg-linear-to-br from-[#16A34A] to-[#15803D] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
                                     </svg>
@@ -547,13 +550,13 @@ require_once __DIR__ . '/../../../config/db.php';
                         </div>
 
                         <!-- Fund Downloaded Summary -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
+                        <div class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Fund Downloaded Summary</h3>
                                     <p class="text-sm text-slate-500">Total funds by period</p>
                                 </div>
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#FCF350] to-[#E5D800] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <div class="w-12 h-12 rounded-xl bg-linear-to-br from-[#FCF350] to-[#E5D800] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                                     <svg class="w-6 h-6 text-slate-900" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                     </svg>

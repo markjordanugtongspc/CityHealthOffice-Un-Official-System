@@ -6,7 +6,7 @@ import Swal from 'sweetalert2';
  */
 async function preloadDashboardAssets() {
     return new Promise((resolve) => {
-        const dashboardUrl = './frontend/pages/dashboard/index.php';
+        const dashboardUrl = './frontend/pages/dashboard/';
         
         // Create a hidden iframe to preload the page and its assets
         const preloadFrame = document.createElement('iframe');
@@ -60,8 +60,8 @@ function redirectToDashboard() {
     `;
     document.body.appendChild(loader);
     
-    // Redirect to dashboard
-    window.location.href = './frontend/pages/dashboard/index.php';
+    // Redirect to dashboard (clean URL without index.php)
+    window.location.href = './frontend/pages/dashboard/';
 }
 
 /**

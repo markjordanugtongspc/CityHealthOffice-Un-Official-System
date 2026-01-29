@@ -1,12 +1,17 @@
 /**
  * Dashboard UI functionality
- * Handles user dropdown menu
+ * Handles user dropdown menu and displays current user info
  */
+
+import { loadUserInfo } from './modules/user-info.js';
 
 /**
  * Initialize dashboard functionality
  */
 export function init() {
+    // Load and display user info
+    loadUserInfo();
+
     const userMenuButton = document.getElementById('userMenuButton');
     const userDropdown = document.getElementById('userDropdown');
 

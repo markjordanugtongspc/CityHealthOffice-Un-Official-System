@@ -1,10 +1,19 @@
 /**
  * Authentication module
- * Currently simulates login with hardcoded credentials
- * TODO: Replace with real backend API integration using fetch/AJAX
+ * Handles login with database authentication via API
  */
 
 import { showLoginSuccess, showIncorrectCredentials, showError } from './modules/popups.js';
+
+/**
+ * Get API base path dynamically
+ * @returns {string}
+ */
+function getApiBasePath() {
+    const path = window.location.pathname || '/';
+    const basePath = path.substring(0, path.indexOf('/frontend/') !== -1 ? path.indexOf('/frontend/') : path.lastIndexOf('/'));
+    return basePath || '';
+}
 
 // Cookie configuration
 const COOKIE_CONFIG = {
@@ -228,24 +237,37 @@ async function handleLogin(e) {
         return;
     }
 
-    // Simulated authentication
-    // TODO: Replace with actual API call to backend
-    // Example: const response = await fetch('/api/auth/login', { method: 'POST', body: JSON.stringify({ username, password }) });
-    
-    if (username === 'admin' && password === 'admin') {
-        // Save credentials if "Remember me" is checked
-        if (rememberMe) {
-            saveCredentials(username, password);
+    try {
+        const apiBase = getApiBasePath();
+        const response = await fetch(`${apiBase}/api/auth/login.php`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ username, password }),
+            credentials: 'same-origin' // Include cookies for session
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Save credentials if "Remember me" is checked
+            if (rememberMe) {
+                saveCredentials(username, password);
+            } else {
+                // Clear credentials if "Remember me" is unchecked
+                clearCredentials();
+            }
+            
+            // Show success message with loading animation, timer, and preload assets
+            // The modal will automatically close and redirect after the timer completes
+            await showLoginSuccess();
         } else {
-            // Clear credentials if "Remember me" is unchecked
-            clearCredentials();
+            // Show incorrect credentials error
+            await showIncorrectCredentials();
         }
-        
-        // Show success message with loading animation, timer, and preload assets
-        // The modal will automatically close and redirect after the timer completes
-        await showLoginSuccess();
-    } else {
-        // Show incorrect credentials error
-        await showIncorrectCredentials();
+    } catch (error) {
+        console.error('Login error:', error);
+        await showError('An error occurred during login. Please try again.');
     }
 }

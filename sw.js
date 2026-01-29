@@ -1,6 +1,6 @@
 // Service Worker for Page Caching
 // Cache name and version
-const CACHE_NAME = 'cho-pages-v1';
+const CACHE_NAME = 'cho-pages-v2';
 const MAX_CACHE_SIZE = 50; // Maximum number of pages to cache
 
 // Install event - cache initial assets
@@ -26,6 +26,17 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
     const url = new URL(event.request.url);
     
+    // Skip caching for:
+    // - API requests
+    // - Vite dev server requests
+    // - Service worker itself
+    if (url.pathname.startsWith('/api/') || 
+        url.pathname.includes('vite') || 
+        url.pathname.includes('sw.js') ||
+        url.hostname !== self.location.hostname) {
+        return; // Let browser handle normally
+    }
+    
     // Only cache GET requests for HTML pages (PHP files and index pages)
     const isPageRequest = event.request.method === 'GET' && 
         (url.pathname.endsWith('.php') || 
@@ -40,7 +51,7 @@ self.addEventListener('fetch', (event) => {
                     // Fetch fresh version in background to update cache (stale-while-revalidate)
                     fetch(event.request)
                         .then((response) => {
-                            if (response.ok) {
+                            if (response.ok && response.headers.get('content-type')?.includes('text/html')) {
                                 const responseClone = response.clone();
                                 caches.open(CACHE_NAME).then((cache) => {
                                     cache.put(event.request, responseClone);

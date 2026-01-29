@@ -5,7 +5,7 @@
 // IMPORTANT: Update this IP to match your computer's LAN IP (e.g., 192.168.1.5)
 // Find this by running 'npm run dev' and looking at the "Network" output.
 define('VITE_HOST', 'http://192.168.1.6:5173');
-define('VITE_BUILD_DIR', '/dist/');
+// VITE_BUILD_DIR will be calculated dynamically based on current request
 
 /**
  * Vite Asset Loader
@@ -47,26 +47,36 @@ function vite($entry, $preloadOnly = false) {
             $entryKey = ltrim($entry, './');
 
             if (isset($manifest[$entryKey])) {
+                // Calculate base path dynamically based on current request
+                $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+                // Remove 'frontend/pages/...' or 'frontend/components' from path
+                $basePath = preg_replace('#/frontend/(pages|components)/.*$#', '', $scriptDir);
+                $basePath = rtrim($basePath, '/') . '/';
+                // Ensure basePath starts with /
+                if (!str_starts_with($basePath, '/')) {
+                    $basePath = '/' . $basePath;
+                }
+                
                 $file = $manifest[$entryKey]['file'];
                 
                 if ($preloadOnly) {
                     // Preload CSS files first
                     if (isset($manifest[$entryKey]['css'])) {
                         foreach ($manifest[$entryKey]['css'] as $cssFile) {
-                            echo '<link rel="preload" href="' . VITE_BUILD_DIR . $cssFile . '" as="style">';
+                            echo '<link rel="preload" href="' . htmlspecialchars($basePath . 'dist/' . $cssFile) . '" as="style">';
                         }
                     }
                     // Preload JS module
-                    echo '<link rel="modulepreload" href="' . VITE_BUILD_DIR . $file . '" crossorigin>';
+                    echo '<link rel="modulepreload" href="' . htmlspecialchars($basePath . 'dist/' . $file) . '" crossorigin>';
                 } else {
                     // Load CSS files synchronously first to prevent FOUC
                     if (isset($manifest[$entryKey]['css'])) {
                         foreach ($manifest[$entryKey]['css'] as $cssFile) {
-                            echo '<link rel="stylesheet" href="' . VITE_BUILD_DIR . $cssFile . '">';
+                            echo '<link rel="stylesheet" href="' . htmlspecialchars($basePath . 'dist/' . $cssFile) . '">';
                         }
                     }
                     // Then load JS module
-                    echo '<script type="module" src="' . VITE_BUILD_DIR . $file . '"></script>';
+                    echo '<script type="module" src="' . htmlspecialchars($basePath . 'dist/' . $file) . '"></script>';
                 }
             }
         }

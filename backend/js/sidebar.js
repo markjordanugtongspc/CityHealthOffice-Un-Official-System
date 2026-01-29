@@ -703,6 +703,39 @@ function reinitializeSidebarFeatures() {
     adjustContentMargin();
 }
 
+/**
+ * Check user role and show/hide admin link
+ */
+async function checkAdminAccess() {
+    try {
+        const path = window.location.pathname || '/';
+        const basePath = path.substring(0, path.indexOf('/frontend/') !== -1 ? path.indexOf('/frontend/') : path.lastIndexOf('/'));
+        const apiBase = basePath || '';
+        
+        const response = await fetch(`${apiBase}/api/auth/current-user.php`, {
+            credentials: 'same-origin'
+        });
+        
+        if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.user) {
+                const allowedRoles = ['Administrator', 'CEO', 'Manager'];
+                const adminNavItem = document.getElementById('adminNavItem');
+                
+                if (adminNavItem) {
+                    if (allowedRoles.includes(data.user.role)) {
+                        adminNavItem.classList.remove('hidden');
+                    } else {
+                        adminNavItem.classList.add('hidden');
+                    }
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error checking admin access:', error);
+    }
+}
+
 export function initSidebar() {
     // Load saved state
     NavigationState.load();
@@ -713,6 +746,9 @@ export function initSidebar() {
     initNavigationLinks();
     initTooltips();
     setActiveNavState();
+    
+    // Check admin access and show/hide admin link
+    checkAdminAccess();
     
     // Initial content margin adjustment
     adjustContentMargin();

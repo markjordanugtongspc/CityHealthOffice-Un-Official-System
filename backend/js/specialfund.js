@@ -9,51 +9,7 @@ import {
     sweetalertSecondaryCancelClasses,
 } from './modules/modal.js';
 
-// Hierarchical Special Program Fund data model
-const specialFundData = [
-    // Category: ACCES TO PROMOTIVE HEALTH CARE SERVICE
-    { type: 'category', glCode: '', program: 'ACCES TO PROMOTIVE HEALTH CARE SERVICE', actual: 0, budget: 0, remainingAmount: 0, remainingPercent: 0 },
-    
-    // Programs under category
-    { type: 'program', glCode: '', program: 'A.Tiyakap Bangsamoro Kalusugan Program', actual: 1500000.0, budget: 2000000.0, remainingAmount: 500000.0, remainingPercent: 25.0 },
-    { type: 'subitem', glCode: '', program: '3 RHUs', actual: 450000.0, budget: 600000.0, remainingAmount: 150000.0, remainingPercent: 25.0 },
-    { type: 'subitem', glCode: '', program: '18 BHSs', actual: 1050000.0, budget: 1400000.0, remainingAmount: 350000.0, remainingPercent: 25.0 },
-    
-    { type: 'program', glCode: '', program: 'B.Oral Health Program', actual: 500000.0, budget: 750000.0, remainingAmount: 250000.0, remainingPercent: 33.33 },
-    
-    { type: 'program', glCode: '', program: 'C.Health Promotion Program', actual: 800000.0, budget: 1000000.0, remainingAmount: 200000.0, remainingPercent: 20.0 },
-    
-    { type: 'program', glCode: '', program: 'D.Non-Communicable Disease Cluster', actual: 1200000.0, budget: 1500000.0, remainingAmount: 300000.0, remainingPercent: 20.0 },
-    { type: 'subitem', glCode: '', program: 'Lifestyle Related Diseases Control and Prevention Program', actual: 600000.0, budget: 750000.0, remainingAmount: 150000.0, remainingPercent: 20.0 },
-    { type: 'subitem', glCode: '', program: 'Chronic Obstructive Pulmonary Disease', actual: 300000.0, budget: 375000.0, remainingAmount: 75000.0, remainingPercent: 20.0 },
-    { type: 'subitem', glCode: '', program: 'Cancer Prevention Program', actual: 300000.0, budget: 375000.0, remainingAmount: 75000.0, remainingPercent: 20.0 },
-    
-    // Dangerous Drug Abuse Prevention Treatment Program
-    { type: 'program', glCode: '', program: 'Dangerous Drug Abuse Prevention Treatment Program (DDAPTP)', actual: 900000.0, budget: 1200000.0, remainingAmount: 300000.0, remainingPercent: 25.0 },
-    
-    // Category: E. Infectious Disease Prevention & Control Program
-    { type: 'program', glCode: '', program: 'E. Infectious Disease Prevention & Control Program', actual: 2500000.0, budget: 3000000.0, remainingAmount: 500000.0, remainingPercent: 16.67 },
-    { type: 'subitem', glCode: '', program: 'AIDS /STI Prevention and Control Program', actual: 400000.0, budget: 500000.0, remainingAmount: 100000.0, remainingPercent: 20.0 },
-    { type: 'subitem', glCode: '', program: 'Dengue Prevention and Control Program', actual: 500000.0, budget: 600000.0, remainingAmount: 100000.0, remainingPercent: 16.67 },
-    { type: 'subitem', glCode: '', program: 'Malaria Elimination Program', actual: 300000.0, budget: 400000.0, remainingAmount: 100000.0, remainingPercent: 25.0 },
-    { type: 'subitem', glCode: '', program: 'Water and Sanitation Hygiene (WASH)', actual: 400000.0, budget: 500000.0, remainingAmount: 100000.0, remainingPercent: 20.0 },
-    { type: 'subitem', glCode: '', program: 'Soil Transmitted Helminthiasis Control Program', actual: 200000.0, budget: 300000.0, remainingAmount: 100000.0, remainingPercent: 33.33 },
-    { type: 'subitem', glCode: '', program: 'Emerging and Re-Emerging Disease Program', actual: 350000.0, budget: 400000.0, remainingAmount: 50000.0, remainingPercent: 12.5 },
-    { type: 'subitem', glCode: '', program: 'Leprosy and Skin Disease Control Program', actual: 150000.0, budget: 200000.0, remainingAmount: 50000.0, remainingPercent: 25.0 },
-    { type: 'subitem', glCode: '', program: 'Rabies Prevention and Control Program', actual: 200000.0, budget: 300000.0, remainingAmount: 100000.0, remainingPercent: 33.33 },
-    
-    // Category: F. Family Health Cluster Program
-    { type: 'program', glCode: '', program: 'F. Family Health Cluster Program', actual: 1800000.0, budget: 2500000.0, remainingAmount: 700000.0, remainingPercent: 28.0 },
-    { type: 'subitem', glCode: '3000', program: 'Safe Motherhood Program', actual: 277439.0, budget: 554878.0, remainingAmount: 277439.0, remainingPercent: 50.0 },
-    { type: 'subitem', glCode: '3001', program: 'FAMILY PLANNING PROGRAM', actual: 854652.0, budget: 1200000.0, remainingAmount: 345348.0, remainingPercent: 28.78 },
-    { type: 'subitem', glCode: '3002', program: 'Essential Newborn Care Program', actual: 300000.0, budget: 400000.0, remainingAmount: 100000.0, remainingPercent: 25.0 },
-    { type: 'subitem', glCode: '3003', program: 'MATERNAL PROGRAM', actual: 367909.0, budget: 345622.0, remainingAmount: -22287.0, remainingPercent: -6.45 },
-    
-    // Bangsamoro Immunization Program
-    { type: 'program', glCode: '', program: 'Bangsamoro Immunization Program (BIP)', actual: 1100000.0, budget: 1500000.0, remainingAmount: 400000.0, remainingPercent: 26.67 },
-];
-
-// Flattened rows for display (with hierarchy preserved)
+// Special Program Fund data model (will be loaded from database)
 let specialFundRows = [];
 
 // State
