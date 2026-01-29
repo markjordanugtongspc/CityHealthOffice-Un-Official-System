@@ -7,6 +7,7 @@ export default defineConfig({
         {
             name: 'php-refresh',
             handleHotUpdate({ file, server }) {
+                // Reload page when PHP files change
                 if (file.endsWith('.php')) {
                     server.ws.send({ type: 'full-reload', path: '*' });
                 }
@@ -14,20 +15,19 @@ export default defineConfig({
         },
     ],
     server: {
-        host: true, // Listen on all addresses, including LAN and public
-        cors: true,
+        host: true, // Allows access via network IP (e.g., 192.168.x.x)
+        port: 5173, // Force port to stay constant
         strictPort: true,
-        // Watch PHP files and frontend directory for changes
-        watch: {
-            usePolling: true,
-            include: ['frontend/**/*', 'backend/**/*'],
-        },
+        cors: true, // Allow your PHP server to fetch assets from Vite
+        origin: 'http://localhost:5173', // Important for asset URLs
     },
     build: {
-        // Generate manifest.json in outDir
-        manifest: true,
+        // Output directory for production build
+        outDir: 'dist',
+        emptyOutDir: true,
+        manifest: true, // Required for PHP to map files in production
         rollupOptions: {
-            // Overwrite default .html entry
+            // Your main entry point
             input: './backend/js/main.js',
         },
     },

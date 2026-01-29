@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Hosting Guide</title>
+    <style>
+        /* Modern Documentation Styling */
+        :root {
+            --bg-base: #020617;
+            --bg-card: #0f172a;
+            --accent: #38bdf8;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --code-bg: #000000;
+            --border: #1e293b;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.7;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        /* Reader Column UI */
+        .guide-container {
+            max-width: 780px;
+            width: 100%;
+            background-color: var(--bg-card);
+            padding: 60px;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--accent);
+            font-size: 2.5rem;
+            letter-spacing: -0.025em;
+            margin: 0;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-top: 40px;
+            display: flex;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        p {
+            color: var(--text-dim);
+            font-size: 1.05rem;
+        }
+
+        /* Code Block UI */
+        pre {
+            background-color: var(--code-bg);
+            color: #7dd3fc;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            font-family: 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.9rem;
+            margin: 20px 0;
+        }
+
+        code {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .step-indicator {
+            background-color: var(--accent);
+            color: var(--bg-base);
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            margin-right: 15px;
+            font-weight: 800;
+        }
+
+        .info-panel {
+            background-color: rgba(56, 189, 248, 0.05);
+            border-left: 3px solid var(--accent);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+        }
+
+        .info-panel strong {
+            color: var(--accent);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            padding-top: 30px;
+            opacity: 0.6;
+        }
+
+        /* Responsive UI */
+        @media (max-width: 640px) {
+            .guide-container { padding: 30px; }
+            h1 { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="guide-container">
+        <header>
+            <h1>Local Network Hosting</h1>
+            <p class="subtitle">Developer Guide for PHP & Vite Asset Syncing</p>
+        </header>
+
+        <p>Complete these steps whenever you switch to a different WiFi network. Since your <strong>Local IP Address</strong> changes per network, you must synchronize your configuration to allow external device connections.</p>
+
+        <h2><span class="step-indicator">1</span> Identify the Local IP</h2>
+        <p>Launch the Vite development server via your terminal to broadcast the network path:</p>
+        <pre>npm run dev</pre>
+        <p>Locate the <strong>"Network"</strong> address in the terminal output:</p>
+        <pre>➜ Network: http://192.168.X.X:5173/</pre>
+        <div class="info-panel">
+            <strong>Pro Tip:</strong> Always ignore the "Local" address (127.0.0.1). Use the Network IP that matches your router's subnet (typically 192.168.x.x).
+        </div>
+
+        <h2><span class="step-indicator">2</span> Update Configuration File</h2>
+        <p>Navigate to <code>config/vite_helper.php</code> and update the <strong>VITE_HOST</strong> constant with the new IP identified in Step 1.</p>
+        <pre>define('VITE_HOST', 'http://192.168.X.X:5173');</pre>
+
+        <h2><span class="step-indicator">3</span> Execute Parallel Servers</h2>
+        <p>The environment requires two active processes running in separate terminal instances:</p>
+        <ul>
+            <li><strong>Terminal A (Vite):</strong> Manages Tailwind processing & HMR via <code>npm run dev</code></li>
+            <li><strong>Terminal B (PHP):</strong> Executes server-side logic via <code>php -S 0.0.0.0:8000</code></li>
+        </ul>
+
+        <h2><span class="step-indicator">4</span> Remote Device Access</h2>
+        <p>Ensure your secondary device (Phone/Tablet) is connected to the <strong>same WiFi network</strong>, then navigate to:</p>
+        <pre>http://192.168.X.X:8000</pre>
+
+        <div class="info-panel" style="border-color: #f43f5e; background-color: rgba(244, 63, 94, 0.05);">
+            <strong style="color: #fb7185;">Firewall Warning:</strong> If the connection times out, verify that the <strong>Windows Defender Firewall</strong> is either disabled or configured to allow inbound traffic on ports 8000 and 5173.
+        </div>
+
+        <footer>
+            System Documentation &bull; Personal Dev Environment &bull; 2026
+        </footer>
+    </div>
+
+</body>
+</html>

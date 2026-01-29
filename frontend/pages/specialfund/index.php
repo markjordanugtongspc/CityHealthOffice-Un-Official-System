@@ -1,5 +1,5 @@
 <?php
-require_once __DIR__ . '/../../../config/vite.php';
+require_once __DIR__ . '/../../../config/vite_helper.php';
 require_once __DIR__ . '/../../../config/db.php';
 ?>
 <!DOCTYPE html>
@@ -10,7 +10,7 @@ require_once __DIR__ . '/../../../config/db.php';
     <title>Special Program Fund - City Health Office</title>
 
     <!-- Vite Assets -->
-    <?= Vite::assets('backend/js/main.js') ?>
+    <?php vite('backend/js/main.js'); ?>
 
 </head>
 <body class="min-h-screen flex flex-col bg-slate-100">
