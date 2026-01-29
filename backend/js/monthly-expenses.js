@@ -1,5 +1,16 @@
 import Swal from 'sweetalert2';
 import { initInlineEdit } from './modules/inline-edit.js';
+import {
+    sweetalertActionsLeftAlignedClasses,
+    sweetalertHtmlLeftAlignedClasses,
+    sweetalertHtmlScrollableClasses,
+    sweetalertNeutralCancelSlateClasses,
+    sweetalertNeutralConfirmBlueClasses,
+    sweetalertPopupBaseClasses,
+    sweetalertPopupScrollableBaseClasses,
+    sweetalertPrimaryConfirmClasses,
+    sweetalertSecondaryCancelClasses,
+} from './modules/modal.js';
 
 // Static monthly expenses data model
 // G/L Code will be auto-incremented by backend later
@@ -276,10 +287,10 @@ function renderTable() {
 
             return `
                 <tr class="${isStriped ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-100 transition-colors" data-row-index="${index}" data-gl-code="${row.glCode}">
-                    <td class="whitespace-nowrap px-3 py-2 text-xs md:text-sm font-medium text-slate-900 sticky left-0 bg-inherit z-10">
+                    <td class="whitespace-nowrap px-3 py-2 text-xs md:text-sm font-medium text-slate-900 w-[80px] min-w-[80px]">
                         ${row.glCode}
                     </td>
-                    <td class="px-3 py-2 text-xs md:text-sm text-slate-700 sticky left-12 bg-inherit z-10 min-w-[200px]" data-editable="accountTitle" data-type="text" data-value="${row.accountTitle}">
+                    <td class="px-3 py-2 text-xs md:text-sm text-slate-700 min-w-[200px]" data-editable="accountTitle" data-type="text" data-value="${row.accountTitle}">
                         ${row.accountTitle}
                     </td>
                     ${monthKeys.map(month => {
@@ -336,7 +347,7 @@ function renderPagination(total, totalPages) {
         button.type = 'button';
         button.textContent = String(page);
         button.className = [
-            'inline-flex items-center justify-center rounded-lg px-2.5 py-1 text-xs font-medium',
+            'inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium md:px-2.5 md:py-1 md:text-xs',
             'cursor-pointer transition-colors',
             page === currentPage
                 ? 'bg-[#224796] text-white border border-[#224796]'
@@ -437,9 +448,9 @@ function handleAddClick() {
         html: `
             <div class="space-y-4 md:space-y-5 text-left">
                 <!-- G/L Code Field (Note: Will be auto-incremented by backend) -->
-                <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
-                    <label class="text-sm font-medium text-slate-700 whitespace-nowrap md:w-32 md:shrink-0">G/L Code</label>
-                    <div class="flex-1 w-full">
+                <div class="grid grid-cols-1 md:grid-cols-[128px_1fr] gap-2 md:gap-3 items-start">
+                    <label class="text-sm font-medium text-slate-700 md:mb-1">G/L Code</label>
+                    <div class="w-full">
                         <input
                             id="swal-glCode"
                             type="text"
@@ -447,14 +458,14 @@ function handleAddClick() {
                             readonly
                             class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed"
                         />
-                        <p class="text-xs text-slate-500 mt-1.5">Note: G/L Code will be auto-incremented by backend</p>
+                        <p class="mt-1.5 text-xs text-slate-500">Note: G/L Code will be auto-incremented by backend</p>
                     </div>
                 </div>
                 
                 <!-- Account Title Field with Autocomplete -->
-                <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
-                    <label class="text-sm font-medium text-slate-700 whitespace-nowrap md:w-32 md:shrink-0">Account Title</label>
-                    <div class="flex-1 w-full relative">
+                <div class="grid grid-cols-1 md:grid-cols-[128px_1fr] gap-2 md:gap-3 items-start">
+                    <label class="text-sm font-medium text-slate-700 md:mb-1">Account Title</label>
+                    <div class="relative w-full">
                         <input
                             id="swal-accountTitle"
                             type="text"
@@ -465,29 +476,29 @@ function handleAddClick() {
                         <button
                             type="button"
                             id="swal-accountTitle-toggle"
-                            class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors hidden"
+                            class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors hidden cursor-pointer"
                             title="Show suggestions"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                             </svg>
                         </button>
-                        <div id="swal-accountTitle-suggestions" class="absolute z-50 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-lg max-h-48 overflow-y-auto hidden">
+                        <div id="swal-accountTitle-suggestions" class="absolute z-50 mt-1 hidden max-h-48 w-full overflow-y-auto rounded-lg border border-slate-300 bg-white shadow-lg">
                             <!-- Suggestions will be populated dynamically -->
                         </div>
                     </div>
                 </div>
                 
                 <!-- Monthly Values Grid -->
-                <div class="flex flex-col md:flex-row md:items-start gap-2 md:gap-3">
-                    <label class="text-sm font-medium text-slate-700 whitespace-nowrap md:w-32 md:shrink-0 md:pt-2">Monthly Values (₱)</label>
-                    <div class="flex-1 w-full">
-                        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-3 gap-3 max-h-[320px] md:max-h-[280px] overflow-y-auto pr-2 pb-2">
+                <div class="grid grid-cols-1 md:grid-cols-[128px_1fr] gap-2 md:gap-3 items-start">
+                    <label class="text-sm font-medium text-slate-700 md:mb-1 pt-1 md:pt-2">Monthly Values (₱)</label>
+                    <div class="w-full">
+                        <div class="grid max-h-[320px] grid-cols-2 gap-3 overflow-y-auto pr-1 pb-2 sm:grid-cols-3 md:max-h-[280px] md:grid-cols-4 lg:grid-cols-3">
                             ${monthNames.map((month, index) => {
                                 const monthKey = monthKeys[index];
                                 return `
                                     <div class="flex flex-col">
-                                        <label class="block text-xs font-medium text-slate-600 mb-1.5">${month}</label>
+                                        <label class="mb-1.5 block text-xs font-medium text-slate-600">${month}</label>
                                         <input
                                             id="swal-${monthKey}"
                                             type="number"
@@ -504,29 +515,27 @@ function handleAddClick() {
                 </div>
                 
                 <!-- Total Summary -->
-                <div class="flex flex-col md:flex-row md:items-center gap-2 md:gap-3">
-                    <label class="text-sm font-medium text-slate-700 whitespace-nowrap md:w-32 md:shrink-0">Total</label>
-                    <div class="flex-1 w-full rounded-lg bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 p-4">
-                        <p class="text-xs font-medium text-slate-500 mb-1.5">Total Amount</p>
-                        <p id="swal-total-amount" class="text-lg md:text-xl font-semibold text-slate-900">₱0.00</p>
+                <div class="grid grid-cols-1 md:grid-cols-[128px_1fr] gap-2 md:gap-3 items-start">
+                    <label class="text-sm font-medium text-slate-700 md:mb-1 pt-1 md:pt-2">Total</label>
+                    <div class="w-full rounded-lg border border-slate-200 bg-linear-to-br from-slate-50 to-slate-100 p-4">
+                        <p class="mb-1.5 text-xs font-medium text-slate-500">Total Amount</p>
+                        <p id="swal-total-amount" class="text-lg font-semibold text-slate-900 md:text-xl">₱0.00</p>
                     </div>
                 </div>
             </div>
         `,
-        width: '90%',
-        maxWidth: '700px',
+        width: 'auto',
         padding: '1.5rem',
         showCancelButton: true,
         confirmButtonText: 'Add Entry',
         cancelButtonText: 'Cancel',
         focusConfirm: false,
         customClass: {
-            popup: 'rounded-xl shadow-xl border border-slate-200',
-            htmlContainer: 'text-left max-h-[85vh] overflow-y-auto',
-            confirmButton:
-                'inline-flex items-center justify-center rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 cursor-pointer transition-colors',
-            cancelButton:
-                'inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1 cursor-pointer transition-colors',
+            popup: `${sweetalertPopupScrollableBaseClasses} max-w-md md:max-w-2xl`,
+            htmlContainer: sweetalertHtmlScrollableClasses,
+            confirmButton: sweetalertPrimaryConfirmClasses,
+            cancelButton: sweetalertSecondaryCancelClasses,
+            actions: sweetalertActionsLeftAlignedClasses,
         },
         didOpen: () => {
             // TODO: Replace with backend fetch API call when integrating with backend
@@ -714,8 +723,7 @@ function handleAddClick() {
                 text: 'Monthly expense entry has been added successfully.',
                 confirmButtonText: 'OK',
                 customClass: {
-                    confirmButton:
-                        'inline-flex items-center justify-center rounded-lg bg-[#224796] px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-colors',
+                    confirmButton: sweetalertNeutralConfirmBlueClasses,
                 },
             });
         }
@@ -747,20 +755,18 @@ function handleCalculateClick() {
     Swal.fire({
         title: `Calculate Monthly Expenses (${year})`,
         html: categoryHTML,
-        width: '90%',
-        maxWidth: '500px',
+        width: 'auto',
         padding: '1rem',
         showCancelButton: true,
         confirmButtonText: 'Calculate',
         cancelButtonText: 'Cancel',
         focusConfirm: false,
         customClass: {
-            popup: 'rounded-xl shadow-xl border border-slate-200',
-            htmlContainer: 'text-left',
-            confirmButton:
-                'inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1 cursor-pointer transition-colors',
-            cancelButton:
-                'inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1 cursor-pointer transition-colors',
+            popup: sweetalertPopupBaseClasses,
+            htmlContainer: sweetalertHtmlLeftAlignedClasses,
+            confirmButton: sweetalertSecondaryCancelClasses,
+            cancelButton: sweetalertNeutralCancelSlateClasses,
+            actions: sweetalertActionsLeftAlignedClasses,
         },
         preConfirm: () => {
             const categorySelect = document.getElementById('swal-calculate-category');
@@ -823,16 +829,14 @@ function handleCalculateClick() {
             return Swal.fire({
                 title: `Calculation Results (${year})`,
                 html: resultsHTML,
-                width: '90%',
-                maxWidth: '600px',
+                width: 'auto',
                 padding: '1rem',
                 confirmButtonText: 'Close',
                 focusConfirm: false,
                 customClass: {
-                    popup: 'rounded-xl shadow-xl border border-slate-200',
-                    htmlContainer: 'text-left',
-                    confirmButton:
-                        'inline-flex items-center justify-center rounded-lg bg-[#224796] px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-colors',
+                    popup: sweetalertPopupBaseClasses,
+                    htmlContainer: sweetalertHtmlLeftAlignedClasses,
+                    confirmButton: sweetalertNeutralConfirmBlueClasses,
                 },
             });
         },

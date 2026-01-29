@@ -207,7 +207,8 @@ function initSidebarToggle() {
     } else if (window.innerWidth < 1024) {
         // On mobile, ensure sidebar is not collapsed and starts hidden
         sidebar.classList.remove('collapsed');
-        sidebar.classList.remove('sidebar-open');
+        sidebar.classList.remove('translate-x-0');
+        sidebar.classList.add('-translate-x-full');
     }
     
     // Initial margin adjustment
@@ -223,25 +224,33 @@ function initSidebarToggle() {
         const mobileBackdrop = document.getElementById('mobileBackdrop');
         
         if (isMobile) {
-            // Mobile: Toggle sidebar visibility
-            const isOpen = sidebar.classList.contains('sidebar-open');
+            // Mobile: Toggle sidebar visibility (Tailwind-only)
+            const isOpen = sidebar.classList.contains('translate-x-0');
             
             if (isOpen) {
                 // Close sidebar
-                sidebar.classList.remove('sidebar-open');
-                document.body.classList.remove('sidebar-open');
+                sidebar.classList.remove('translate-x-0');
+                sidebar.classList.add('-translate-x-full');
+                document.body.classList.remove('overflow-hidden');
                 if (mobileBackdrop) {
-                    mobileBackdrop.classList.remove('visible');
+                    mobileBackdrop.classList.remove('opacity-100', 'visible', 'pointer-events-auto');
+                    mobileBackdrop.classList.add('opacity-0', 'invisible', 'pointer-events-none');
+                    mobileBackdrop.setAttribute('aria-hidden', 'true');
                 }
+                sidebar.setAttribute('aria-hidden', 'true');
                 // Update header toggle icon
                 updateHeaderToggleIcon(false);
             } else {
                 // Open sidebar
-                sidebar.classList.add('sidebar-open');
-                document.body.classList.add('sidebar-open');
+                sidebar.classList.remove('-translate-x-full');
+                sidebar.classList.add('translate-x-0');
+                document.body.classList.add('overflow-hidden');
                 if (mobileBackdrop) {
-                    mobileBackdrop.classList.add('visible');
+                    mobileBackdrop.classList.remove('opacity-0', 'invisible', 'pointer-events-none');
+                    mobileBackdrop.classList.add('opacity-100', 'visible', 'pointer-events-auto');
+                    mobileBackdrop.setAttribute('aria-hidden', 'false');
                 }
+                sidebar.setAttribute('aria-hidden', 'false');
                 // Update header toggle icon
                 updateHeaderToggleIcon(true);
             }
@@ -377,7 +386,7 @@ function initSidebarToggle() {
     const mobileBackdrop = document.getElementById('mobileBackdrop');
     if (mobileBackdrop) {
         mobileBackdrop.addEventListener('click', () => {
-            if (window.innerWidth < 1024 && sidebar.classList.contains('sidebar-open')) {
+            if (window.innerWidth < 1024 && sidebar.classList.contains('translate-x-0')) {
                 toggleSidebar();
             }
         });
@@ -394,7 +403,7 @@ function initSidebarToggle() {
             
             // Close if clicking outside, on nav link, or on close button
             if (isOutside || isNavLink || isCloseButton) {
-                if (sidebar.classList.contains('sidebar-open')) {
+                if (sidebar.classList.contains('translate-x-0')) {
                     toggleSidebar();
                 }
             }
@@ -408,10 +417,13 @@ function initSidebarToggle() {
         
         // Close mobile sidebar if switching to desktop
         if (window.innerWidth >= 1024) {
-            sidebar.classList.remove('sidebar-open');
-            document.body.classList.remove('sidebar-open');
+            sidebar.classList.remove('translate-x-0');
+            sidebar.classList.add('-translate-x-full');
+            document.body.classList.remove('overflow-hidden');
             if (mobileBackdrop) {
-                mobileBackdrop.classList.remove('visible');
+                mobileBackdrop.classList.remove('opacity-100', 'visible', 'pointer-events-auto');
+                mobileBackdrop.classList.add('opacity-0', 'invisible', 'pointer-events-none');
+                mobileBackdrop.setAttribute('aria-hidden', 'true');
             }
             // Reset header toggle icon
             updateHeaderToggleIcon(false);

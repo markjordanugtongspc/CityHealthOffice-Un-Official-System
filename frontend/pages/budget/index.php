@@ -13,7 +13,8 @@ require_once __DIR__ . '/../../../config/db.php';
     <?php vite('backend/js/main.js'); ?>
 
 </head>
-<body class="min-h-screen flex flex-col bg-slate-100">
+<body class="app-shell min-h-screen flex flex-col bg-slate-100">
+    <?php require_once __DIR__ . '/../../components/page-loader.php'; ?>
     <?php require_once __DIR__ . '/../../components/sidebar.php'; ?>
 
     <!-- Main Content Container (Expandable and Scrollable) -->
@@ -87,7 +88,7 @@ require_once __DIR__ . '/../../../config/db.php';
             </header>
 
             <!-- Content Area (Scrollable) -->
-            <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
+            <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-16">
                 <!-- Intro section -->
                 <section class="mb-6">
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6">
@@ -227,24 +228,24 @@ require_once __DIR__ . '/../../../config/db.php';
 
                         <!-- Pagination -->
                         <div class="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 md:flex-row md:items-center md:justify-between">
-                            <p class="text-xs text-slate-600" id="budgetPaginationSummary">
+                            <p class="text-xs md:text-sm text-slate-600" id="budgetPaginationSummary">
                                 Showing 0 to 0 of 0 entries
                             </p>
-                            <div class="flex items-center justify-end gap-1">
+                            <div class="flex items-center justify-end gap-2">
                                 <button
                                     id="budgetPrevPage"
                                     type="button"
-                                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors"
+                                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors md:px-2 md:py-1 md:text-xs"
                                 >
                                     Prev
                                 </button>
-                                <div id="budgetPageNumbers" class="flex items-center gap-1 text-xs">
+                                <div id="budgetPageNumbers" class="flex items-center gap-1 text-sm md:text-xs">
                                     <!-- Page buttons rendered by budget.js -->
                                 </div>
                                 <button
                                     id="budgetNextPage"
                                     type="button"
-                                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors"
+                                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors md:px-2 md:py-1 md:text-xs"
                                 >
                                     Next
                                 </button>

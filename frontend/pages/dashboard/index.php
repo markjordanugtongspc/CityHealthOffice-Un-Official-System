@@ -14,7 +14,8 @@ require_once __DIR__ . '/../../../config/db.php';
     <?php vite('backend/js/main.js'); ?>
 
 </head>
-<body class="min-h-screen flex flex-col bg-slate-100">
+<body class="app-shell min-h-screen flex flex-col bg-slate-100">
+    <?php require_once __DIR__ . '/../../components/page-loader.php'; ?>
     <?php require_once __DIR__ . '/../../components/sidebar.php'; ?>
 
     <!-- Main Content Container (Expandable and Scrollable) -->
@@ -88,7 +89,7 @@ require_once __DIR__ . '/../../../config/db.php';
             </header>
 
             <!-- Content Area (Scrollable) -->
-            <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
+            <main class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-24">
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Stats Card 1 -->
                     <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200 hover:scale-105 hover:shadow-lg transition-transform duration-300">
@@ -182,12 +183,12 @@ require_once __DIR__ . '/../../../config/db.php';
                     </div>
 
                     <!-- Page 1: Vouchers Charts -->
-                    <div id="chart-page-1" class="chart-page grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div id="chart-page-1" class="chart-page grid grid-cols-1 lg:grid-cols-2 gap-6 pb-4">
                     <!-- Monthly Vouchers Donut Chart -->
-                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6">
-                        <div class="flex justify-between mb-3">
-                            <div class="flex justify-center items-center">
-                                <h5 class="text-xl font-semibold text-slate-900 me-1">Monthly Vouchers</h5>
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6 relative isolate overflow-hidden">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-3">
+                            <div class="flex items-center gap-1.5 flex-wrap">
+                                <h5 class="text-lg sm:text-xl font-semibold text-slate-900">Monthly Vouchers</h5>
                                 <svg data-popover-target="vouchers-info" data-popover-placement="bottom" class="w-4 h-4 text-slate-500 hover:text-slate-900 cursor-pointer ms-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.529 9.988a2.502 2.502 0 1 1 5 .191A2.441 2.441 0 0 1 12 12.582V14m-.01 3.008H12M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                                 </svg>
@@ -208,7 +209,7 @@ require_once __DIR__ . '/../../../config/db.php';
                                 </div>
                             </div>
                             <div>
-                                <button type="button" data-tooltip-target="download-tooltip" data-tooltip-placement="bottom" class="hidden sm:inline-flex items-center justify-center text-slate-500 hover:text-slate-900 bg-transparent box-border border border-transparent hover:bg-slate-100 focus:ring-4 focus:ring-slate-200 font-medium leading-5 rounded-lg text-sm w-9 h-9 focus:outline-none cursor-pointer transition-colors">
+                                <button type="button" data-tooltip-target="download-tooltip" data-tooltip-placement="bottom" class="inline-flex items-center justify-center text-slate-500 hover:text-slate-900 bg-transparent box-border border border-transparent hover:bg-slate-100 focus:ring-4 focus:ring-slate-200 font-medium leading-5 rounded-lg text-sm w-9 h-9 focus:outline-none cursor-pointer transition-colors">
                                     <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 15v2a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-2m-8 1V4m0 12-4-4m4 4 4-4"/>
                                     </svg>
@@ -243,17 +244,18 @@ require_once __DIR__ . '/../../../config/db.php';
                         </div>
 
                         <!-- Donut Chart -->
-                        <div class="py-6" id="monthlyVouchersChart"></div>
+                        <div class="py-4 sm:py-6" id="monthlyVouchersChart"></div>
 
                         <div class="grid grid-cols-1 items-center border-slate-200 border-t justify-between">
-                            <div class="flex justify-between items-center pt-4 md:pt-6">
-                                <button id="dropdownLastDaysMonthlyButton" data-dropdown-toggle="LastDaysMonthlydropdown" data-dropdown-placement="bottom" class="text-sm font-medium text-slate-600 hover:text-slate-900 text-center inline-flex items-center cursor-pointer transition-colors" type="button">
-                                    This Year
-                                    <svg class="w-4 h-4 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/>
-                                    </svg>
-                                </button>
-                                <div id="LastDaysMonthlydropdown" class="z-10 hidden bg-white border border-slate-200 rounded-lg shadow-lg w-44">
+                            <div class="flex flex-wrap items-center justify-between gap-3 pt-4 md:pt-6">
+                                <div class="relative inline-flex w-fit">
+                                    <button id="dropdownLastDaysMonthlyButton" data-dropdown-toggle="LastDaysMonthlydropdown" data-dropdown-placement="bottom" class="text-sm font-medium text-slate-600 hover:text-slate-900 text-center inline-flex items-center cursor-pointer transition-colors" type="button">
+                                        This Year
+                                        <svg class="w-4 h-4 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/>
+                                        </svg>
+                                    </button>
+                                    <div id="LastDaysMonthlydropdown" class="absolute left-0 top-full mt-2 z-999 hidden bg-white border border-slate-200 rounded-lg shadow-xl w-44 ring-1 ring-slate-200">
                                     <ul class="p-2 text-sm text-slate-600 font-medium" aria-labelledby="dropdownLastDaysMonthlyButton">
                                         <li>
                                             <a href="#" class="inline-flex items-center w-full p-2 hover:bg-slate-100 hover:text-slate-900 rounded cursor-pointer transition-colors">This Year</a>
@@ -269,7 +271,8 @@ require_once __DIR__ . '/../../../config/db.php';
                                         </li>
                                     </ul>
                                 </div>
-                                <a href="#" class="inline-flex items-center text-[#224796] bg-transparent box-border border border-transparent hover:bg-slate-100 focus:ring-4 focus:ring-slate-200 font-medium leading-5 rounded-lg text-sm px-3 py-2 focus:outline-none cursor-pointer transition-colors">
+                                </div>
+                                <a href="#" class="inline-flex items-center text-[#224796] bg-transparent box-border border border-transparent hover:bg-slate-100 focus:ring-4 focus:ring-slate-200 font-medium leading-5 rounded-lg text-sm px-3 py-2 focus:outline-none cursor-pointer transition-colors ms-auto">
                                     Vouchers analysis
                                     <svg class="w-4 h-4 ms-1.5 -me-0.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4"/>
@@ -280,7 +283,7 @@ require_once __DIR__ . '/../../../config/db.php';
                     </div>
 
                     <!-- Weekly Vouchers Line Chart -->
-                    <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group">
+                    <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                         <div class="flex items-center justify-between mb-6">
                             <div>
                                 <h3 class="text-xl font-bold text-slate-900 mb-1">Weekly Vouchers</h3>
@@ -296,7 +299,7 @@ require_once __DIR__ . '/../../../config/db.php';
                     </div>
 
                     <!-- Daily Vouchers Column Chart -->
-                    <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group">
+                    <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group relative isolate">
                         <div class="flex justify-between pb-4 mb-4 border-b border-slate-200">
                             <div class="flex items-center">
                                 <div class="w-12 h-12 bg-gradient-to-br from-[#FCF350] to-[#E5D800] border border-slate-200 flex items-center justify-center rounded-full me-3 shadow-md">
@@ -333,14 +336,15 @@ require_once __DIR__ . '/../../../config/db.php';
                         <div id="dailyVouchersChart" class="chart-container"></div>
                         
                         <div class="grid grid-cols-1 items-center border-slate-200 border-t justify-between mt-4">
-                            <div class="flex justify-between items-center pt-4 md:pt-6">
-                                <button id="dropdownLastDaysButton" data-dropdown-toggle="LastDaysdropdown" data-dropdown-placement="bottom" class="text-sm font-medium text-slate-600 hover:text-slate-900 text-center inline-flex items-center cursor-pointer transition-colors" type="button">
-                                    Last 7 days
-                                    <svg class="w-4 h-4 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/>
-                                    </svg>
-                                </button>
-                                <div id="LastDaysdropdown" class="z-10 hidden bg-white border border-slate-200 rounded-lg shadow-lg w-44">
+                            <div class="flex flex-wrap items-center justify-between gap-3 pt-4 md:pt-6">
+                                <div class="relative inline-flex w-fit">
+                                    <button id="dropdownLastDaysButton" data-dropdown-toggle="LastDaysdropdown" data-dropdown-placement="bottom" class="text-sm font-medium text-slate-600 hover:text-slate-900 text-center inline-flex items-center cursor-pointer transition-colors" type="button">
+                                        Last 7 days
+                                        <svg class="w-4 h-4 ms-1.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 9-7 7-7-7"/>
+                                        </svg>
+                                    </button>
+                                    <div id="LastDaysdropdown" class="absolute left-0 top-full mt-2 z-999 hidden bg-white border border-slate-200 rounded-lg shadow-xl w-44 ring-1 ring-slate-200">
                                     <ul class="p-2 text-sm text-slate-600 font-medium" aria-labelledby="dropdownLastDaysButton">
                                         <li>
                                             <a href="#" class="inline-flex items-center w-full p-2 hover:bg-slate-100 hover:text-slate-900 rounded cursor-pointer transition-colors">Yesterday</a>
@@ -359,7 +363,8 @@ require_once __DIR__ . '/../../../config/db.php';
                                         </li>
                                     </ul>
                                 </div>
-                                <a href="#" class="inline-flex items-center text-[#224796] bg-transparent box-border border border-transparent hover:bg-slate-100 focus:ring-4 focus:ring-slate-200 font-medium leading-5 rounded-lg text-sm px-3 py-2 focus:outline-none cursor-pointer transition-colors">
+                                </div>
+                                <a href="#" class="inline-flex items-center text-[#224796] bg-transparent box-border border border-transparent hover:bg-slate-100 focus:ring-4 focus:ring-slate-200 font-medium leading-5 rounded-lg text-sm px-3 py-2 focus:outline-none cursor-pointer transition-colors ms-auto">
                                     Vouchers Report
                                     <svg class="w-4 h-4 ms-1.5 -me-0.5 rtl:rotate-180" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5m14 0-4 4m4-4-4-4"/>
@@ -387,10 +392,10 @@ require_once __DIR__ . '/../../../config/db.php';
                     </div>
 
                     <!-- Page 2: Daily Transactions Charts -->
-                    <div id="chart-page-2" class="chart-page hidden">
+                    <div id="chart-page-2" class="chart-page hidden pb-4">
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Daily Transactions Line Chart -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group">
+                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Daily Transactions</h3>
@@ -406,7 +411,7 @@ require_once __DIR__ . '/../../../config/db.php';
                         </div>
 
                         <!-- Transaction Volume Chart -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group">
+                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Transaction Volume</h3>
@@ -424,10 +429,10 @@ require_once __DIR__ . '/../../../config/db.php';
                     </div>
 
                     <!-- Page 3: Monthly/Weekly Transactions Charts -->
-                    <div id="chart-page-3" class="chart-page hidden">
+                    <div id="chart-page-3" class="chart-page hidden pb-4">
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Monthly Transactions Chart -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group">
+                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Monthly Transactions</h3>
@@ -443,7 +448,7 @@ require_once __DIR__ . '/../../../config/db.php';
                         </div>
 
                         <!-- Weekly Transactions Chart -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group">
+                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Weekly Transactions</h3>
@@ -461,10 +466,10 @@ require_once __DIR__ . '/../../../config/db.php';
                     </div>
 
                     <!-- Page 4: Quarterly Transactions Charts -->
-                    <div id="chart-page-4" class="chart-page hidden">
+                    <div id="chart-page-4" class="chart-page hidden pb-4">
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Quarterly Transactions Donut Chart -->
-                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6">
+                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6 overflow-hidden">
                             <div class="flex justify-between mb-3">
                                 <div class="flex justify-center items-center">
                                     <h5 class="text-xl font-semibold text-slate-900 me-1">Quarterly Transactions</h5>
@@ -474,7 +479,7 @@ require_once __DIR__ . '/../../../config/db.php';
                         </div>
 
                         <!-- Quarterly Comparison Chart -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group">
+                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Quarterly Comparison</h3>
@@ -492,10 +497,10 @@ require_once __DIR__ . '/../../../config/db.php';
                     </div>
 
                     <!-- Page 5: Expenses Charts -->
-                    <div id="chart-page-5" class="chart-page hidden">
+                    <div id="chart-page-5" class="chart-page hidden pb-4">
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Expenses Overview Chart -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group">
+                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Expenses Overview</h3>
@@ -511,7 +516,7 @@ require_once __DIR__ . '/../../../config/db.php';
                         </div>
 
                         <!-- Expenses by Category Chart -->
-                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6">
+                        <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6 overflow-hidden">
                             <div class="flex justify-between mb-3">
                                 <div class="flex justify-center items-center">
                                     <h5 class="text-xl font-semibold text-slate-900 me-1">Expenses by Category</h5>
@@ -523,10 +528,10 @@ require_once __DIR__ . '/../../../config/db.php';
                     </div>
 
                     <!-- Page 6: Fund Downloaded Charts -->
-                    <div id="chart-page-6" class="chart-page hidden">
+                    <div id="chart-page-6" class="chart-page hidden pb-4">
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <!-- Fund Downloaded Timeline -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group">
+                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Fund Downloaded Timeline</h3>
@@ -542,7 +547,7 @@ require_once __DIR__ . '/../../../config/db.php';
                         </div>
 
                         <!-- Fund Downloaded Summary -->
-                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group">
+                        <div class="bg-gradient-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                             <div class="flex items-center justify-between mb-6">
                                 <div>
                                     <h3 class="text-xl font-bold text-slate-900 mb-1">Fund Downloaded Summary</h3>

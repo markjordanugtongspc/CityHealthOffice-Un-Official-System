@@ -241,12 +241,9 @@ async function handleLogin(e) {
             clearCredentials();
         }
         
-        // Show success message with loading animation
+        // Show success message with loading animation, timer, and preload assets
+        // The modal will automatically close and redirect after the timer completes
         await showLoginSuccess();
-        
-        // Redirect to dashboard after success
-        // TODO: Update path based on your actual project structure
-        window.location.href = './frontend/pages/dashboard/index.php';
     } else {
         // Show incorrect credentials error
         await showIncorrectCredentials();

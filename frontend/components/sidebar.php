@@ -9,10 +9,10 @@
  */
 ?>
 <!-- Mobile Backdrop Overlay (visible when sidebar is open on mobile) -->
-<div id="mobileBackdrop" class="fixed inset-0 bg-black/60 z-30 opacity-0 invisible transition-all duration-300 ease-in-out pointer-events-none lg:hidden backdrop-blur-sm"></div>
+<div id="mobileBackdrop" aria-hidden="true" class="fixed inset-0 bg-black/60 z-[55] opacity-0 invisible transition-opacity duration-300 ease-out pointer-events-none lg:hidden backdrop-blur-sm"></div>
 
 <!-- Sidebar Navigation -->
-<aside id="sidebar" class="fixed left-0 top-0 z-50 h-screen w-[75vw] max-w-[320px] lg:w-64 bg-gradient-to-b from-slate-800 to-slate-900 flex flex-col shadow-2xl transition-transform duration-300 ease-in-out transform -translate-x-full lg:translate-x-0" aria-label="Sidebar">
+<aside id="sidebar" aria-hidden="true" class="fixed left-0 top-0 z-[60] h-dvh lg:h-screen w-[75vw] max-w-[320px] lg:w-64 bg-linear-to-b from-slate-800 to-slate-900 flex flex-col shadow-2xl transition-transform duration-300 ease-out transform -translate-x-full lg:translate-x-0" aria-label="Sidebar">
     <!-- Logo & Brand Section -->
     <div class="p-4 border-b border-white/10 flex flex-col shrink-0">
         <div class="flex items-center justify-between">
@@ -44,7 +44,7 @@
         </div>
 
         <!-- Expand Sidebar Button (visible when collapsed, directly below logo - not below separator) -->
-        <div id="sidebarToggleCollapsedWrapper" class="w-full flex justify-center items-center transition-all duration-300 ease-in-out hidden mt-3">
+        <div id="sidebarToggleCollapsedWrapper" class="w-full justify-center items-center transition-all duration-300 ease-in-out hidden mt-3">
             <button id="sidebarToggleCollapsed" class="shrink-0 p-1.5 hover:bg-white/10 rounded-lg transition-colors cursor-pointer relative group" title="Expand Sidebar">
                 <svg id="sidebarToggleIconCollapsed" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5 text-white transition-transform duration-200">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
@@ -55,7 +55,7 @@
     </div>
 
     <!-- Navigation Links -->
-    <nav class="flex-1 px-3 py-3 space-y-1 overflow-y-auto overflow-x-hidden lg:overflow-y-auto">
+    <nav class="flex-1 min-h-0 px-3 pt-3 pb-4 space-y-1 overflow-y-auto overflow-x-hidden">
         <ul class="space-y-1">
             <!-- Dashboard -->
             <li>
@@ -144,7 +144,7 @@
     </nav>
 
     <!-- Sidebar Footer (Settings, Logout, Version) -->
-    <div class="sidebar-footer-section border-t border-white/10 pt-3 mt-auto shrink-0 px-3 pb-3">
+    <div class="sidebar-footer-section border-t border-white/10 pt-3 mt-auto shrink-0 px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
         <ul class="space-y-1">
             <!-- Settings -->
             <li>
@@ -154,6 +154,15 @@
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
                     <span class="sidebar-text text-sm whitespace-nowrap flex-1 text-left nav-text">Settings</span>
+                </a>
+            </li>
+            <!-- About -->
+            <li>
+                <a href="../about/" data-tooltip="About" class="nav-item nav-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all group relative w-full cursor-pointer touch-manipulation">
+                    <svg class="w-5 h-5 shrink-0 transition-all duration-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 13V7m0 10h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
+                    </svg>
+                    <span class="sidebar-text text-sm whitespace-nowrap flex-1 text-left nav-text">About</span>
                 </a>
             </li>
             <!-- Logout -->

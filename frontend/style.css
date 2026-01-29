@@ -228,8 +228,8 @@
     flex: 1;
     min-width: 0; /* Allow flex shrinking */
     overflow-x: hidden;
-    height: 100vh; /* Full viewport height */
-    max-height: 100vh; /* Prevent exceeding viewport */
+    height: 100dvh; /* Full dynamic viewport height (mobile-safe) */
+    max-height: 100dvh; /* Prevent exceeding viewport */
     display: flex;
     flex-direction: column;
 }
@@ -244,207 +244,23 @@
     min-height: 0; /* Important for flex children to allow shrinking */
 }
 
-/* Ensure body allows proper flex layout */
+/* Base page scrolling
+   - Default: allow body scrolling (needed for login / long forms on mobile)
+   - App shell pages (with sidebar): lock body scroll and scroll inside main content */
 body {
-    overflow: hidden; /* Prevent body scroll, content scrolls in main */
-    height: 100vh;
-    max-height: 100vh;
+    min-height: 100dvh;
+    overflow-x: hidden;
 }
 
-/* Mobile Backdrop Overlay (visible when sidebar is open on mobile) */
-#mobileBackdrop {
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
-    z-index: 30;
+body.app-shell {
+    overflow: hidden;
+    height: 100dvh;
+    max-height: 100dvh;
 }
 
-/* Ensure sidebar is always clear and above backdrop - no blur effects */
-#sidebar {
-    z-index: 50 !important;
-    filter: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-}
-
-/* Ensure sidebar content is never blurred */
-#sidebar * {
-    filter: none !important;
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-}
-
-/* Touch-friendly interactions for mobile */
-@media (max-width: 1023px) {
-    #sidebar a,
-    #sidebar button {
-        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
-        touch-action: manipulation;
-    }
-}
-
-#mobileBackdrop.visible {
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-}
-
-/* Mobile Sidebar Behavior (< 1024px) - Uses Tailwind lg: breakpoint */
-/* Sidebar is hidden by default on mobile, slides in when .sidebar-open class is added */
-@media (max-width: 1023px) {
-    #sidebar {
-        transform: translateX(-100%);
-        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        will-change: transform;
-    }
-    
-    #sidebar.sidebar-open {
-        transform: translateX(0);
-        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.3);
-    }
-    
-    /* Prevent body scroll when sidebar is open on mobile */
-    body.sidebar-open {
-        overflow: hidden;
-        position: fixed;
-        width: 100%;
-    }
-    
-    /* Ensure sidebar is fully visible on mobile */
-    #sidebar {
-        width: 75vw !important;
-        max-width: 320px !important;
-        min-width: 280px !important;
-    }
-    
-    /* Mobile sidebar content styling */
-    #sidebar .nav-item,
-    #sidebar .nav-link,
-    #sidebar .nav-dropdown-trigger {
-        min-height: 44px; /* Touch target size */
-        -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
-    }
-    
-    /* Improve mobile text readability */
-    #sidebar .sidebar-text,
-    #sidebar .nav-text {
-        font-size: 0.875rem;
-        line-height: 1.5;
-    }
-    
-    /* Mobile logo section */
-    #sidebar .p-4.border-b {
-        padding: 1rem;
-    }
-    
-    /* On mobile, sidebar should always show full content (no collapse state) */
-    #sidebar.collapsed {
-        width: 280px !important;
-    }
-    
-    #sidebar.collapsed .sidebar-text,
-    #sidebar.collapsed .nav-text {
-        display: block !important;
-    }
-    
-    #sidebar.collapsed .dropdown-arrow {
-        display: block !important;
-    }
-    
-    #sidebar.collapsed .nav-dropdown-trigger {
-        display: flex !important;
-    }
-    
-    #sidebar.collapsed .dropdown-content {
-        display: block !important;
-        max-height: 0 !important;
-        opacity: 0 !important;
-    }
-    
-    #sidebar.collapsed .dropdown-content.show {
-        max-height: 500px !important;
-        opacity: 1 !important;
-    }
-    
-    #sidebar.collapsed .dropdown-content .nav-subitem {
-        margin-left: 1.5rem !important;
-        width: auto !important;
-        justify-content: flex-start !important;
-    }
-    
-    /* Hide desktop toggle buttons on mobile */
-    #sidebar #sidebarToggleDesktop,
-    #sidebar #sidebarToggleCollapsedWrapper {
-        display: none !important;
-    }
-    
-    /* Show mobile close button */
-    #sidebar #sidebarCloseMobile {
-        display: flex !important;
-    }
-    
-    /* Main content full width on mobile */
-    .main-content,
-    #spaContentContainer {
-        margin-left: 0 !important;
-        width: 100% !important;
-    }
-    
-    /* Ensure dropdowns work properly on mobile */
-    #sidebar .dropdown-content {
-        max-height: 500px !important;
-    }
-    
-    #sidebar .dropdown-content.show {
-        max-height: 1000px !important;
-        opacity: 1 !important;
-    }
-    
-    /* Mobile navigation touch improvements */
-    #sidebar nav {
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: contain;
-    }
-}
-
-/* Desktop: Hide mobile close button */
-@media (min-width: 1024px) {
-    #sidebar #sidebarCloseMobile {
-        display: none !important;
-    }
-}
-
-/* Desktop Sidebar Behavior (>= 1024px) */
-@media (min-width: 1024px) {
-    #sidebar {
-        transform: translateX(0) !important;
-        filter: none !important;
-        backdrop-filter: none !important;
-        width: 16rem !important;
-        max-width: none !important;
-        min-width: auto !important;
-    }
-    
-    /* Hide mobile backdrop on desktop */
-    #mobileBackdrop {
-        display: none !important;
-        opacity: 0 !important;
-        visibility: hidden !important;
-        pointer-events: none !important;
-    }
-    
-    /* Ensure expand button wrapper is hidden when sidebar is NOT collapsed */
-    #sidebar:not(.collapsed) #sidebarToggleCollapsedWrapper {
-        display: none !important;
-    }
-    
-    /* Reset mobile-specific styles on desktop */
-    body.sidebar-open {
-        overflow: auto !important;
-        position: static !important;
-        width: auto !important;
-    }
-}
+/* NOTE:
+   Mobile sidebar show/hide is now handled via Tailwind classes
+   toggled in `backend/js/sidebar.js` (no more `.visible` / `.sidebar-open` CSS). */
 
 /* Enhanced Pie Chart Shadow */
 #monthlyVouchersChart {

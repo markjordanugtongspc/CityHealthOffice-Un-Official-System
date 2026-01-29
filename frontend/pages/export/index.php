@@ -13,16 +13,17 @@ require_once __DIR__ . '/../../../config/db.php';
     <?php vite('backend/js/main.js'); ?>
 
 </head>
-<body class="min-h-screen flex flex-col bg-slate-100">
+<body class="app-shell min-h-screen flex flex-col bg-slate-100">
+    <?php require_once __DIR__ . '/../../components/page-loader.php'; ?>
     <?php require_once __DIR__ . '/../../components/sidebar.php'; ?>
 
     <!-- Main Content Container (Expandable and Scrollable) -->
     <div id="spaContentContainer" class="main-content ml-64 min-h-screen transition-all duration-300 flex-1 flex flex-col">
             <!-- Header -->
-            <header class="flex items-center justify-between bg-white border-b border-slate-200 px-4 py-3">
+            <header class="sticky top-0 z-40 flex items-center justify-between bg-white border-b border-slate-200 px-4 py-3">
                 <div class="flex items-center space-x-3">
                     <!-- Mobile Hamburger Toggle (visible only on mobile) -->
-                    <button id="sidebarToggleHeader" type="button" class="lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
+                    <button id="sidebarToggleHeader" type="button" class="relative z-50 lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
                         <span class="sr-only">Toggle sidebar</span>
                         <!-- Hamburger Icon (default) -->
                         <svg id="headerHamburgerIcon" class="w-6 h-6 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -148,7 +149,7 @@ require_once __DIR__ . '/../../../config/db.php';
                 </section>
 
                 <!-- Preview Section -->
-                <section id="exportPreviewSection" class="hidden mb-6">
+                <section id="exportPreviewSection" class="hidden mb-6 relative z-10">
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-lg font-semibold text-slate-900">Preview</h3>

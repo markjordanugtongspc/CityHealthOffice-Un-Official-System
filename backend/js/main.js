@@ -153,13 +153,109 @@ import { init as initBudget } from './budget.js';
 import { init as initSpecialFund } from './specialfund.js';
 import { init as initMonthlyExpenses } from './monthly-expenses.js';
 import { init as initExport } from './modules/export.js';
+import { init as initScrollToTop } from './modules/scroll-to-top.js';
+import { init as initAbout } from './about.js';
 import { initSidebar } from './sidebar.js';
+
+/**
+ * Remove page loader once assets are loaded
+ */
+function removePageLoader() {
+    const loader = document.getElementById('page-loader');
+    if (loader) {
+        loader.style.opacity = '0';
+        loader.style.transition = 'opacity 0.3s ease-out';
+        setTimeout(() => {
+            loader.remove();
+        }, 300);
+    }
+}
+
+/**
+ * Preload page assets on link hover for smoother navigation
+ * Uses service worker cache for instant navigation
+ */
+function initNavigationPreloading() {
+    // Import cache manager
+    import('./modules/cache-manager.js').then(({ preloadPage, isPageCached }) => {
+        // Find all internal navigation links
+        const links = document.querySelectorAll('a[href*="frontend/pages"], a[href*="index.php"]');
+        const preloadedPages = new Set();
+        
+        links.forEach(link => {
+            const href = link.getAttribute('href');
+            if (!href || href.startsWith('#') || href.startsWith('javascript:')) {
+                return;
+            }
+            
+            // Skip external links
+            if (href.startsWith('http') && !href.includes(window.location.hostname)) {
+                return;
+            }
+            
+            // Resolve relative URLs to absolute
+            const absoluteUrl = new URL(href, window.location.href).href;
+            
+            // Preload on hover (mouseenter) - cache the page for instant future loads
+            link.addEventListener('mouseenter', async () => {
+                if (!preloadedPages.has(absoluteUrl)) {
+                    preloadedPages.add(absoluteUrl);
+                    
+                    // Check if already cached
+                    try {
+                        const cached = await isPageCached(absoluteUrl);
+                        if (!cached) {
+                            // Preload into cache (non-blocking)
+                            preloadPage(absoluteUrl);
+                        }
+                    } catch (error) {
+                        // Ignore cache errors
+                    }
+                }
+            }, { once: true });
+            
+            // Handle clicks - service worker will serve cached pages instantly
+            link.addEventListener('click', (e) => {
+                // Only handle internal navigation
+                if (href && !href.startsWith('http') && !href.startsWith('#')) {
+                    // Service worker will intercept and serve from cache if available
+                    // Show loader only briefly for visual feedback
+                    const loader = document.createElement('div');
+                    loader.id = 'page-loader';
+                    loader.innerHTML = `
+                        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #f4f8fb 60%, #dbeafe 100%); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column;">
+                            <div style="width: 48px; height: 48px; border: 4px solid #e2e8f0; border-top-color: #224796; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                            <p style="margin-top: 1rem; color: #223557; font-weight: 500;">Loading page...</p>
+                        </div>
+                        <style>
+                            @keyframes spin {
+                                to { transform: rotate(360deg); }
+                            }
+                        </style>
+                    `;
+                    document.body.appendChild(loader);
+                    
+                    // If page is cached, loader will be removed quickly by main.js init()
+                    // If not cached, normal navigation will occur
+                }
+            });
+        });
+    });
+}
 
 /**
  * Main application initialization
  * Conditionally initializes modules based on page context
  */
 export async function init() {
+    // Register service worker for page caching (must be first)
+    import('./modules/cache-manager.js').then(({ registerServiceWorker }) => {
+        registerServiceWorker();
+    });
+    
+    // Remove page loader if it exists (for page transitions)
+    removePageLoader();
+    
     // Set favicon for all pages (must be first)
     setFavicon();
     
@@ -186,12 +282,38 @@ export async function init() {
 
     // Initialize export page if export elements exist
     initExport();
+
+    // Initialize about page if about elements exist
+    initAbout();
+
+    // Floating scroll-to-top button (mobile/desktop)
+    initScrollToTop();
+    
+    // Initialize navigation preloading for smoother page transitions
+    initNavigationPreloading();
+    
+    // Ensure loader is removed after all initialization
+    removePageLoader();
+}
+
+// Mark body as loaded once CSS is ready (prevents FOUC)
+function markBodyLoaded() {
+    document.body.classList.add('loaded');
 }
 
 // Auto-init when DOM is ready
 if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener('DOMContentLoaded', () => {
+        markBodyLoaded();
+        init();
+    });
 } else {
     // DOM is already loaded, run immediately
+    markBodyLoaded();
     init();
 }
+
+// Fallback: Mark body as loaded after a short delay if CSS hasn't loaded yet
+setTimeout(() => {
+    markBodyLoaded();
+}, 100);

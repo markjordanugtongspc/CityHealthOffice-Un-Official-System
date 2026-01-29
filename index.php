@@ -9,10 +9,23 @@ require_once __DIR__ . '/config/db.php';
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - City Health Office</title>
 
+    <!-- Prevent FOUC: Hide body until CSS loads -->
+    <style>
+        body:not(.loaded) {
+            visibility: hidden;
+            opacity: 0;
+        }
+        body.loaded {
+            visibility: visible;
+            opacity: 1;
+            transition: opacity 0.2s ease-in;
+        }
+    </style>
+
     <!-- Vite Assets -->
     <?php vite('backend/js/main.js'); ?>
 </head>
-<body class="min-h-screen flex flex-col md:flex-row">
+<body class="min-h-screen flex flex-col md:flex-row bg-slate-50 overflow-hidden">
     <!-- Left Panel - Brand Area -->
     <div class="hidden md:flex md:w-1/2 bg-[#224796] text-white items-center justify-center p-8">
         <div class="text-center space-y-6">
@@ -32,14 +45,25 @@ require_once __DIR__ . '/config/db.php';
     </div>
 
     <!-- Right Panel - Login Form -->
-    <div class="flex w-full md:w-1/2 items-center justify-center bg-slate-50 p-6 md:p-10">
-        <div class="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 space-y-6">
-            <div class="text-center mb-8">
-                <h2 class="text-3xl font-bold text-slate-900 mb-2">Welcome Back</h2>
-                <p class="text-slate-600">Sign in to your account</p>
+    <div class="flex w-full md:w-1/2 items-center justify-center bg-slate-50 px-4 py-6 sm:px-6 md:p-10">
+        <div class="w-full max-w-md bg-white/90 backdrop-blur-sm shadow-xl rounded-2xl border border-slate-200 px-5 py-6 sm:p-8 space-y-5">
+            <!-- Mobile Logo (shows only on mobile) -->
+            <div class="md:hidden flex justify-center">
+                <div class="w-20 h-20 rounded-full overflow-hidden bg-transparent ring-1 ring-slate-200 shadow-sm">
+                    <img
+                        src="frontend/images/ch-logo.png"
+                        alt="City Health Office Logo"
+                        class="w-full h-full object-contain"
+                    />
+                </div>
             </div>
 
-            <form id="loginForm" class="space-y-6">
+            <div class="text-center">
+                <h2 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-tight">Welcome Back</h2>
+                <p class="mt-1.5 text-sm sm:text-base text-slate-600">Sign in to your account</p>
+            </div>
+
+            <form id="loginForm" class="space-y-4">
                 <!-- Username Field -->
                 <div>
                     <label for="username" class="block text-sm font-medium text-slate-700 mb-2">
@@ -51,7 +75,7 @@ require_once __DIR__ . '/config/db.php';
                         name="username"
                         required
                         autocomplete="username"
-                        class="block w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#224796] focus:border-transparent transition"
+                        class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#224796] focus:border-transparent transition"
                         placeholder="Enter your username"
                     />
                 </div>
@@ -67,7 +91,7 @@ require_once __DIR__ . '/config/db.php';
                         name="password"
                         required
                         autocomplete="current-password"
-                        class="block w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#224796] focus:border-transparent transition"
+                        class="block w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#224796] focus:border-transparent transition"
                         placeholder="Enter your password"
                     />
                 </div>
@@ -93,13 +117,13 @@ require_once __DIR__ . '/config/db.php';
                 <!-- Login Button -->
                 <button
                     type="submit"
-                    class="w-full bg-[#224796] text-white font-medium py-2.5 rounded-lg hover:bg-[#163473] transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-2"
+                    class="w-full bg-[#224796] text-white font-medium py-2.5 sm:py-2.5 rounded-lg hover:bg-[#163473] transition cursor-pointer focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-2"
                 >
                     Sign In
                 </button>
             </form>
 
-            <div class="text-center text-sm text-slate-500 mt-6">
+            <div class="text-center text-xs sm:text-sm text-slate-500 mt-2">
                 <p>&copy; 2026 City Health Office. All rights reserved.</p>
             </div>
         </div>

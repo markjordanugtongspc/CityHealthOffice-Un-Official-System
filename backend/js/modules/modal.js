@@ -5,6 +5,36 @@
 
 let modalContainer = null;
 
+// ============================================================================
+// Shared SweetAlert2 styling helpers
+// ============================================================================
+
+export const sweetalertPopupBaseClasses =
+    'rounded-2xl shadow-xl border border-slate-200';
+
+export const sweetalertPopupScrollableBaseClasses =
+    'rounded-2xl shadow-xl border border-slate-200';
+
+export const sweetalertHtmlLeftAlignedClasses = 'text-left';
+
+export const sweetalertHtmlScrollableClasses =
+    'text-left max-h-[85vh] overflow-y-auto';
+
+export const sweetalertPrimaryConfirmClasses =
+    'inline-flex items-center justify-center rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 cursor-pointer transition-colors';
+
+export const sweetalertSecondaryCancelClasses =
+    'inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1 cursor-pointer transition-colors';
+
+export const sweetalertNeutralConfirmBlueClasses =
+    'inline-flex items-center justify-center rounded-lg bg-[#224796] px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-colors';
+
+export const sweetalertNeutralCancelSlateClasses =
+    'inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-300 focus:ring-offset-1 cursor-pointer transition-colors';
+
+export const sweetalertActionsLeftAlignedClasses =
+    'flex items-center justify-start gap-3 mt-4';
+
 /**
  * Initialize modal container
  */

@@ -1,5 +1,13 @@
 import Swal from 'sweetalert2';
 import { initInlineEdit } from './modules/inline-edit.js';
+import {
+    sweetalertActionsLeftAlignedClasses,
+    sweetalertHtmlLeftAlignedClasses,
+    sweetalertNeutralConfirmBlueClasses,
+    sweetalertPopupBaseClasses,
+    sweetalertPrimaryConfirmClasses,
+    sweetalertSecondaryCancelClasses,
+} from './modules/modal.js';
 
 // Hierarchical Special Program Fund data model
 const specialFundData = [
@@ -232,7 +240,7 @@ function renderPagination(total, totalPages) {
         button.type = 'button';
         button.textContent = String(page);
         button.className = [
-            'inline-flex items-center justify-center rounded-lg px-2.5 py-1 text-xs font-medium',
+            'inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium md:px-2.5 md:py-1 md:text-xs',
             'cursor-pointer transition-colors',
             page === currentPage
                 ? 'bg-[#224796] text-white border border-[#224796]'
@@ -263,8 +271,8 @@ function handleAddClick() {
         html: `
             <div class="space-y-4 md:space-y-5 text-left">
                 <!-- G/L Code Field -->
-                <div class="grid grid-cols-[120px_1fr] md:grid-cols-1 gap-2 md:gap-2 items-center">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1 whitespace-nowrap">G/L Code</label>
+                <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-2 md:gap-2 items-start">
+                    <label class="text-sm font-medium text-slate-700 md:mb-1">G/L Code</label>
                     <input
                         id="swal-glCode"
                         type="text"
@@ -274,8 +282,8 @@ function handleAddClick() {
                 </div>
                 
                 <!-- Program Field -->
-                <div class="grid grid-cols-[120px_1fr] md:grid-cols-1 gap-2 md:gap-2 items-center">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1 whitespace-nowrap">Program</label>
+                <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-2 md:gap-2 items-start">
+                    <label class="text-sm font-medium text-slate-700 md:mb-1">Program</label>
                     <input
                         id="swal-program"
                         type="text"
@@ -285,8 +293,8 @@ function handleAddClick() {
                 </div>
                 
                 <!-- Type Field -->
-                <div class="grid grid-cols-[120px_1fr] md:grid-cols-1 gap-2 md:gap-2 items-center">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1 whitespace-nowrap">Type</label>
+                <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-2 md:gap-2 items-start">
+                    <label class="text-sm font-medium text-slate-700 md:mb-1">Type</label>
                     <select
                         id="swal-type"
                         class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] cursor-pointer transition-colors"
@@ -297,8 +305,8 @@ function handleAddClick() {
                 </div>
                 
                 <!-- Actual Field -->
-                <div class="grid grid-cols-[120px_1fr] md:grid-cols-1 gap-2 md:gap-2 items-center">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1 whitespace-nowrap">Actual (₱)</label>
+                <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-2 md:gap-2 items-start">
+                    <label class="text-sm font-medium text-slate-700 md:mb-1">Actual (₱)</label>
                     <input
                         id="swal-actual"
                         type="number"
@@ -309,8 +317,8 @@ function handleAddClick() {
                 </div>
                 
                 <!-- Budget Field -->
-                <div class="grid grid-cols-[120px_1fr] md:grid-cols-1 gap-2 md:gap-2 items-center">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1 whitespace-nowrap">Budget (₱)</label>
+                <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-2 md:gap-2 items-start">
+                    <label class="text-sm font-medium text-slate-700 md:mb-1">Budget (₱)</label>
                     <input
                         id="swal-budget"
                         type="number"
@@ -321,9 +329,9 @@ function handleAddClick() {
                 </div>
                 
                 <!-- Remaining Summary -->
-                <div class="grid grid-cols-[120px_1fr] md:grid-cols-1 gap-2 md:gap-2 items-start">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1 whitespace-nowrap pt-2">Summary</label>
-                    <div class="rounded-lg bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 p-4 w-full">
+                <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-2 md:gap-2 items-start">
+                    <label class="text-sm font-medium text-slate-700 md:mb-1 pt-1 md:pt-2">Summary</label>
+                    <div class="w-full rounded-lg bg-linear-to-br from-slate-50 to-slate-100 border border-slate-200 p-4">
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <p class="text-xs font-medium text-slate-500 mb-1.5">Remaining ₱</p>
@@ -345,12 +353,11 @@ function handleAddClick() {
         cancelButtonText: 'Cancel',
         focusConfirm: false,
         customClass: {
-            popup: 'rounded-2xl shadow-xl border border-slate-200 max-w-md md:max-w-2xl',
-            htmlContainer: 'text-left',
-            confirmButton:
-                'inline-flex items-center justify-center rounded-lg bg-emerald-500 px-5 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 cursor-pointer transition-colors',
-            cancelButton:
-                'inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-5 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1 cursor-pointer transition-colors',
+            popup: `${sweetalertPopupBaseClasses} max-w-md md:max-w-2xl`,
+            htmlContainer: sweetalertHtmlLeftAlignedClasses,
+            confirmButton: sweetalertPrimaryConfirmClasses,
+            cancelButton: sweetalertSecondaryCancelClasses,
+            actions: sweetalertActionsLeftAlignedClasses,
         },
         didOpen: () => {
             const actualInput = document.getElementById('swal-actual');
@@ -430,8 +437,7 @@ function handleAddClick() {
                 text: 'Program entry has been added successfully.',
                 confirmButtonText: 'OK',
                 customClass: {
-                    confirmButton:
-                        'inline-flex items-center justify-center rounded-lg bg-[#224796] px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-colors',
+                    confirmButton: sweetalertNeutralConfirmBlueClasses,
                 },
             });
         }
@@ -543,11 +549,9 @@ function handleCalculateClick() {
         cancelButtonText: 'Close',
         focusConfirm: false,
         customClass: {
-            popup: 'rounded-2xl',
-            confirmButton:
-                'inline-flex items-center justify-center rounded-lg bg-[#224796] px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-colors',
-            cancelButton:
-                'inline-flex items-center justify-center rounded-lg border border-red-300 bg-white px-4 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-red-300 focus:ring-offset-1 cursor-pointer transition-colors',
+            popup: sweetalertPopupBaseClasses,
+            confirmButton: sweetalertNeutralConfirmBlueClasses,
+            cancelButton: sweetalertSecondaryCancelClasses,
         },
         didOpen: () => {
             const popup = Swal.getPopup();
@@ -573,8 +577,7 @@ function handleCalculateClick() {
                 text: 'Special Program Fund data has been copied to your clipboard.',
                 confirmButtonText: 'OK',
                 customClass: {
-                    confirmButton:
-                        'inline-flex items-center justify-center rounded-lg bg-[#224796] px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-colors',
+                    confirmButton: sweetalertNeutralConfirmBlueClasses,
                 },
             });
         }

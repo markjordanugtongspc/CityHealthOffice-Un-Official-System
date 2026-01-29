@@ -30,6 +30,22 @@ function formatCurrency(value) {
 }
 
 /**
+ * Compute base path for assets relative to current script.
+ * Ensures previews and print work on localhost and LAN without hard-coded hosts.
+ */
+function getBasePath() {
+    const path = window.location.pathname || '/';
+    const marker = '/frontend/';
+    const idx = path.indexOf(marker);
+    if (idx === -1) {
+        return '/';
+    }
+    return path.slice(0, idx + 1);
+}
+
+const exportBasePath = getBasePath();
+
+/**
  * Initialize print page functionality
  */
 export function init() {
@@ -357,7 +373,7 @@ function generatePrintHTML(data, source) {
 
     const headers = Object.keys(data[0]);
     const year = getCurrentYearFromGlobal();
-    const logoPath = window.location.origin + '/Project/frontend/images/ch-logo.png';
+    const logoPath = exportBasePath + 'frontend/images/ch-logo.png';
     const rowsPerPage = 10;
     const totalPages = Math.ceil(data.length / rowsPerPage);
     
@@ -609,7 +625,7 @@ function generateTableHTML(data, source) {
 
     const headers = Object.keys(data[0]);
     const year = getCurrentYearFromGlobal();
-    const logoPath = window.location.origin + '/Project/frontend/images/ch-logo.png'; // Mao ni logo path
+    const logoPath = exportBasePath + 'frontend/images/ch-logo.png'; // Computed base path for LAN-safe logo
 
     let html = `
         <div class="export-content bg-white p-6 rounded-xl shadow-sm border border-slate-200">

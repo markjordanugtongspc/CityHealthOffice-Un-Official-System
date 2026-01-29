@@ -13,7 +13,8 @@ require_once __DIR__ . '/../../../config/db.php';
     <?php vite('backend/js/main.js'); ?>
 
 </head>
-<body class="min-h-screen flex flex-col bg-slate-100">
+<body class="app-shell min-h-screen flex flex-col bg-slate-100">
+    <?php require_once __DIR__ . '/../../components/page-loader.php'; ?>
     <?php require_once __DIR__ . '/../../components/sidebar.php'; ?>
 
     <!-- Main Content Container (Expandable and Scrollable) -->
@@ -87,10 +88,10 @@ require_once __DIR__ . '/../../../config/db.php';
             </header>
 
             <!-- Content Area (Scrollable) -->
-            <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
+            <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-16">
                 <!-- Header Section with Standard Graphics -->
                 <section class="mb-6">
-                    <div class="relative bg-gradient-to-br from-[#224796] to-[#163473] rounded-2xl shadow-xl overflow-hidden">
+                    <div class="relative bg-linear-to-br from-[#224796] to-[#163473] rounded-2xl shadow-xl overflow-hidden">
                         <!-- Static Background Pattern -->
                         <div class="absolute inset-0 opacity-10">
                             <div class="absolute top-0 left-0 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-3xl"></div>
@@ -98,45 +99,45 @@ require_once __DIR__ . '/../../../config/db.php';
                         </div>
                         
                         <!-- Content -->
-                        <div class="relative z-10 p-6 md:p-8 lg:p-10">
+                        <div class="relative z-10 p-4 md:p-6 lg:p-8">
                             <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                                 <!-- Left: Title and Description -->
                                 <div class="flex-1">
                                     <div class="flex items-center gap-3 mb-3">
-                                        <div class="p-3 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
-                                            <svg class="w-8 h-8 md:w-10 md:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <div class="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
+                                            <svg class="w-7 h-7 md:w-9 md:h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                             </svg>
                                         </div>
-                                        <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-white tracking-tight">
+                                        <h2 class="text-xl md:text-2xl lg:text-3xl font-bold text-white tracking-tight">
                                             Monthly Expenses Summary
                                         </h2>
                                     </div>
-                                    <p class="text-white/90 text-sm md:text-base ml-14 md:ml-16">
+                                    <p class="text-white/90 text-sm md:text-base ml-12 md:ml-14">
                                         Track and manage your monthly financial expenses with detailed insights
                                     </p>
                                 </div>
                                 
                                 <!-- Right: Standard Graphics -->
-                                <div class="flex items-center gap-4 lg:gap-6">
+                                <div class="flex items-center gap-3 lg:gap-5">
                                     <!-- Chart Icon -->
-                                    <div class="hidden md:flex flex-col items-center gap-2 p-4 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
-                                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="hidden md:flex flex-col items-center gap-2 p-3 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
+                                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                         </svg>
                                         <span class="text-xs text-white/80 font-medium">Analytics</span>
                                     </div>
                                     
                                     <!-- Expense Icon -->
-                                    <div class="hidden md:flex flex-col items-center gap-2 p-4 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
-                                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <div class="hidden md:flex flex-col items-center gap-2 p-3 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
+                                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                         <span class="text-xs text-white/80 font-medium">Expenses</span>
                                     </div>
                                     
                                     <!-- Standard Decorative Bars -->
-                                    <div class="flex flex-col gap-2">
+                                <div class="hidden sm:flex flex-col gap-2">
                                         <div class="flex gap-2">
                                             <div class="w-3 h-8 bg-white/30 rounded-full"></div>
                                             <div class="w-3 h-6 bg-white/40 rounded-full"></div>
@@ -152,7 +153,7 @@ require_once __DIR__ . '/../../../config/db.php';
                         </div>
                         
                         <!-- Bottom Accent Line -->
-                        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-white/30 to-transparent"></div>
+                        <div class="absolute bottom-0 left-0 right-0 h-1 bg-linear-to-r from-transparent via-white/30 to-transparent"></div>
                     </div>
                 </section>
 
@@ -233,14 +234,14 @@ require_once __DIR__ . '/../../../config/db.php';
                 <!-- Table -->
                 <section>
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                        <div class="overflow-x-auto">
-                            <table id="monthlyExpensesTable" class="min-w-full divide-y divide-slate-200 text-sm">
+                        <div class="w-full overflow-x-auto">
+                            <table id="monthlyExpensesTable" class="min-w-max divide-y divide-slate-200 text-sm">
                                 <thead class="bg-slate-50">
                                     <tr>
-                                        <th scope="col" class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 sticky left-0 bg-slate-50 z-10">
+                                        <th scope="col" class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 w-[80px] min-w-[80px]">
                                             G/L Code
                                         </th>
-                                        <th scope="col" class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 sticky left-12 bg-slate-50 z-10">
+                                        <th scope="col" class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 min-w-[200px]">
                                             Account Title
                                         </th>
                                         <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
@@ -294,24 +295,24 @@ require_once __DIR__ . '/../../../config/db.php';
 
                         <!-- Pagination -->
                         <div class="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 md:flex-row md:items-center md:justify-between">
-                            <p class="text-xs text-slate-600" id="monthlyExpensesPaginationSummary">
+                            <p class="text-xs md:text-sm text-slate-600" id="monthlyExpensesPaginationSummary">
                                 Showing 0 to 0 of 0 entries
                             </p>
-                            <div class="flex items-center justify-end gap-1">
+                            <div class="flex items-center justify-end gap-2">
                                 <button
                                     id="monthlyExpensesPrevPage"
                                     type="button"
-                                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors"
+                                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors md:px-2 md:py-1 md:text-xs"
                                 >
                                     Prev
                                 </button>
-                                <div id="monthlyExpensesPageNumbers" class="flex items-center gap-1 text-xs">
+                                <div id="monthlyExpensesPageNumbers" class="flex items-center gap-1 text-sm md:text-xs">
                                     <!-- Page buttons rendered by monthly-expenses.js -->
                                 </div>
                                 <button
                                     id="monthlyExpensesNextPage"
                                     type="button"
-                                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors"
+                                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors md:px-2 md:py-1 md:text-xs"
                                 >
                                     Next
                                 </button>

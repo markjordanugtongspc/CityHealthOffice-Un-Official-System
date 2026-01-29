@@ -21,14 +21,29 @@ export default defineConfig({
         cors: true, // Allow your PHP server to fetch assets from Vite
         origin: 'http://localhost:5173', // Important for asset URLs
     },
+    css: {
+        devSourcemap: true, // Enable source maps in dev for debugging
+    },
     build: {
         // Output directory for production build
         outDir: 'dist',
         emptyOutDir: true,
         manifest: true, // Required for PHP to map files in production
+        cssCodeSplit: false, // Extract all CSS into a single file for faster loading
         rollupOptions: {
             // Your main entry point
             input: './backend/js/main.js',
+            output: {
+                // Optimize chunk splitting
+                manualChunks: undefined, // Single bundle for faster initial load
+            },
+        },
+        // Optimize build performance
+        minify: 'terser',
+        terserOptions: {
+            compress: {
+                drop_console: false, // Keep console logs in dev
+            },
         },
     },
 });
