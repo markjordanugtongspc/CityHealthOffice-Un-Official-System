@@ -31,7 +31,7 @@
 const NavigationState = {
     sidebarCollapsed: false,
     openDropdowns: [],
-    
+
     /**
      * Save current navigation state to localStorage
      * Called automatically on state changes
@@ -46,7 +46,7 @@ const NavigationState = {
             console.warn('Failed to save navigation state:', error);
         }
     },
-    
+
     /**
      * Load saved navigation state from localStorage
      * Called on page initialization
@@ -79,10 +79,10 @@ const NavigationState = {
  * @returns {HTMLElement|null} Main content element
  */
 function getMainContent() {
-    return document.getElementById('spaContentContainer') || 
-           document.querySelector('.main-content') ||
-           document.querySelector('main') ||
-           document.querySelector('.ml-64');
+    return document.getElementById('spaContentContainer') ||
+        document.querySelector('.main-content') ||
+        document.querySelector('main') ||
+        document.querySelector('.ml-64');
 }
 
 /**
@@ -123,20 +123,20 @@ function debounce(func, wait) {
 function adjustContentMargin() {
     const sidebar = document.getElementById('sidebar');
     const mainContent = getMainContent();
-    
+
     if (!sidebar || !mainContent) return;
-    
+
     const isCollapsed = sidebar.classList.contains('collapsed');
     const isMobile = window.innerWidth < 1024;
-    
+
     // Remove Tailwind margin classes that might conflict
     mainContent.classList.remove('ml-64', 'ml-18', 'ml-0');
-    
+
     // Add transition classes if not present
     if (!mainContent.classList.contains('transition-all')) {
         mainContent.classList.add('transition-all', 'duration-300');
     }
-    
+
     // Adjust margin based on state using inline style for reliable override
     if (isMobile) {
         // Mobile: No margin, full width
@@ -174,7 +174,7 @@ function initSidebarToggle() {
 
     // Restore saved state on page load (Desktop only - >= 1024px)
     NavigationState.load();
-    
+
     // Only apply collapsed state on desktop (>= 1024px)
     if (window.innerWidth >= 1024 && NavigationState.sidebarCollapsed) {
         sidebar.classList.add('collapsed');
@@ -185,7 +185,7 @@ function initSidebarToggle() {
         if (sidebarToggleDesktop) {
             sidebarToggleDesktop.classList.add('hidden');
         }
-        
+
         // When collapsed on load, hide dropdown triggers and show all dropdown items as icons
         document.querySelectorAll('.nav-dropdown-trigger').forEach(trigger => {
             trigger.style.display = 'none';
@@ -210,7 +210,7 @@ function initSidebarToggle() {
         sidebar.classList.remove('translate-x-0');
         sidebar.classList.add('-translate-x-full');
     }
-    
+
     // Initial margin adjustment
     adjustContentMargin();
 
@@ -222,11 +222,11 @@ function initSidebarToggle() {
     function toggleSidebar() {
         const isMobile = window.innerWidth < 1024;
         const mobileBackdrop = document.getElementById('mobileBackdrop');
-        
+
         if (isMobile) {
             // Mobile: Toggle sidebar visibility (Tailwind-only)
             const isOpen = sidebar.classList.contains('translate-x-0');
-            
+
             if (isOpen) {
                 // Close sidebar
                 sidebar.classList.remove('translate-x-0');
@@ -258,14 +258,14 @@ function initSidebarToggle() {
             // Desktop: Toggle collapse/expand
             sidebar.classList.toggle('collapsed');
             const isCollapsed = sidebar.classList.contains('collapsed');
-            
+
             // Save state
             NavigationState.sidebarCollapsed = isCollapsed;
             NavigationState.save();
-            
+
             // Adjust content margin
             adjustContentMargin();
-            
+
             // Toggle button visibility
             if (isCollapsed) {
                 if (sidebarToggleDesktop) sidebarToggleDesktop.classList.add('hidden');
@@ -273,7 +273,7 @@ function initSidebarToggle() {
                     sidebarToggleCollapsedWrapper.classList.remove('hidden');
                     sidebarToggleCollapsedWrapper.classList.add('flex');
                 }
-                
+
                 // When collapsed, hide dropdown triggers and show all dropdown items as icons
                 document.querySelectorAll('.nav-dropdown-trigger').forEach(trigger => {
                     trigger.style.display = 'none';
@@ -297,7 +297,7 @@ function initSidebarToggle() {
                     sidebarToggleCollapsedWrapper.classList.add('hidden');
                     sidebarToggleCollapsedWrapper.classList.remove('flex');
                 }
-                
+
                 // When expanded, show dropdown triggers and restore normal dropdown behavior
                 document.querySelectorAll('.nav-dropdown-trigger').forEach(trigger => {
                     trigger.style.display = '';
@@ -308,7 +308,7 @@ function initSidebarToggle() {
                     dropdown.style.gap = '';
                     dropdown.style.marginLeft = '';
                     dropdown.style.marginTop = '';
-                    
+
                     const trigger = document.querySelector(`[data-dropdown="${dropdown.id}"]`);
                     if (trigger && trigger.classList.contains('active')) {
                         dropdown.classList.add('show');
@@ -324,7 +324,7 @@ function initSidebarToggle() {
             }
         }
     }
-    
+
     /**
      * Update header toggle icon (hamburger/close)
      * @param {boolean} isOpen - Whether sidebar is open
@@ -332,10 +332,10 @@ function initSidebarToggle() {
     function updateHeaderToggleIcon(isOpen) {
         const headerToggle = document.getElementById('sidebarToggleHeader');
         if (!headerToggle) return;
-        
+
         const hamburgerIcon = headerToggle.querySelector('#headerHamburgerIcon');
         const closeIcon = headerToggle.querySelector('#headerCloseIcon');
-        
+
         if (isOpen) {
             if (hamburgerIcon) hamburgerIcon.classList.add('hidden');
             if (closeIcon) closeIcon.classList.remove('hidden');
@@ -361,7 +361,7 @@ function initSidebarToggle() {
             toggleSidebar();
         });
     }
-    
+
     // Header toggle button (mobile hamburger)
     if (sidebarToggleHeader) {
         sidebarToggleHeader.addEventListener('click', (e) => {
@@ -370,7 +370,7 @@ function initSidebarToggle() {
             toggleSidebar();
         });
     }
-    
+
     // Mobile close button (inside sidebar)
     if (sidebarCloseMobile) {
         sidebarCloseMobile.addEventListener('click', (e) => {
@@ -381,7 +381,7 @@ function initSidebarToggle() {
             }
         });
     }
-    
+
     // Close sidebar when clicking backdrop (mobile only)
     const mobileBackdrop = document.getElementById('mobileBackdrop');
     if (mobileBackdrop) {
@@ -397,10 +397,10 @@ function initSidebarToggle() {
         if (window.innerWidth < 1024) {
             const isNavLink = e.target.closest('.nav-link, .nav-subitem');
             const isCloseButton = e.target.closest('#sidebarCloseMobile');
-            const isOutside = sidebar && !sidebar.contains(e.target) && 
-                            sidebarToggleHeader && !sidebarToggleHeader.contains(e.target) &&
-                            mobileBackdrop && !mobileBackdrop.contains(e.target);
-            
+            const isOutside = sidebar && !sidebar.contains(e.target) &&
+                sidebarToggleHeader && !sidebarToggleHeader.contains(e.target) &&
+                mobileBackdrop && !mobileBackdrop.contains(e.target);
+
             // Close if clicking outside, on nav link, or on close button
             if (isOutside || isNavLink || isCloseButton) {
                 if (sidebar.classList.contains('translate-x-0')) {
@@ -414,7 +414,7 @@ function initSidebarToggle() {
     const handleResize = debounce(() => {
         // Adjust content margin for desktop
         adjustContentMargin();
-        
+
         // Close mobile sidebar if switching to desktop
         if (window.innerWidth >= 1024) {
             sidebar.classList.remove('translate-x-0');
@@ -429,7 +429,7 @@ function initSidebarToggle() {
             updateHeaderToggleIcon(false);
         }
     }, 150);
-    
+
     window.addEventListener('resize', handleResize);
 }
 
@@ -472,9 +472,9 @@ function initDropdowns() {
         const dropdownId = trigger.getAttribute('data-dropdown');
         const dropdown = document.getElementById(dropdownId);
         if (!dropdown) return;
-        
+
         const isActive = trigger.classList.contains('active');
-        
+
         // Toggle state
         if (isActive) {
             trigger.classList.remove('active');
@@ -483,7 +483,7 @@ function initDropdowns() {
             trigger.classList.add('active');
             dropdown.classList.add('show');
         }
-        
+
         saveDropdownStates();
     }
 
@@ -492,13 +492,13 @@ function initDropdowns() {
         trigger.addEventListener('click', (e) => {
             e.preventDefault();
             e.stopPropagation();
-            
+
             // Don't toggle dropdowns when sidebar is collapsed (they're always visible as icons)
             const sidebar = document.getElementById('sidebar');
             if (sidebar && sidebar.classList.contains('collapsed')) {
                 return;
             }
-            
+
             toggleDropdown(trigger);
         });
     });
@@ -547,18 +547,18 @@ function initDropdowns() {
 function setActiveNavState() {
     const currentPath = window.location.pathname;
     const navItems = document.querySelectorAll('.nav-item[href]');
-    
+
     navItems.forEach(item => {
         const href = item.getAttribute('href');
         if (!href || href === '#') return;
-        
+
         // Normalize href
         const normalizedHref = href.replace(/^\.\//, '').replace(/^\.\.\//, '').replace(/\/$/, '').replace(/\/index\.php$/, '');
         const currentPathNormalized = currentPath.replace(/\/$/, '').replace(/\/index\.php$/, '');
-        
+
         // Check if current path matches
         let isActive = false;
-        
+
         if (normalizedHref.includes('dashboard')) {
             isActive = currentPathNormalized.includes('dashboard') || currentPathNormalized === '' || currentPathNormalized === '/';
         } else if (normalizedHref.includes('budget')) {
@@ -570,7 +570,7 @@ function setActiveNavState() {
         } else {
             isActive = currentPathNormalized.includes(normalizedHref) || currentPath.includes(normalizedHref);
         }
-        
+
         // Update styling
         if (isActive) {
             item.classList.remove('text-white/80');
@@ -594,7 +594,7 @@ function setActiveLink(link) {
         item.classList.remove('bg-white/20', 'text-white');
         item.classList.add('text-white/80');
     });
-    
+
     if (link) {
         link.classList.remove('text-white/80');
         link.classList.add('bg-white/20', 'text-white');
@@ -631,13 +631,13 @@ function initNavigationLinks() {
 function initTooltips() {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
-    
+
     const tooltipElements = document.querySelectorAll('[data-tooltip]');
-    
+
     tooltipElements.forEach(element => {
         const tooltipText = element.getAttribute('data-tooltip');
         if (!tooltipText) return;
-        
+
         // Create tooltip element if it doesn't exist
         if (!element.querySelector('.tooltip')) {
             const tooltip = document.createElement('span');
@@ -646,12 +646,12 @@ function initTooltips() {
             element.appendChild(tooltip);
         }
     });
-    
+
     // Show/hide tooltips on hover when collapsed
     const handleTooltip = (e) => {
         const isCollapsed = sidebar.classList.contains('collapsed');
         const tooltip = e.currentTarget.querySelector('.tooltip');
-        
+
         if (tooltip && isCollapsed) {
             if (e.type === 'mouseenter') {
                 tooltip.style.opacity = '1';
@@ -660,7 +660,7 @@ function initTooltips() {
             }
         }
     };
-    
+
     tooltipElements.forEach(element => {
         element.addEventListener('mouseenter', handleTooltip);
         element.addEventListener('mouseleave', handleTooltip);
@@ -689,16 +689,16 @@ function initTooltips() {
 function reinitializeSidebarFeatures() {
     // Re-initialize dropdowns
     initDropdowns();
-    
+
     // Re-initialize tooltips
     initTooltips();
-    
+
     // Re-initialize navigation links
     initNavigationLinks();
-    
+
     // Set active navigation state
     setActiveNavState();
-    
+
     // Adjust content margin
     adjustContentMargin();
 }
@@ -708,20 +708,32 @@ function reinitializeSidebarFeatures() {
  */
 async function checkAdminAccess() {
     try {
+        // Get the base path from the current URL
         const path = window.location.pathname || '/';
-        const basePath = path.substring(0, path.indexOf('/frontend/') !== -1 ? path.indexOf('/frontend/') : path.lastIndexOf('/'));
-        const apiBase = basePath || '';
-        
+
+        // Extract base path before /frontend/ or /index.php
+        let apiBase = '';
+
+        if (path.includes('/frontend/')) {
+            const idx = path.indexOf('/frontend/');
+            apiBase = path.substring(0, idx);
+        } else if (path.includes('/index.php')) {
+            const idx = path.indexOf('/index.php');
+            apiBase = path.substring(0, idx);
+        } else if (path !== '/' && path.endsWith('/')) {
+            apiBase = path.slice(0, -1);
+        }
+
         const response = await fetch(`${apiBase}/api/auth/current-user.php`, {
             credentials: 'same-origin'
         });
-        
+
         if (response.ok) {
             const data = await response.json();
             if (data.success && data.user) {
                 const allowedRoles = ['Administrator', 'CEO', 'Manager'];
                 const adminNavItem = document.getElementById('adminNavItem');
-                
+
                 if (adminNavItem) {
                     if (allowedRoles.includes(data.user.role)) {
                         adminNavItem.classList.remove('hidden');
@@ -739,25 +751,25 @@ async function checkAdminAccess() {
 export function initSidebar() {
     // Load saved state
     NavigationState.load();
-    
+
     // Initialize all features
     initSidebarToggle();
     initDropdowns();
     initNavigationLinks();
     initTooltips();
     setActiveNavState();
-    
+
     // Check admin access and show/hide admin link
     checkAdminAccess();
-    
+
     // Initial content margin adjustment
     adjustContentMargin();
 }
 
 // Export utility functions for use in other modules
-export { 
-    setActiveLink, 
-    getMainContent, 
+export {
+    setActiveLink,
+    getMainContent,
     NavigationState,
     adjustContentMargin,
     initDropdowns,

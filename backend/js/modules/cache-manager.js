@@ -12,10 +12,25 @@ const MAX_CACHE_AGE = 24 * 60 * 60 * 1000; // 24 hours
 export async function registerServiceWorker() {
     if ('serviceWorker' in navigator) {
         try {
-            const registration = await navigator.serviceWorker.register('/sw.js', {
-                scope: '/'
+            // Get base path dynamically
+            const path = window.location.pathname || '/';
+            let basePath = '';
+
+            if (path.includes('/frontend/')) {
+                const idx = path.indexOf('/frontend/');
+                basePath = path.substring(0, idx);
+            } else if (path.includes('/index.php')) {
+                const idx = path.indexOf('/index.php');
+                basePath = path.substring(0, idx);
+            } else if (path !== '/' && path.endsWith('/')) {
+                basePath = path.slice(0, -1);
+            }
+
+            const swPath = `${basePath}/sw.js`;
+            const registration = await navigator.serviceWorker.register(swPath, {
+                scope: basePath || '/'
             });
-            
+
             // Update service worker when new version is available
             registration.addEventListener('updatefound', () => {
                 const newWorker = registration.installing;
@@ -26,7 +41,7 @@ export async function registerServiceWorker() {
                     }
                 });
             });
-            
+
             return registration;
         } catch (error) {
             console.warn('Service Worker registration failed:', error);
@@ -77,7 +92,7 @@ export async function isPageCached(url) {
 export async function clearPageCache() {
     if ('caches' in window) {
         await caches.delete(CACHE_VERSION);
-        
+
         // Also notify service worker
         if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
             return new Promise((resolve) => {

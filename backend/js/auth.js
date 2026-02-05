@@ -10,9 +10,35 @@ import { showLoginSuccess, showIncorrectCredentials, showError } from './modules
  * @returns {string}
  */
 function getApiBasePath() {
+    // Get the base path from the current URL
     const path = window.location.pathname || '/';
-    const basePath = path.substring(0, path.indexOf('/frontend/') !== -1 ? path.indexOf('/frontend/') : path.lastIndexOf('/'));
-    return basePath || '';
+
+    // Extract base path before /frontend/ or /index.php
+    // Examples:
+    // /Project/frontend/pages/dashboard/ -> /Project
+    // /Project/index.php -> /Project
+    // /frontend/pages/dashboard/ -> (empty)
+    // /index.php -> (empty)
+
+    if (path.includes('/frontend/')) {
+        // Get everything before /frontend/
+        const idx = path.indexOf('/frontend/');
+        return path.substring(0, idx);
+    }
+
+    // For paths like /Project/index.php or /Project/
+    if (path.includes('/index.php')) {
+        const idx = path.indexOf('/index.php');
+        return path.substring(0, idx);
+    }
+
+    // For paths like /Project/ (with trailing slash)
+    if (path !== '/' && path.endsWith('/')) {
+        return path.slice(0, -1);
+    }
+
+    // For root level, return empty string
+    return '';
 }
 
 // Cookie configuration
@@ -39,13 +65,13 @@ const ENCRYPTION_KEY = 'CHO_AUTH_2026_SECURE_KEY';
  */
 function encrypt(text, key = ENCRYPTION_KEY) {
     if (!text) return '';
-    
+
     let result = '';
     for (let i = 0; i < text.length; i++) {
         const charCode = text.charCodeAt(i) ^ key.charCodeAt(i % key.length);
         result += String.fromCharCode(charCode);
     }
-    
+
     // Encode to base64 for safe cookie storage
     return btoa(result);
 }
@@ -58,17 +84,17 @@ function encrypt(text, key = ENCRYPTION_KEY) {
  */
 function decrypt(encryptedText, key = ENCRYPTION_KEY) {
     if (!encryptedText) return '';
-    
+
     try {
         // Decode from base64
         const decoded = atob(encryptedText);
-        
+
         let result = '';
         for (let i = 0; i < decoded.length; i++) {
             const charCode = decoded.charCodeAt(i) ^ key.charCodeAt(i % key.length);
             result += String.fromCharCode(charCode);
         }
-        
+
         return result;
     } catch (error) {
         console.error('Decryption error:', error);
@@ -86,14 +112,14 @@ function decrypt(encryptedText, key = ENCRYPTION_KEY) {
 function setCookie(name, value, days = COOKIE_CONFIG.expires, options = {}) {
     const expires = new Date();
     expires.setTime(expires.getTime() + (days * 24 * 60 * 60 * 1000));
-    
+
     let cookieString = `${name}=${encodeURIComponent(value)}; expires=${expires.toUTCString()}; path=${options.path || COOKIE_CONFIG.path}; SameSite=${options.sameSite || COOKIE_CONFIG.sameSite}`;
-    
+
     // Add Secure flag if HTTPS (only set in production with HTTPS)
     if (location.protocol === 'https:') {
         cookieString += '; Secure';
     }
-    
+
     document.cookie = cookieString;
 }
 
@@ -105,14 +131,14 @@ function setCookie(name, value, days = COOKIE_CONFIG.expires, options = {}) {
 function getCookie(name) {
     const nameEQ = name + '=';
     const cookies = document.cookie.split(';');
-    
+
     for (let i = 0; i < cookies.length; i++) {
         let cookie = cookies[i].trim();
         if (cookie.indexOf(nameEQ) === 0) {
             return decodeURIComponent(cookie.substring(nameEQ.length));
         }
     }
-    
+
     return null;
 }
 
@@ -132,11 +158,11 @@ function deleteCookie(name) {
 function saveCredentials(username, password) {
     // Save username (plain text is usually acceptable)
     setCookie(COOKIE_CONFIG.username, username);
-    
+
     // Encrypt and save password
     const encryptedPassword = encrypt(password);
     setCookie(COOKIE_CONFIG.password, encryptedPassword);
-    
+
     // Save remember me flag
     setCookie(COOKIE_CONFIG.rememberMe, 'true');
 }
@@ -147,21 +173,21 @@ function saveCredentials(username, password) {
  */
 function loadCredentials() {
     const rememberMe = getCookie(COOKIE_CONFIG.rememberMe);
-    
+
     if (rememberMe !== 'true') {
         return null;
     }
-    
+
     const username = getCookie(COOKIE_CONFIG.username);
     const encryptedPassword = getCookie(COOKIE_CONFIG.password);
-    
+
     if (!username || !encryptedPassword) {
         return null;
     }
-    
+
     // Decrypt password
     const password = decrypt(encryptedPassword);
-    
+
     return { username, password };
 }
 
@@ -179,12 +205,12 @@ function clearCredentials() {
  */
 function loadSavedCredentials() {
     const credentials = loadCredentials();
-    
+
     if (credentials) {
         const usernameInput = document.getElementById('username');
         const passwordInput = document.getElementById('password');
         const rememberMeCheckbox = document.getElementById('rememberMe');
-        
+
         if (usernameInput && passwordInput && rememberMeCheckbox) {
             usernameInput.value = credentials.username;
             passwordInput.value = credentials.password;
@@ -198,14 +224,14 @@ function loadSavedCredentials() {
  */
 export function init() {
     const loginForm = document.getElementById('loginForm');
-    
+
     if (!loginForm) {
         return; // Login form not present on this page
     }
 
     // Load saved credentials if "Remember me" was previously checked
     loadSavedCredentials();
-    
+
     // Handle remember me checkbox change
     const rememberMeCheckbox = document.getElementById('rememberMe');
     if (rememberMeCheckbox) {
@@ -258,7 +284,7 @@ async function handleLogin(e) {
                 // Clear credentials if "Remember me" is unchecked
                 clearCredentials();
             }
-            
+
             // Show success message with loading animation, timer, and preload assets
             // The modal will automatically close and redirect after the timer completes
             await showLoginSuccess();

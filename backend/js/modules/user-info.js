@@ -8,9 +8,35 @@
  * @returns {string}
  */
 function getApiBasePath() {
+    // Get the base path from the current URL
     const path = window.location.pathname || '/';
-    const basePath = path.substring(0, path.indexOf('/frontend/') !== -1 ? path.indexOf('/frontend/') : path.lastIndexOf('/'));
-    return basePath || '';
+
+    // Extract base path before /frontend/ or /index.php
+    // Examples:
+    // /Project/frontend/pages/dashboard/ -> /Project
+    // /Project/index.php -> /Project
+    // /frontend/pages/dashboard/ -> (empty)
+    // /index.php -> (empty)
+
+    if (path.includes('/frontend/')) {
+        // Get everything before /frontend/
+        const idx = path.indexOf('/frontend/');
+        return path.substring(0, idx);
+    }
+
+    // For paths like /Project/index.php or /Project/
+    if (path.includes('/index.php')) {
+        const idx = path.indexOf('/index.php');
+        return path.substring(0, idx);
+    }
+
+    // For paths like /Project/ (with trailing slash)
+    if (path !== '/' && path.endsWith('/')) {
+        return path.slice(0, -1);
+    }
+
+    // For root level, return empty string
+    return '';
 }
 
 /**
@@ -36,7 +62,7 @@ export async function loadUserInfo() {
         const fullName = user.full_name || user.username || 'User';
         const username = user.username || '...';
         const role = user.role || '...';
-        
+
         // Get first letter of full name or username for avatar
         const initial = (fullName.charAt(0) || username.charAt(0) || 'U').toUpperCase();
 

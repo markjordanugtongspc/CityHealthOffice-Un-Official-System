@@ -15,11 +15,11 @@ export default defineConfig({
         },
     ],
     server: {
-        host: true, // Allows access via network IP (e.g., 192.168.x.x)
+        host: true, // Allows access via localhost and LAN IP automatically
         port: 5173, // Force port to stay constant
         strictPort: true,
         cors: true, // Allow your PHP server to fetch assets from Vite
-        origin: 'http://localhost:5173', // Important for asset URLs
+        // No hard-coded origin so it works on any machine/network
     },
     css: {
         devSourcemap: true, // Enable source maps in dev for debugging

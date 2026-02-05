@@ -1,3 +1,105 @@
+// Service Worker for page caching
+// Must stay in sync with CACHE_VERSION in backend/js/modules/cache-manager.js
+
+const CACHE_NAME = 'cho-pages-v1';
+
+self.addEventListener('install', (event) => {
+  // Activate updated worker immediately
+  self.skipWaiting();
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    (async () => {
+      // Remove old caches
+      const keys = await caches.keys();
+      await Promise.all(
+        keys.map((key) => (key === CACHE_NAME ? Promise.resolve() : caches.delete(key)))
+      );
+      await self.clients.claim();
+    })()
+  );
+});
+
+// Cache-first strategy for navigation/page requests
+self.addEventListener('fetch', (event) => {
+  const request = event.request;
+
+  // Only handle GET requests
+  if (request.method !== 'GET') {
+    return;
+  }
+
+  const accept = request.headers.get('accept') || '';
+  const isPageRequest = accept.includes('text/html');
+
+  if (!isPageRequest) {
+    return;
+  }
+
+  event.respondWith(
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const cached = await cache.match(request);
+
+      const networkFetch = fetch(request)
+        .then((response) => {
+          // Only cache successful responses
+          if (response && response.ok) {
+            cache.put(request, response.clone());
+          }
+          return response;
+        })
+        .catch(() => {
+          // If network fails, fall back to cache (if available)
+          if (cached) {
+            return cached;
+          }
+          throw new Error('Network error and no cached response available');
+        });
+
+      // Serve cached version immediately if we have it, otherwise wait for network
+      return cached || networkFetch;
+    })()
+  );
+});
+
+// Handle messages from cache-manager.js
+self.addEventListener('message', (event) => {
+  const data = event.data || {};
+  const type = data.type;
+
+  if (type === 'PRELOAD_PAGE' && data.url) {
+    event.waitUntil(preloadPage(data.url));
+    return;
+  }
+
+  if (type === 'CLEAR_CACHE') {
+    event.waitUntil(
+      (async () => {
+        await caches.delete(CACHE_NAME);
+        // Respond back to the page via MessageChannel, if provided
+        if (event.ports && event.ports[0]) {
+          event.ports[0].postMessage({ success: true });
+        }
+      })()
+    );
+  }
+});
+
+async function preloadPage(url) {
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    const response = await fetch(url, { credentials: 'same-origin' });
+    if (response.ok) {
+      await cache.put(url, response.clone());
+    }
+  } catch (e) {
+    // Silent fail for preload
+    console.warn('SW preload failed for', url, e);
+  }
+}
+
 // Service Worker for Page Caching
 // Cache name and version
 const CACHE_NAME = 'cho-pages-v2';

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Network Hosting Guide</title>
+    <style>
+        /* Modern Documentation Styling */
+        :root {
+            --bg-base: #020617;
+            --bg-card: #0f172a;
+            --accent: #38bdf8;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+            --code-bg: #000000;
+            --border: #1e293b;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            line-height: 1.7;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        /* Reader Column UI */
+        .guide-container {
+            max-width: 780px;
+            width: 100%;
+            background-color: var(--bg-card);
+            padding: 60px;
+            border-radius: 16px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 50px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 30px;
+        }
+
+        h1 {
+            color: var(--accent);
+            font-size: 2.5rem;
+            letter-spacing: -0.025em;
+            margin: 0;
+        }
+
+        .subtitle {
+            color: var(--text-dim);
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-top: 40px;
+            display: flex;
+            align-items: center;
+            color: var(--text-main);
+        }
+
+        p {
+            color: var(--text-dim);
+            font-size: 1.05rem;
+        }
+
+        /* Code Block UI */
+        pre {
+            background-color: var(--code-bg);
+            color: #7dd3fc;
+            padding: 20px;
+            border-radius: 10px;
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            font-family: 'Fira Code', 'Cascadia Code', monospace;
+            font-size: 0.9rem;
+            margin: 20px 0;
+        }
+
+        code {
+            background-color: rgba(56, 189, 248, 0.1);
+            color: var(--accent);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+
+        .step-indicator {
+            background-color: var(--accent);
+            color: var(--bg-base);
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            margin-right: 15px;
+            font-weight: 800;
+        }
+
+        .info-panel {
+            background-color: rgba(56, 189, 248, 0.05);
+            border-left: 3px solid var(--accent);
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 4px;
+        }
+
+        .info-panel strong {
+            color: var(--accent);
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .info-panel.success {
+            background-color: rgba(34, 197, 94, 0.05);
+            border-left-color: #22c55e;
+        }
+
+        .info-panel.success strong {
+            color: #22c55e;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 60px;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border);
+            padding-top: 30px;
+            opacity: 0.6;
+        }
+
+        /* Responsive UI */
+        @media (max-width: 640px) {
+            .guide-container {
+                padding: 30px;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="guide-container">
+        <header>
+            <h1>System Setup & Usage</h1>
+            <p class="subtitle">How you and your sister run this PHP + Vite system</p>
+        </header>
+
+        <div class="info-panel success">
+            <strong>Zero-terminal mode for your sister:</strong>
+            On your sister's laptop, she only needs XAMPP (Apache + MySQL) running and a browser. No <code>npm run dev</code>, no PHP commands, no IDE.
+        </div>
+
+        <h2><span class="step-indicator">1</span> What you must prepare (developer)</h2>
+        <p><strong>Prerequisites on your machine:</strong></p>
+        <pre>
+1. Install Node.js and run:
+   npm install
+
+2. Build production assets:
+   npm run build
+
+3. Make sure these exist before you copy to another laptop:
+   - dist/            &rarr; built JS/CSS from Vite
+   - config/.env      &rarr; database credentials (not in git)
+        </pre>
+
+        <p><strong>Create or update your <code>config/.env</code>:</strong></p>
+        <pre>
+DB_HOST=localhost
+DB_USER=root
+DB_PASS=
+DB_NAME=cho_db
+DB_CHARSET=utf8mb4
+        </pre>
+        <p>The PHP config <code>config/db.php</code> now reads from <code>config/.env</code>, so you never hardcode DB
+            passwords in the codebase.</p>
+
+        <h2><span class="step-indicator">2</span> How your sister runs the system</h2>
+        <p><strong>On your sister's laptop (no programming tools needed):</strong></p>
+        <pre>
+1. Install XAMPP and make Apache + MySQL start automatically.
+2. Create the database (import your SQL schema).
+3. Copy the project folder (including dist/) into:
+   C:\xampp\htdocs\Project
+4. Create config/.env on her machine with her DB credentials.
+5. Open a browser and go to:
+   http://localhost/Project/
+        </pre>
+        <p>Because the Vite helpers check if the dev server is running, her laptop will automatically use the built
+            files from <code>dist/.vite/manifest.json</code>. She never has to run <code>npm run dev</code>.</p>
+
+        <h2><span class="step-indicator">3</span> Same-network access (LAN)</h2>
+        <p><strong>Goal:</strong> Other devices (phone, another PC) use the system over WiFi or LAN.</p>
+
+        <p><strong>Step A &mdash; find the PC's IP address:</strong></p>
+        <pre>
+1. Press Win + R, type: cmd
+2. Run:
+   ipconfig
+3. Look for "IPv4 Address", e.g. 192.168.1.123
+        </pre>
+
+        <p><strong>Step B &mdash; access from another device:</strong></p>
+        <pre>
+From another PC or phone on the same WiFi:
+   http://192.168.1.123/Project/
+        </pre>
+
+        <div class="info-panel">
+            <strong>Vite + PHP host detection (for dev mode):</strong>
+            When you are developing with <code>npm run dev</code>, <code>vite.config.js</code> uses
+            <code>host: true</code> so Vite listens on all network interfaces, and
+            <code>config/vite.php</code> / <code>config/vite_helper.php</code> read
+            <code>$_SERVER['HTTP_HOST']</code> to build the correct Vite URL dynamically. This means other devices on
+            the same network can load assets via your machine's IP without editing any IPs in code.
+        </div>
+
+        <div class="info-panel">
+            <strong>Service Worker scope:</strong>
+            The <code>sw.js</code> file lives in the project root and is registered using the current path as its base
+            scope (e.g. <code>/Project/</code>). Whether you hit the app as <code>http://localhost/Project/</code> or
+            <code>http://192.168.1.123/Project/</code>, the service worker attaches to that origin and caches pages for
+            faster navigation on that device.
+        </div>
+
+        <div class="info-panel" style="border-color: #f43f5e; background-color: rgba(244, 63, 94, 0.05);">
+            <strong style="color: #fb7185;">Firewall note:</strong>
+            If other devices cannot connect, make sure Windows Firewall allows inbound HTTP traffic for Apache on port
+            80. For dev-only sharing of the live Vite server, also allow port 5173 and run <code>npm run dev</code> on
+            the main machine.
+        </div>
+
+        <footer>
+            System Documentation &bull; PHP + Vite Integration &bull; 2026
+        </footer>
+    </div>
+
+</body>
+
+</html>

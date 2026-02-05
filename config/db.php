@@ -4,12 +4,14 @@
  * City Health Office Database Connection
  */
 
-// Database credentials
-define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'cho_db');
-define('DB_CHARSET', 'utf8mb4');
+require_once __DIR__ . '/env.php';
+
+// Database credentials (loaded from config/.env, with safe defaults)
+define('DB_HOST', env('DB_HOST', 'localhost'));
+define('DB_USER', env('DB_USER', 'root'));
+define('DB_PASS', env('DB_PASS', ''));
+define('DB_NAME', env('DB_NAME', 'cho_db'));
+define('DB_CHARSET', env('DB_CHARSET', 'utf8mb4'));
 
 /**
  * Get database connection

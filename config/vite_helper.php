@@ -2,9 +2,10 @@
 // ----------------------------------------------------------------------
 // VITE CONFIGURATION
 // ----------------------------------------------------------------------
-// IMPORTANT: Update this IP to match your computer's LAN IP (e.g., 192.168.1.5)
-// Find this by running 'npm run dev' and looking at the "Network" output.
-define('VITE_HOST', 'http://192.168.1.6:5173');
+// Automatically detect the host IP (works for localhost and LAN)
+$requestHost = $_SERVER['HTTP_HOST'] ?? 'localhost';
+$cleanHost = explode(':', $requestHost)[0];
+define('VITE_HOST', "http://$cleanHost:5173");
 // VITE_BUILD_DIR will be calculated dynamically based on current request
 
 /**
@@ -12,7 +13,8 @@ define('VITE_HOST', 'http://192.168.1.6:5173');
  * @param string $entry  The path to your main entry point (e.g., 'backend/js/main.js')
  * @param bool $preloadOnly  If true, only output preload links without script tags
  */
-function vite($entry, $preloadOnly = false) {
+function vite($entry, $preloadOnly = false)
+{
     // Extract the Hostname and Port from VITE_HOST to check connection
     $parsedUrl = parse_url(VITE_HOST);
     $host = $parsedUrl['host'] ?? 'localhost';
@@ -56,9 +58,9 @@ function vite($entry, $preloadOnly = false) {
                 if (!str_starts_with($basePath, '/')) {
                     $basePath = '/' . $basePath;
                 }
-                
+
                 $file = $manifest[$entryKey]['file'];
-                
+
                 if ($preloadOnly) {
                     // Preload CSS files first
                     if (isset($manifest[$entryKey]['css'])) {
