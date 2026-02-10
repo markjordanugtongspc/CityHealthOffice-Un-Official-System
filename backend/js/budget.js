@@ -103,8 +103,8 @@ function renderTable() {
                 row.remainingAmount < 0
                     ? 'text-red-600'
                     : row.remainingAmount > 0
-                    ? 'text-emerald-600'
-                    : 'text-slate-700';
+                        ? 'text-emerald-600'
+                        : 'text-slate-700';
 
             return `
                 <tr class="${isStriped ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-100 transition-colors" data-row-index="${index}" data-gl-code="${row.glCode}">
@@ -138,7 +138,7 @@ function renderTable() {
     }
 
     renderPagination(total, totalPages);
-    
+
     // Initialize inline editing for editable cells
     initInlineEditing();
 }
@@ -194,88 +194,91 @@ function calculateRemaining(actual, budget) {
 
 function handleAddClick() {
     const year = selectedYear || getCurrentYearFromGlobal();
-    
+
     Swal.fire({
-        title: `Add Budget Entry (${year})`,
+        title: `Initialize Budget Entry [${year}]`,
         html: `
-            <div class="space-y-4 md:space-y-5 text-left">
-                <!-- G/L Code Field -->
-                <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-2 md:gap-2 items-start">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1">G/L Code</label>
-                    <input
-                        id="swal-glCode"
-                        type="text"
-                        placeholder="e.g., 8000"
-                        class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] transition-colors"
-                    />
+            <div class="text-left space-y-8 p-1 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                <!-- Group 1: Identity -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+                        <div class="w-2 h-6 bg-[#224796] rounded-full"></div>
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Account Identification</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">G/L Account Code <span class="text-rose-500">*</span></label>
+                            <input type="text" id="swal-glCode" placeholder="e.g. 1011" 
+                                class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] transition-all outline-hidden font-mono">
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Account Description <span class="text-rose-500">*</span></label>
+                            <input type="text" id="swal-accountTitle" placeholder="Enter Full Category Name"
+                                class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] transition-all outline-hidden">
+                        </div>
+                    </div>
                 </div>
-                
-                <!-- Account Title Field -->
-                <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-2 md:gap-2 items-start">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1">Account Title</label>
-                    <input
-                        id="swal-accountTitle"
-                        type="text"
-                        placeholder="e.g., Office Equipment Expenses"
-                        class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] transition-colors"
-                    />
-                </div>
-                
-                <!-- Actual Field -->
-                <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-2 md:gap-2 items-start">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1">Actual (₱)</label>
-                    <input
-                        id="swal-actual"
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] transition-colors"
-                    />
-                </div>
-                
-                <!-- Budget Field -->
-                <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-2 md:gap-2 items-start">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1">Budget (₱)</label>
-                    <input
-                        id="swal-budget"
-                        type="number"
-                        step="0.01"
-                        placeholder="0.00"
-                        class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] transition-colors"
-                    />
-                </div>
-                
-                <!-- Remaining Summary -->
-                <div class="grid grid-cols-1 md:grid-cols-[120px_1fr] gap-2 md:gap-2 items-start">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1 pt-1 md:pt-2">Summary</label>
-                    <div class="w-full rounded-lg bg-linear-to-br from-slate-50 to-slate-100 border border-slate-200 p-4">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <p class="text-xs font-medium text-slate-500 mb-1.5">Remaining ₱</p>
-                                <p id="swal-remaining-amount" class="text-base font-semibold text-slate-900">₱0.00</p>
+
+                <!-- Group 2: Financial Caps -->
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
+                        <div class="w-2 h-6 bg-emerald-500 rounded-full"></div>
+                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Financial Allocation</h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Actual Amount (₱)</label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-2.5 text-slate-400 text-sm font-bold">₱</span>
+                                <input type="number" step="0.01" id="swal-actual" placeholder="0.00"
+                                    class="w-full pl-8 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] transition-all outline-hidden text-[#224796]">
                             </div>
-                            <div>
-                                <p class="text-xs font-medium text-slate-500 mb-1.5">Remaining %</p>
-                                <p id="swal-remaining-percent" class="text-base font-semibold text-slate-900">0.00%</p>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Budget Allocation (₱) <span class="text-rose-500">*</span></label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-2.5 text-slate-400 text-sm font-bold">₱</span>
+                                <input type="number" step="0.01" id="swal-budget" placeholder="0.00"
+                                    class="w-full pl-8 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-hidden text-[#224796]">
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Summary Calculation -->
+                <div class="bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 p-6 rounded-2xl space-y-4 shadow-xl border border-white/5">
+                    <div class="flex items-center gap-2">
+                        <div class="w-1.5 h-4 bg-emerald-400 rounded-full animate-pulse"></div>
+                        <h3 class="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Real-time Utilization Summary</h3>
+                    </div>
+                    <div class="grid grid-cols-2 gap-8">
+                        <div class="space-y-1">
+                            <p class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest opacity-80">Remaining Balance</p>
+                            <p id="swal-remaining-amount" class="text-2xl font-black text-white tracking-tight">₱0.00</p>
+                        </div>
+                        <div class="space-y-1">
+                            <p class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest opacity-80">Utilization Efficiency</p>
+                            <p id="swal-remaining-percent" class="text-2xl font-black text-white tracking-tight">0.00%</p>
                         </div>
                     </div>
                 </div>
             </div>
         `,
-        width: 'auto',
-        padding: '1.5rem',
+        width: '42rem',
         showCancelButton: true,
         confirmButtonText: 'Add Entry',
-        cancelButtonText: 'Cancel',
-        focusConfirm: false,
+        cancelButtonText: 'Dismiss',
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#64748b',
         customClass: {
-            popup: `${sweetalertPopupBaseClasses} max-w-md md:max-w-2xl`,
+            popup: `${sweetalertPopupBaseClasses} max-w-2xl rounded-3xl`,
+            title: 'text-2xl font-black text-slate-900 mt-6 tracking-tight',
             htmlContainer: sweetalertHtmlLeftAlignedClasses,
-            confirmButton: sweetalertPrimaryConfirmClasses,
-            cancelButton: sweetalertSecondaryCancelClasses,
-            actions: sweetalertActionsLeftAlignedClasses,
+            confirmButton: `inline-flex items-center px-6 py-2.5 bg-emerald-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:shadow-lg transition-all cursor-pointer m-2`,
+            cancelButton: `inline-flex items-center px-6 py-2.5 bg-slate-100 text-slate-600 rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all cursor-pointer m-2`,
         },
+        buttonsStyling: false,
+        focusConfirm: false,
         didOpen: () => {
             const actualInput = document.getElementById('swal-actual');
             const budgetInput = document.getElementById('swal-budget');
@@ -286,24 +289,18 @@ function handleAddClick() {
                 const actual = parseFloat(actualInput.value) || 0;
                 const budget = parseFloat(budgetInput.value) || 0;
                 const { remainingAmount, remainingPercent } = calculateRemaining(actual, budget);
-                
+
                 remainingAmountEl.textContent = formatCurrency(remainingAmount);
-                remainingAmountEl.className = `text-base font-semibold ${
-                    remainingAmount < 0
-                        ? 'text-red-600'
-                        : remainingAmount > 0
-                        ? 'text-emerald-600'
-                        : 'text-slate-900'
-                }`;
-                
                 remainingPercentEl.textContent = formatPercent(remainingPercent);
-                remainingPercentEl.className = `text-base font-semibold ${
-                    remainingPercent < 0
-                        ? 'text-red-600'
-                        : remainingPercent > 0
-                        ? 'text-emerald-600'
-                        : 'text-slate-900'
-                }`;
+
+                // Dynamic coloring for summary text
+                if (remainingAmount < 0) {
+                    remainingAmountEl.className = 'text-2xl font-black text-rose-400 tracking-tight';
+                    remainingPercentEl.className = 'text-2xl font-black text-rose-400 tracking-tight';
+                } else {
+                    remainingAmountEl.className = 'text-2xl font-black text-white tracking-tight';
+                    remainingPercentEl.className = 'text-2xl font-black text-white tracking-tight';
+                }
             };
 
             if (actualInput) {
@@ -350,11 +347,106 @@ function handleAddClick() {
             budgetRows.push(result.value);
             currentPage = 1;
             renderTable();
-            
+
             Swal.fire({
                 icon: 'success',
                 title: 'Entry added',
                 text: 'Budget entry has been added successfully.',
+                confirmButtonText: 'OK',
+                customClass: {
+                    confirmButton: sweetalertNeutralConfirmBlueClasses,
+                },
+            });
+        }
+    });
+}
+
+function handleCalculateClick() {
+    const year = selectedYear || getCurrentYearFromGlobal();
+    const { csvString, totals } = buildCsvAndTotals();
+
+    const html = `
+        <div class="space-y-4 text-left text-sm">
+            <div class="grid gap-3 rounded-lg bg-slate-50 p-3 md:grid-cols-4">
+                <div>
+                    <p class="text-xs font-medium text-slate-500">Total Actual</p>
+                    <p class="text-sm font-semibold text-slate-900">${formatCurrency(totals.totalActual)}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500">Total Budget</p>
+                    <p class="text-sm font-semibold text-slate-900">${formatCurrency(totals.totalBudget)}</p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500">Remaining ₱</p>
+                    <p class="text-sm font-semibold ${totals.totalRemaining < 0
+            ? 'text-red-600'
+            : totals.totalRemaining > 0
+                ? 'text-emerald-600'
+                : 'text-slate-900'
+        }">
+                        ${formatCurrency(totals.totalRemaining)}
+                    </p>
+                </div>
+                <div>
+                    <p class="text-xs font-medium text-slate-500">Remaining %</p>
+                    <p class="text-sm font-semibold ${totals.overallRemainingPercent < 0
+            ? 'text-red-600'
+            : totals.overallRemainingPercent > 0
+                ? 'text-emerald-600'
+                : 'text-slate-900'
+        }">
+                        ${formatPercent(totals.overallRemainingPercent)}
+                    </p>
+                </div>
+            </div>
+            <div>
+                <p class="mb-1 text-xs font-medium text-slate-500">
+                    CSV Preview (all rows)
+                </p>
+                <div class="max-h-64 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50">
+                    <pre class="whitespace-pre text-xs p-3 text-slate-800">${csvString
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')}</pre>
+                </div>
+            </div>
+        </div>
+    `;
+
+    Swal.fire({
+        title: `Budget Summary (${year})`,
+        html,
+        width: '60rem',
+        confirmButtonText: 'Copy CSV',
+        showCancelButton: true,
+        cancelButtonText: 'Close',
+        focusConfirm: false,
+        customClass: {
+            popup: sweetalertPopupBaseClasses,
+            confirmButton: sweetalertNeutralConfirmBlueClasses,
+            cancelButton: sweetalertSecondaryCancelClasses,
+        },
+        didOpen: () => {
+            const popup = Swal.getPopup();
+            if (popup) {
+                popup.classList.add('!p-0', 'md:!p-0');
+            }
+        },
+        preConfirm: async () => {
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(csvString);
+                }
+                return true;
+            } catch {
+                return false;
+            }
+        },
+    }).then((result) => {
+        if (result.isConfirmed) {
+            Swal.fire({
+                icon: 'success',
+                title: 'CSV copied',
+                text: 'Budget data has been copied to your clipboard.',
                 confirmButtonText: 'OK',
                 customClass: {
                     confirmButton: sweetalertNeutralConfirmBlueClasses,
@@ -469,103 +561,6 @@ function buildCsvAndTotals() {
     };
 }
 
-function handleCalculateClick() {
-    const year = selectedYear || getCurrentYearFromGlobal();
-    const { csvString, totals } = buildCsvAndTotals();
-
-    const html = `
-        <div class="space-y-4 text-left text-sm">
-            <div class="grid gap-3 rounded-lg bg-slate-50 p-3 md:grid-cols-4">
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Total Actual</p>
-                    <p class="text-sm font-semibold text-slate-900">${formatCurrency(totals.totalActual)}</p>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Total Budget</p>
-                    <p class="text-sm font-semibold text-slate-900">${formatCurrency(totals.totalBudget)}</p>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Remaining ₱</p>
-                    <p class="text-sm font-semibold ${
-                        totals.totalRemaining < 0
-                            ? 'text-red-600'
-                            : totals.totalRemaining > 0
-                            ? 'text-emerald-600'
-                            : 'text-slate-900'
-                    }">
-                        ${formatCurrency(totals.totalRemaining)}
-                    </p>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Remaining %</p>
-                    <p class="text-sm font-semibold ${
-                        totals.overallRemainingPercent < 0
-                            ? 'text-red-600'
-                            : totals.overallRemainingPercent > 0
-                            ? 'text-emerald-600'
-                            : 'text-slate-900'
-                    }">
-                        ${formatPercent(totals.overallRemainingPercent)}
-                    </p>
-                </div>
-            </div>
-            <div>
-                <p class="mb-1 text-xs font-medium text-slate-500">
-                    CSV Preview (all rows)
-                </p>
-                <div class="max-h-64 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50">
-                    <pre class="whitespace-pre text-xs p-3 text-slate-800">${csvString
-                        .replace(/</g, '&lt;')
-                        .replace(/>/g, '&gt;')}</pre>
-                </div>
-            </div>
-        </div>
-    `;
-
-    Swal.fire({
-        title: `Budget Summary (${year})`,
-        html,
-        width: '60rem',
-        confirmButtonText: 'Copy CSV',
-        showCancelButton: true,
-        cancelButtonText: 'Close',
-        focusConfirm: false,
-        customClass: {
-            popup: sweetalertPopupBaseClasses,
-            confirmButton: sweetalertNeutralConfirmBlueClasses,
-            cancelButton: sweetalertSecondaryCancelClasses,
-        },
-        didOpen: () => {
-            const popup = Swal.getPopup();
-            if (popup) {
-                popup.classList.add('!p-0', 'md:!p-0');
-            }
-        },
-        preConfirm: async () => {
-            try {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    await navigator.clipboard.writeText(csvString);
-                }
-                return true;
-            } catch {
-                return false;
-            }
-        },
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({
-                icon: 'success',
-                title: 'CSV copied',
-                text: 'Budget data has been copied to your clipboard.',
-                confirmButtonText: 'OK',
-                customClass: {
-                    confirmButton: sweetalertNeutralConfirmBlueClasses,
-                },
-            });
-        }
-    });
-}
-
 function renderYearSelector() {
     const yearSelect = document.getElementById('budgetYear');
     if (!yearSelect) return;
@@ -619,17 +614,17 @@ function applyYearBindings() {
  */
 function initInlineEditing() {
     const editableCells = document.querySelectorAll('#budgetTableBody [data-editable]');
-    
+
     editableCells.forEach(cell => {
         const row = cell.closest('tr');
         const glCode = row?.getAttribute('data-gl-code') || '';
         const fieldName = cell.getAttribute('data-editable');
         const fieldType = cell.getAttribute('data-type') || 'text';
-        
+
         // Find the row data
         const rowData = budgetRows.find(r => r.glCode === glCode);
         if (!rowData) return;
-        
+
         initInlineEdit(cell, {
             type: fieldType,
             rowData: rowData,
@@ -651,7 +646,7 @@ function initInlineEditing() {
                     rowData.remainingAmount = remaining.remainingAmount;
                     rowData.remainingPercent = remaining.remainingPercent;
                 }
-                
+
                 // Re-render table to update calculated values
                 renderTable();
             },

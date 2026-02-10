@@ -38,24 +38,28 @@
 /* Desktop Sidebar Width */
 @media (min-width: 1024px) {
     #sidebar {
-        width: 16rem !important; /* 256px - expanded width */
+        width: 16rem !important;
+        /* 256px - expanded width */
         transition: width 0.3s ease-in-out;
     }
 
     #sidebar.collapsed {
-        width: 4.5rem !important; /* 72px - collapsed width */
+        width: 4.5rem !important;
+        /* 72px - collapsed width */
     }
 }
 
 /* Logo shrinks when collapsed */
 #sidebar.collapsed .sidebar-logo {
-    width: 2.5rem !important; /* 40px */
+    width: 2.5rem !important;
+    /* 40px */
     height: 2.5rem !important;
     margin: 0 auto !important;
 }
 
 #sidebar.collapsed .sidebar-logo img {
-    width: 2rem !important; /* 32px */
+    width: 2rem !important;
+    /* 32px */
     height: 2rem !important;
 }
 
@@ -65,13 +69,14 @@
     justify-content: center !important;
 }
 
-#sidebar.collapsed .p-4.border-b > div:first-child {
+#sidebar.collapsed .p-4.border-b>div:first-child {
     justify-content: center !important;
     width: 100% !important;
 }
 
 /* Desktop Collapsed State (>= 1024px) */
 @media (min-width: 1024px) {
+
     /* Hide text when collapsed */
     #sidebar.collapsed .sidebar-text {
         display: none !important;
@@ -110,6 +115,7 @@
 
 /* Desktop Collapsed State - Dropdown Behavior (>= 1024px) */
 @media (min-width: 1024px) {
+
     /* When collapsed, hide dropdown button and show dropdown items as individual icons */
     #sidebar.collapsed .nav-dropdown-trigger {
         display: none !important;
@@ -171,9 +177,9 @@
 
 /* Dropdown animations */
 .dropdown-content {
-    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
-                opacity 0.3s ease, 
-                margin-top 0.3s ease;
+    transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.3s ease,
+        margin-top 0.3s ease;
     max-height: 0;
     opacity: 0;
 }
@@ -226,10 +232,13 @@
 #spaContentContainer {
     transition: margin-left 0.3s ease-in-out, width 0.3s ease-in-out, opacity 0.2s ease-in-out !important;
     flex: 1;
-    min-width: 0; /* Allow flex shrinking */
+    min-width: 0;
+    /* Allow flex shrinking */
     overflow-x: hidden;
-    height: 100dvh; /* Full dynamic viewport height (mobile-safe) */
-    max-height: 100dvh; /* Prevent exceeding viewport */
+    height: 100dvh;
+    /* Full dynamic viewport height (mobile-safe) */
+    max-height: 100dvh;
+    /* Prevent exceeding viewport */
     display: flex;
     flex-direction: column;
 }
@@ -240,8 +249,10 @@
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-    min-height: 0; /* Important for flex children to allow shrinking */
+    -webkit-overflow-scrolling: touch;
+    /* Smooth scrolling on iOS */
+    min-height: 0;
+    /* Important for flex children to allow shrinking */
 }
 
 /* Base page scrolling
@@ -267,3 +278,44 @@ body.app-shell {
     filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.06));
 }
 
+
+/* ============================================================================
+   EXPORT & PRINT STYLES
+   ============================================================================ */
+/* ============================================================================
+   GLOBAL PRINT & REPORT CONFIGURATION
+   ============================================================================ */
+@media print {
+    @page {
+        size: landscape;
+        margin: 12mm 15mm;
+    }
+
+    /* Clean slate for print body */
+    body {
+        background: white !important;
+        overflow: visible !important;
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
+    /* Target the high-fidelity template specifically */
+    #export-template {
+        display: block !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        z-index: 9999 !important;
+    }
+
+    /* Global isolation: Hide non-report elements from the body */
+    body>*:not(#export-template),
+    #spaContentContainer,
+    #sidebar,
+    header,
+    nav,
+    .invisible-on-print {
+        display: none !important;
+    }
+}

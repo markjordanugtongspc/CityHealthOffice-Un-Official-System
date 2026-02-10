@@ -220,6 +220,37 @@ function loadSavedCredentials() {
 }
 
 /**
+ * Initialize password visibility toggle on login form
+ */
+function initPasswordToggle() {
+    const passwordInput = document.getElementById('password');
+    const toggleButton = document.getElementById('passwordToggle');
+    const eyeIcon = document.getElementById('passwordEye');
+    const eyeOffIcon = document.getElementById('passwordEyeOff');
+
+    if (!passwordInput || !toggleButton) {
+        return;
+    }
+
+    toggleButton.addEventListener('click', () => {
+        const isHidden = passwordInput.type === 'password';
+        passwordInput.type = isHidden ? 'text' : 'password';
+
+        if (eyeIcon && eyeOffIcon) {
+            if (isHidden) {
+                eyeIcon.classList.add('hidden');
+                eyeOffIcon.classList.remove('hidden');
+                toggleButton.setAttribute('aria-label', 'Hide password');
+            } else {
+                eyeIcon.classList.remove('hidden');
+                eyeOffIcon.classList.add('hidden');
+                toggleButton.setAttribute('aria-label', 'Show password');
+            }
+        }
+    });
+}
+
+/**
  * Initialize authentication functionality
  */
 export function init() {
@@ -231,6 +262,9 @@ export function init() {
 
     // Load saved credentials if "Remember me" was previously checked
     loadSavedCredentials();
+
+    // Initialize password visibility toggle
+    initPasswordToggle();
 
     // Handle remember me checkbox change
     const rememberMeCheckbox = document.getElementById('rememberMe');

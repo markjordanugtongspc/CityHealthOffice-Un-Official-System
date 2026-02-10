@@ -12,7 +12,7 @@ requireAuth();
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Budget - City Health Office</title>
+    <title>Itemized Daily Transactions - City Health Office</title>
 
     <!-- Vite Assets -->
     <?php vite('backend/js/main.js'); ?>
@@ -47,9 +47,8 @@ requireAuth();
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-900">YTD Budget Summary</h1>
-                    <h3 class="text-sm text-slate-600">Actual vs Budget overview for <span id="budgetCurrentYear"
-                            class="font-semibold text-slate-900"></span></h3>
+                    <h1 class="text-xl font-bold text-slate-900">Itemized Daily Transactions</h1>
+                    <h3 class="text-sm text-slate-600">Manage disbursement vouchers and transaction records</h3>
                 </div>
             </div>
 
@@ -117,14 +116,12 @@ requireAuth();
             <section class="mb-6">
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6">
                     <h2 class="text-xl md:text-2xl font-semibold text-slate-900 mb-2">
-                        Actual vs Budget Year-to-Date
+                        Daily Transactions Management
                     </h2>
                     <p class="text-sm md:text-base text-slate-600">
-                        This view compares the City Health Office&apos;s actual expenses against the approved budget for
-                        <span id="budgetCurrentYearInline" class="font-semibold text-slate-900"></span>.
-                        It highlights remaining funds in pesos and percentage to help you quickly identify overspending
-                        and
-                        underutilized allocations across G/L accounts.
+                        Manage and track daily transactions including disbursement vouchers, check amounts, and payee
+                        information.
+                        Click on any row to view detailed information in the modal.
                     </p>
                 </div>
             </section>
@@ -135,8 +132,8 @@ requireAuth();
                     <div class="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
                         <!-- Search -->
                         <div class="w-full md:flex-1">
-                            <label for="budgetSearch" class="block text-xs font-medium text-slate-500 mb-1">
-                                Search by G/L Code or Account Title
+                            <label for="itemizedSearch" class="block text-xs font-medium text-slate-500 mb-1">
+                                Search by G/L Code, DV NO., Requested By, or Payee
                             </label>
                             <div class="relative">
                                 <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -146,47 +143,42 @@ requireAuth();
                                             d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
                                     </svg>
                                 </span>
-                                <input id="budgetSearch" type="text" placeholder="Search accounts..."
+                                <input id="itemizedSearch" type="text" placeholder="Search transactions..."
                                     class="block w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796]" />
+                            </div>
+                        </div>
+
+                        <!-- Category Filters -->
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <!-- Requested By Filter -->
+                            <div class="w-full sm:w-48">
+                                <label for="itemizedRequestedByFilter"
+                                    class="block text-xs font-medium text-slate-500 mb-1">
+                                    Requested By
+                                </label>
+                                <select id="itemizedRequestedByFilter"
+                                    class="w-full rounded-lg border border-slate-300 bg-white py-2.5 px-3 text-sm text-slate-900 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] cursor-pointer">
+                                    <option value="">All</option>
+                                </select>
+                            </div>
+
+                            <!-- Payee Filter -->
+                            <div class="w-full sm:w-48">
+                                <label for="itemizedPayeeFilter" class="block text-xs font-medium text-slate-500 mb-1">
+                                    Payee
+                                </label>
+                                <select id="itemizedPayeeFilter"
+                                    class="w-full rounded-lg border border-slate-300 bg-white py-2.5 px-3 text-sm text-slate-900 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] cursor-pointer">
+                                    <option value="">All</option>
+                                </select>
                             </div>
                         </div>
 
                         <!-- Right controls -->
                         <div class="flex flex-col sm:flex-row gap-3 md:gap-4 md:items-center">
                             <div class="flex items-center gap-3">
-                                <label for="budgetYear" class="text-sm font-medium text-slate-700 whitespace-nowrap">
-                                    Year
-                                </label>
-                                <select id="budgetYear"
-                                    class="rounded-lg border border-slate-300 bg-white py-2.5 px-4 text-sm text-slate-900 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] cursor-pointer">
-                                    <!-- Options populated by JavaScript -->
-                                </select>
-                            </div>
-                            <div class="flex items-center gap-3">
-                                <label for="budgetSort" class="text-sm font-medium text-slate-700 whitespace-nowrap">
-                                    Sort by
-                                </label>
-                                <select id="budgetSort"
-                                    class="rounded-lg border border-slate-300 bg-white py-2.5 px-4 text-sm text-slate-900 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] cursor-pointer">
-                                    <option value="">None</option>
-                                    <option value="actual">Actual</option>
-                                    <option value="budget">Budget</option>
-                                    <option value="remainingAmount">Remaining ₱</option>
-                                    <option value="remainingPercent">Remaining %</option>
-                                </select>
-                                <button id="budgetSortDirection" type="button"
-                                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 hover:bg-slate-100 cursor-pointer transition-colors">
-                                    <svg id="budgetSortDirectionIcon" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg"
-                                        fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M5 15l7-7 7 7" />
-                                    </svg>
-                                </button>
-                            </div>
-
-                            <div class="flex items-center gap-3">
-                                <button id="budgetAddBtn" type="button"
-                                    class="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-bold uppercase tracking-widest text-white shadow-sm hover:bg-emerald-600 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 cursor-pointer transition-all">
+                                <button id="itemizedAddBtn" type="button"
+                                    class="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-black uppercase tracking-widest text-white shadow-sm hover:bg-emerald-600 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 cursor-pointer transition-all">
                                     <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -194,14 +186,14 @@ requireAuth();
                                     </svg>
                                     Add Entry
                                 </button>
-                                <button id="budgetCalculateBtn" type="button"
-                                    class="inline-flex items-center justify-center rounded-lg bg-[#224796] px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-colors">
+                                <button id="itemizedExportBtn" type="button"
+                                    class="inline-flex items-center justify-center rounded-lg bg-[#224796] px-4 py-2.5 text-sm font-black uppercase tracking-widest text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-all">
                                     <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 7h6M9 11h6m-9 4h.01M15 15h.01M5 5h14v14H5z" />
+                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                     </svg>
-                                    Calculate
+                                    Export
                                 </button>
                             </div>
                         </div>
@@ -213,37 +205,41 @@ requireAuth();
             <section>
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
-                        <table id="budgetTable" class="min-w-full divide-y divide-slate-200 text-sm">
-                            <thead class="bg-slate-50">
+                        <table id="itemizedTable" class="min-w-full divide-y divide-slate-200 text-sm">
+                            <thead class="bg-[#224796]">
                                 <tr>
                                     <th scope="col"
-                                        class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                        class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-white">
                                         G/L Code
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                        Account Title
+                                        class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-white">
+                                        DV Date
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                        Actual
+                                        class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-white">
+                                        DV NO.
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                        Budget
+                                        class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-white">
+                                        Requested By
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                        Remaining ₱
+                                        class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-white">
+                                        Check Amount
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                        Remaining %
+                                        class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-white">
+                                        Payee
+                                    </th>
+                                    <th scope="col"
+                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
+                                        Actions
                                     </th>
                                 </tr>
                             </thead>
-                            <tbody id="budgetTableBody" class="divide-y divide-slate-100 bg-white">
-                                <!-- Rows rendered by budget.js -->
+                            <tbody id="itemizedTableBody" class="divide-y divide-slate-100 bg-white">
+                                <!-- Rows rendered by itemized.js -->
                             </tbody>
                         </table>
                     </div>
@@ -251,18 +247,18 @@ requireAuth();
                     <!-- Pagination -->
                     <div
                         class="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 md:flex-row md:items-center md:justify-between">
-                        <p class="text-xs md:text-sm text-slate-600" id="budgetPaginationSummary">
+                        <p class="text-xs md:text-sm text-slate-600" id="itemizedPaginationSummary">
                             Showing 0 to 0 of 0 entries
                         </p>
                         <div class="flex items-center justify-end gap-2">
-                            <button id="budgetPrevPage" type="button"
+                            <button id="itemizedPrevPage" type="button"
                                 class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors md:px-2 md:py-1 md:text-xs">
                                 Prev
                             </button>
-                            <div id="budgetPageNumbers" class="flex items-center gap-1 text-sm md:text-xs">
-                                <!-- Page buttons rendered by budget.js -->
+                            <div id="itemizedPageNumbers" class="flex items-center gap-1 text-sm md:text-xs">
+                                <!-- Page buttons rendered by itemized.js -->
                             </div>
-                            <button id="budgetNextPage" type="button"
+                            <button id="itemizedNextPage" type="button"
                                 class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors md:px-2 md:py-1 md:text-xs">
                                 Next
                             </button>

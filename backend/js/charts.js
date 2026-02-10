@@ -26,6 +26,14 @@ const colors = {
     ]
 };
 
+// Simple currency formatter for peso values
+function formatCurrency(value) {
+    if (typeof value !== 'number' || isNaN(value)) {
+        return '₱0';
+    }
+    return '₱' + value.toLocaleString();
+}
+
 let ApexCharts;
 const chartInstances = {};
 
@@ -83,8 +91,9 @@ function initializeCharts() {
     initYearlyVouchersChart();
     
     // Page 2: Daily Transactions Charts
-    initDailyTransactionsChart();
-    initTransactionVolumeChart();
+    initDailyTransactionsPieChart();
+    initExpensesOverviewChart();
+    initExpensesCategoryChart();
     
     // Page 3: Monthly/Weekly Transactions Charts
     initMonthlyTransactionsChart();
@@ -118,8 +127,9 @@ window.initPageCharts = function(pageNumber) {
                 initYearlyVouchersChart();
                 break;
             case 2:
-                initDailyTransactionsChart();
-                initTransactionVolumeChart();
+                initDailyTransactionsPieChart();
+                initExpensesOverviewChart();
+                initExpensesCategoryChart();
                 break;
             case 3:
                 initMonthlyTransactionsChart();
@@ -153,8 +163,8 @@ function initMonthlyVouchersChart() {
     const brandSecondaryColor = colors.secondary;
     const brandTertiaryColor = colors.accent1;
 
-    // Monthly voucher data (current year)
-    const monthlyData = {
+    // Base monthly cash-in-bank data (used to derive yearly data)
+    const monthlyBaseData = {
         'Jan': { value: 285, quarter: 'Q1' },
         'Feb': { value: 312, quarter: 'Q1' },
         'Mar': { value: 298, quarter: 'Q1' },
@@ -169,9 +179,80 @@ function initMonthlyVouchersChart() {
         'Dec': { value: 278, quarter: 'Q4' }
     };
 
-    const labels = Object.keys(monthlyData);
-    const series = Object.values(monthlyData).map(item => item.value);
-    const total = series.reduce((sum, val) => sum + val, 0);
+    const years = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
+
+    // Build synthetic yearly datasets based on the base data
+    const cashInBankByYear = {};
+    years.forEach((year, index) => {
+        const scale = 0.65 + index * 0.05; // slightly increase per year (starting from 0.65 for 2018)
+        const yearData = {};
+        Object.keys(monthlyBaseData).forEach((month) => {
+            yearData[month] = {
+                quarter: monthlyBaseData[month].quarter,
+                value: Math.round(monthlyBaseData[month].value * scale)
+            };
+        });
+        cashInBankByYear[year] = yearData;
+    });
+
+    // Category multipliers (for future real data these would come from API)
+    const categoryMultipliers = {
+        all: 1,
+        MOOE: 0.6,
+        PHM: 0.5,
+        PHIC: 0.5,
+        'PHM - Konsulta': 0.35,
+        'PHM - SPF': 0.25,
+        'PHIC - PF': 0.55,
+        'PHIC - Facility': 0.45
+    };
+
+    // PHM sub-type multipliers
+    const phmSubtypeMultipliers = {
+        'PHM - Konsulta': 0.35,
+        'PHM - SPF': 0.25
+    };
+
+    // PHIC sub-type multipliers
+    const phicSubtypeMultipliers = {
+        'PHIC - PF': 0.55,
+        'PHIC - Facility': 0.45
+    };
+
+    let currentYear = new Date().getFullYear();
+    if (!years.includes(currentYear)) {
+        currentYear = 2026;
+    }
+    let currentCategory = 'all';
+    let currentPhmSubtype = 'PHM - Konsulta';
+    let currentPhicSubtype = 'PHIC - PF';
+
+    // Labels/series references used by formatters (kept up to date)
+    let labels = [];
+    let series = [];
+    let total = 0;
+
+    function buildData(year, category) {
+        const yearData = cashInBankByYear[year] || cashInBankByYear[2026];
+        let multiplier;
+
+        if (category === 'PHM') {
+            multiplier = phmSubtypeMultipliers[currentPhmSubtype] || categoryMultipliers.PHM;
+        } else if (category === 'PHIC') {
+            multiplier = phicSubtypeMultipliers[currentPhicSubtype] || categoryMultipliers.PHIC;
+        } else {
+            multiplier = categoryMultipliers[category] || 1;
+        }
+
+        labels = Object.keys(yearData);
+        series = labels.map((month) => Math.round(yearData[month].value * multiplier));
+        total = series.reduce((sum, val) => sum + val, 0);
+
+        return { labels, series, total };
+    }
+
+    // Initial data build
+    buildData(currentYear, currentCategory);
 
     // Generate colors for 12 months using brand colors
     const generateColors = () => {
@@ -210,16 +291,16 @@ function initMonthlyVouchersChart() {
                             total: {
                                 showAlways: true,
                                 show: true,
-                                label: "Total Vouchers",
+                                label: "Total Yearly",
                                 fontFamily: "inherit",
                                 fontSize: '16px',
                                 fontWeight: 600,
                                 color: '#1E293B',
                                 formatter: function (w) {
                                     const sum = w.globals.seriesTotals.reduce((a, b) => {
-                                        return a + b
-                                    }, 0)
-                                    return sum.toLocaleString()
+                                        return a + b;
+                                    }, 0);
+                                    return formatCurrency(sum);
                                 }
                             },
                             value: {
@@ -230,7 +311,7 @@ function initMonthlyVouchersChart() {
                                 fontWeight: 700,
                                 color: '#1E293B',
                                 formatter: function (value) {
-                                    return value.toLocaleString()
+                                    return formatCurrency(value);
                                 }
                             }
                         },
@@ -263,7 +344,7 @@ function initMonthlyVouchersChart() {
                 formatter: function(seriesName, opts) {
                     const value = series[opts.seriesIndex];
                     const percentage = ((value / total) * 100).toFixed(1);
-                    return seriesName + ': ' + value.toLocaleString() + ' (' + percentage + '%)';
+                    return seriesName + ': ' + formatCurrency(value) + ' (' + percentage + '%)';
                 }
             },
             tooltip: {
@@ -272,9 +353,10 @@ function initMonthlyVouchersChart() {
                     fontSize: '13px'
                 },
                 y: {
-                    formatter: function (value) {
-                        const percentage = ((value / total) * 100).toFixed(1);
-                        return value.toLocaleString() + ' vouchers (' + percentage + '%)';
+                    formatter: function (value, opts) {
+                        const monthLabel = labels[opts.seriesIndex] || '';
+                        // Format: "Nov 2026: ₱332"
+                        return monthLabel + ' ' + currentYear + ': ' + formatCurrency(value);
                     }
                 },
                 theme: 'dark',
@@ -319,9 +401,159 @@ function initMonthlyVouchersChart() {
             chartInstances.monthly.destroy();
         }
         
+        // Ensure subtype dropdowns are hidden by default on initialization
+        const phmWrapperInit = document.getElementById('phmWrapper');
+        const phicWrapperInit = document.getElementById('phicWrapper');
+        if (phmWrapperInit) {
+            phmWrapperInit.classList.add('hidden');
+        }
+        if (phicWrapperInit) {
+            phicWrapperInit.classList.add('hidden');
+        }
+        
         const chart = new ApexCharts(chartElement, getChartOptions());
         chartInstances.monthly = chart;
         chart.render();
+
+        // Update Total Income stat card
+        const incomeStatElement = document.getElementById('dashboardTotalIncome');
+        if (incomeStatElement) {
+            incomeStatElement.textContent = formatCurrency(total);
+        }
+
+        // Year dropdown handling
+        const yearButton = document.getElementById('cashYearButton');
+        const yearDropdown = document.getElementById('cashYearDropdown');
+        if (yearButton && yearDropdown) {
+            const yearItems = yearDropdown.querySelectorAll('[data-year]');
+            yearItems.forEach((item) => {
+                item.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const yearAttr = item.getAttribute('data-year');
+                    const parsedYear = parseInt(yearAttr || '', 10);
+                    if (!isNaN(parsedYear)) {
+                        currentYear = parsedYear;
+                        yearButton.textContent = item.textContent || String(parsedYear);
+                        const data = buildData(currentYear, currentCategory);
+                        chart.updateSeries(data.series);
+                        chart.updateOptions({ labels: data.labels });
+                        if (incomeStatElement) {
+                            incomeStatElement.textContent = formatCurrency(data.total);
+                        }
+                    }
+                });
+            });
+        }
+
+        // Category dropdown handling (All Categories, MOOE, PHM (with subtype), PHIC (with subtype))
+        const categoryButton = document.getElementById('cashCategoryButton');
+        const categoryDropdown = document.getElementById('cashCategoryDropdown');
+        const phmWrapper = document.getElementById('phmWrapper');
+        const phicWrapper = document.getElementById('phicWrapper');
+        if (categoryButton && categoryDropdown) {
+            const categoryItems = categoryDropdown.querySelectorAll('[data-category]');
+            categoryItems.forEach((item) => {
+                item.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const category = item.getAttribute('data-category') || 'all';
+                    currentCategory = category;
+
+                    if (category === 'all') {
+                        categoryButton.textContent = 'All Categories';
+                    } else {
+                        categoryButton.textContent = item.textContent || 'All Categories';
+                    }
+
+                    // Show/hide PHM subtype dropdown only when PHM is active
+                    if (phmWrapper) {
+                        if (category === 'PHM') {
+                            phmWrapper.classList.remove('hidden');
+                        } else {
+                            phmWrapper.classList.add('hidden');
+                        }
+                    }
+
+                    // Show/hide PHIC subtype dropdown only when PHIC is active
+                    if (phicWrapper) {
+                        if (category === 'PHIC') {
+                            phicWrapper.classList.remove('hidden');
+                        } else {
+                            phicWrapper.classList.add('hidden');
+                        }
+                    }
+
+                    // Ensure only one wrapper is visible at a time
+                    // When switching categories, hide the other wrapper
+                    if (category === 'PHM' && phicWrapper) {
+                        phicWrapper.classList.add('hidden');
+                    }
+                    if (category === 'PHIC' && phmWrapper) {
+                        phmWrapper.classList.add('hidden');
+                    }
+
+                    const data = buildData(currentYear, currentCategory);
+                    chart.updateSeries(data.series);
+                    chart.updateOptions({ labels: data.labels });
+                    if (incomeStatElement) {
+                        incomeStatElement.textContent = formatCurrency(data.total);
+                    }
+                });
+            });
+        }
+
+        // PHM subtype handling (Konsulta / SPF) under PHM
+        const phmSubtypeButton = document.getElementById('phmSubtypeButton');
+        const phmSubtypeDropdown = document.getElementById('phmSubtypeDropdown');
+        if (phmSubtypeDropdown) {
+            const phmSubtypeItems = phmSubtypeDropdown.querySelectorAll('[data-phm-subtype]');
+            phmSubtypeItems.forEach((item) => {
+                item.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const subtype = item.getAttribute('data-phm-subtype');
+                    if (!subtype) return;
+                    currentPhmSubtype = subtype;
+                    if (phmSubtypeButton) {
+                        phmSubtypeButton.textContent = subtype;
+                    }
+
+                    if (currentCategory === 'PHM') {
+                        const data = buildData(currentYear, currentCategory);
+                        chart.updateSeries(data.series);
+                        chart.updateOptions({ labels: data.labels });
+                        if (incomeStatElement) {
+                            incomeStatElement.textContent = formatCurrency(data.total);
+                        }
+                    }
+                });
+            });
+        }
+
+        // PHIC subtype handling (PF / Facility) under PHIC
+        const phicSubtypeButton = document.getElementById('phicSubtypeButton');
+        const phicSubtypeDropdown = document.getElementById('phicSubtypeDropdown');
+        if (phicSubtypeDropdown) {
+            const phicSubtypeItems = phicSubtypeDropdown.querySelectorAll('[data-phic-subtype]');
+            phicSubtypeItems.forEach((item) => {
+                item.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const subtype = item.getAttribute('data-phic-subtype');
+                    if (!subtype) return;
+                    currentPhicSubtype = subtype;
+                    if (phicSubtypeButton) {
+                        phicSubtypeButton.textContent = subtype;
+                    }
+
+                    if (currentCategory === 'PHIC') {
+                        const data = buildData(currentYear, currentCategory);
+                        chart.updateSeries(data.series);
+                        chart.updateOptions({ labels: data.labels });
+                        if (incomeStatElement) {
+                            incomeStatElement.textContent = formatCurrency(data.total);
+                        }
+                    }
+                });
+            });
+        }
 
         // Get all the checkboxes for quarters
         const checkboxes = document.querySelectorAll('#voucher-quarters input[type="checkbox"]');
@@ -333,7 +565,10 @@ function initMonthlyVouchersChart() {
             const isChecked = checkbox.checked;
             
             // Get months for this quarter
-            const quarterMonths = labels.filter(month => monthlyData[month].quarter === quarter);
+            const currentYearData = cashInBankByYear[currentYear] || monthlyBaseData;
+            const quarterMonths = Object.keys(currentYearData).filter(
+                month => currentYearData[month].quarter === quarter
+            );
             
             // Show or hide series for this quarter's months
             quarterMonths.forEach((month) => {
@@ -955,6 +1190,98 @@ function initTransactionVolumeChart() {
 }
 
 /**
+ * Daily Transactions Pie Chart (Flowbite style)
+ */
+function initDailyTransactionsPieChart() {
+    const chartElement = document.getElementById('dailyTransactionsPieChart');
+    if (!chartElement || !ApexCharts) return;
+
+    // Synthetic breakdown for now; later will be driven by itemized data
+    const categories = ['MOOE', 'PHILHEALTH', 'SPF'];
+    const series = [52.8, 26.8, 20.4];
+
+    const options = {
+        series,
+        colors: [colors.primary, colors.accent1, colors.secondary],
+        chart: {
+            height: 320,
+            width: '100%',
+            type: 'pie',
+            fontFamily: 'inherit',
+            toolbar: { show: false }
+        },
+        stroke: {
+            colors: ['#ffffff'],
+            lineCap: ''
+        },
+        plotOptions: {
+            pie: {
+                labels: {
+                    show: true
+                },
+                size: '100%',
+                dataLabels: {
+                    offset: -25
+                }
+            }
+        },
+        labels: categories,
+        dataLabels: {
+            enabled: true,
+            style: {
+                fontFamily: 'inherit',
+                fontSize: '12px'
+            },
+            formatter: (val, opts) => {
+                const raw = series[opts.seriesIndex] || 0;
+                return `${raw.toFixed(1)}%`;
+            }
+        },
+        legend: {
+            position: 'bottom',
+            fontFamily: 'inherit',
+            fontSize: '13px'
+        },
+        yaxis: {
+            labels: {
+                formatter: (value) => `${value.toFixed(1)}%`
+            }
+        },
+        xaxis: {
+            labels: {
+                formatter: (value) => `${value.toFixed(1)}%`
+            },
+            axisTicks: { show: false },
+            axisBorder: { show: false }
+        },
+        tooltip: {
+            theme: 'dark',
+            style: { fontSize: '13px', fontFamily: 'inherit' },
+            y: {
+                formatter: (val, opts) => {
+                    const total = series.reduce((sum, v) => sum + v, 0);
+                    const amount = Math.round((val / 100) * 100000); // synthetic base, later real values
+                    const label = categories[opts.seriesIndex] || '';
+                    const percent = ((val / total) * 100).toFixed(1);
+                    return `${label}: ${formatCurrency(amount)} (${percent}%)`;
+                }
+            }
+        }
+    };
+
+    try {
+        if (chartInstances.dailyTransactionsPie) {
+            chartInstances.dailyTransactionsPie.destroy();
+        }
+        const chart = new ApexCharts(chartElement, options);
+        chartInstances.dailyTransactionsPie = chart;
+        chart.render();
+    } catch (error) {
+        console.error('Error creating daily transactions pie chart:', error);
+    }
+}
+
+/**
  * Monthly Transactions Chart
  */
 function initMonthlyTransactionsChart() {
@@ -1183,6 +1510,8 @@ function initExpensesOverviewChart() {
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const expensesData = months.map(() => Math.floor(Math.random() * 50000) + 10000);
 
+    const totalExpenses = expensesData.reduce((sum, val) => sum + val, 0);
+
     const options = {
         series: [{ name: 'Expenses', data: expensesData }],
         colors: ['#DC2626'],
@@ -1215,6 +1544,12 @@ function initExpensesOverviewChart() {
         const chart = new ApexCharts(chartElement, options);
         chartInstances.expensesOverview = chart;
         chart.render();
+
+        // Update Total Expenses stat card
+        const expensesStatElement = document.getElementById('dashboardTotalExpenses');
+        if (expensesStatElement) {
+            expensesStatElement.textContent = formatCurrency(totalExpenses);
+        }
     } catch (error) {
         console.error('Error creating expenses overview chart:', error);
     }
@@ -1367,6 +1702,8 @@ function initFundDownloadedSummaryChart() {
     const periods = ['Q1', 'Q2', 'Q3', 'Q4'];
     const fundData = periods.map(() => Math.floor(Math.random() * 500000) + 200000);
 
+    const totalFund = fundData.reduce((sum, val) => sum + val, 0);
+
     const options = {
         series: [{ name: 'Fund Downloaded', data: fundData }],
         colors: [colors.secondary],
@@ -1404,6 +1741,12 @@ function initFundDownloadedSummaryChart() {
         const chart = new ApexCharts(chartElement, options);
         chartInstances.fundDownloadedSummary = chart;
         chart.render();
+
+        // Update Fund Downloaded Summary stat card
+        const fundStatElement = document.getElementById('dashboardFundDownloadedTotal');
+        if (fundStatElement) {
+            fundStatElement.textContent = formatCurrency(totalFund);
+        }
     } catch (error) {
         console.error('Error creating fund downloaded summary chart:', error);
     }

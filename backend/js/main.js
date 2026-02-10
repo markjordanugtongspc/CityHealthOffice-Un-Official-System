@@ -152,6 +152,7 @@ import { init as initCharts } from './charts.js';
 import { init as initBudget } from './budget.js';
 import { init as initSpecialFund } from './specialfund.js';
 import { init as initMonthlyExpenses } from './monthly-expenses.js';
+import { init as initItemized } from './itemized.js';
 import { init as initExport } from './modules/export.js';
 import { init as initScrollToTop } from './modules/scroll-to-top.js';
 import { init as initAbout } from './about.js';
@@ -288,6 +289,9 @@ export async function init() {
 
     // Initialize monthly expenses page if monthly expenses elements exist
     initMonthlyExpenses();
+
+    // Initialize itemized page if itemized elements exist
+    initItemized();
 
     // Initialize export page if export elements exist
     initExport();

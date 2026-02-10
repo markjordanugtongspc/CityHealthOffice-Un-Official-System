@@ -91,7 +91,7 @@ export function showModal(options = {}) {
     } = options;
 
     const container = initModalContainer();
-    
+
     // Icon configuration
     const icons = {
         success: {
@@ -165,7 +165,7 @@ export function showModal(options = {}) {
 
     container.innerHTML = modalHTML;
     container.style.display = 'flex';
-    
+
     // Animate in
     setTimeout(() => {
         const content = container.querySelector('#customModalContent');
@@ -369,14 +369,14 @@ export async function showAdminEditUserModal(username) {
         // Format date for input (YYYY-MM-DD)
         const formattedDob = user.date_of_birth ? user.date_of_birth.split(' ')[0] : '';
         // Format phone (remove leading 0 for display)
-        const displayPhone = user.phone_number && user.phone_number.startsWith('0') 
-            ? user.phone_number.substring(1) 
+        const displayPhone = user.phone_number && user.phone_number.startsWith('0')
+            ? user.phone_number.substring(1)
             : (user.phone_number || '');
 
-         // Show edit modal
-     const result = await Swal.fire({
-        title: 'Edit User',
-        html: `
+        // Show edit modal
+        const result = await Swal.fire({
+            title: 'Edit User',
+            html: `
             <div class="text-left space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Username <span class="text-red-500">*</span></label>
@@ -456,71 +456,71 @@ export async function showAdminEditUserModal(username) {
                 <div>
                     <label class="block text-sm font-medium text-slate-700 mb-1.5">Role <span class="text-red-500">*</span></label>
                         <select id="edit-role" class="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-[#224796] focus:border-[#224796] text-sm cursor-pointer" required>
-                            ${allRoles.map(function(role) {
-                                const isSelected = user.role === role;
-                                const isAllowed = allowedRoles.includes(role);
-                                
-                                // Role order for escalation check
-                                const roleOrder = {
-                                    'Administrator': 1,
-                                    'CEO': 2,
-                                    'Manager': 3,
-                                    'Staff': 4,
-                                    'Workmate': 5,
-                                };
-                                
-                                const currentUserRoleLevel = roleOrder[currentUserRole] || 999;
-                                const newRoleLevel = roleOrder[role] || 999;
-                                const currentUserRoleLevel_beingEdited = roleOrder[user.role] || 999;
-                                
-                                // Disable if role is higher than current user's role
-                                // or if target user has higher role than current user
-                                const isEscalation = newRoleLevel < currentUserRoleLevel || currentUserRoleLevel_beingEdited < currentUserRoleLevel;
-                                const shouldDisable = !isAllowed || isEscalation;
-                                
-                                const roleEscaped = escapeHtml(role);
-                                const selectedAttr = isSelected ? 'selected' : '';
-                                const disabledAttr = shouldDisable ? 'disabled' : '';
-                                // Add inline styles for disabled options to prevent selection
-                                const styleAttr = shouldDisable ? 'style="user-select: none; pointer-events: none; opacity: 0.5;"' : '';
-                                let notAllowedText = '';
-                                if (!isAllowed) {
-                                    notAllowedText = ' (Not allowed)';
-                                } else if (isEscalation) {
-                                    notAllowedText = ' (Cannot escalate)';
-                                }
-                                
-                                return '<option value="' + roleEscaped + '" ' + selectedAttr + ' ' + disabledAttr + ' ' + styleAttr + '>' + roleEscaped + notAllowedText + '</option>';
-                            }).join('')}
+                            ${allRoles.map(function (role) {
+                const isSelected = user.role === role;
+                const isAllowed = allowedRoles.includes(role);
+
+                // Role order for escalation check
+                const roleOrder = {
+                    'Administrator': 1,
+                    'CEO': 2,
+                    'Manager': 3,
+                    'Staff': 4,
+                    'Workmate': 5,
+                };
+
+                const currentUserRoleLevel = roleOrder[currentUserRole] || 999;
+                const newRoleLevel = roleOrder[role] || 999;
+                const currentUserRoleLevel_beingEdited = roleOrder[user.role] || 999;
+
+                // Disable if role is higher than current user's role
+                // or if target user has higher role than current user
+                const isEscalation = newRoleLevel < currentUserRoleLevel || currentUserRoleLevel_beingEdited < currentUserRoleLevel;
+                const shouldDisable = !isAllowed || isEscalation;
+
+                const roleEscaped = escapeHtml(role);
+                const selectedAttr = isSelected ? 'selected' : '';
+                const disabledAttr = shouldDisable ? 'disabled' : '';
+                // Add inline styles for disabled options to prevent selection
+                const styleAttr = shouldDisable ? 'style="user-select: none; pointer-events: none; opacity: 0.5;"' : '';
+                let notAllowedText = '';
+                if (!isAllowed) {
+                    notAllowedText = ' (Not allowed)';
+                } else if (isEscalation) {
+                    notAllowedText = ' (Cannot escalate)';
+                }
+
+                return '<option value="' + roleEscaped + '" ' + selectedAttr + ' ' + disabledAttr + ' ' + styleAttr + '>' + roleEscaped + notAllowedText + '</option>';
+            }).join('')}
                         </select>
                         ${allowedRoles.length < allRoles.length ? '<p class="mt-1 text-xs text-slate-500">You can only assign roles: ' + allowedRoles.join(', ') + '</p>' : ''}
                 </div>
             </div>
         `,
-        icon: 'info',
-        iconColor: '#224796',
-        showCancelButton: true,
-        confirmButtonText: 'Update User',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#224796',
-        cancelButtonColor: '#64748b',
-        customClass: {
-        popup: `${sweetalertPopupBaseClasses} max-w-lg`,
-        title: 'text-xl font-semibold text-slate-900 mb-4',
-        htmlContainer: 'text-left',
-        confirmButton: `${sweetalertNeutralConfirmBlueClasses} px-6 py-2.5`,
-        cancelButton: `${sweetalertNeutralCancelSlateClasses} px-6 py-2.5`,
-    },
-    buttonsStyling: false,
-    focusConfirm: false,
-    preConfirm: async () => {
-        const fullName = document.getElementById('edit-full-name')?.value.trim();
-        const email = document.getElementById('edit-email')?.value.trim();
-        const phone = document.getElementById('edit-phone')?.value.trim();
-        const dob = document.getElementById('edit-dob')?.value;
-        const gender = document.getElementById('edit-gender')?.value;
-        const bio = document.getElementById('edit-bio')?.value.trim();
-        const role = document.getElementById('edit-role')?.value;
+            icon: 'info',
+            iconColor: '#224796',
+            showCancelButton: true,
+            confirmButtonText: 'Update User',
+            cancelButtonText: 'Cancel',
+            confirmButtonColor: '#224796',
+            cancelButtonColor: '#64748b',
+            customClass: {
+                popup: `${sweetalertPopupBaseClasses} max-w-lg`,
+                title: 'text-xl font-semibold text-slate-900 mb-4',
+                htmlContainer: 'text-left',
+                confirmButton: `${sweetalertNeutralConfirmBlueClasses} px-6 py-2.5`,
+                cancelButton: `${sweetalertNeutralCancelSlateClasses} px-6 py-2.5`,
+            },
+            buttonsStyling: false,
+            focusConfirm: false,
+            preConfirm: async () => {
+                const fullName = document.getElementById('edit-full-name')?.value.trim();
+                const email = document.getElementById('edit-email')?.value.trim();
+                const phone = document.getElementById('edit-phone')?.value.trim();
+                const dob = document.getElementById('edit-dob')?.value;
+                const gender = document.getElementById('edit-gender')?.value;
+                const bio = document.getElementById('edit-bio')?.value.trim();
+                const role = document.getElementById('edit-role')?.value;
 
                 // Validation
                 if (!fullName) {
@@ -684,7 +684,7 @@ export function showWarning(title = 'Warning', text = 'Please review your select
  */
 export function showLoading(title = 'Processing...', text = 'Please wait while we process your request.') {
     const container = initModalContainer();
-    
+
     const iconConfig = {
         bg: 'bg-blue-100',
         icon: `<svg class="w-12 h-12 text-blue-600 animate-spin" fill="none" viewBox="0 0 24 24">
@@ -692,7 +692,7 @@ export function showLoading(title = 'Processing...', text = 'Please wait while w
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>`
     };
-    
+
     const modalHTML = `
         <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 transform transition-all duration-300 scale-100" id="customModalContent">
             <div class="p-6">
@@ -706,10 +706,10 @@ export function showLoading(title = 'Processing...', text = 'Please wait while w
             </div>
         </div>
     `;
-    
+
     container.innerHTML = modalHTML;
     container.style.display = 'flex';
-    
+
     setTimeout(() => {
         const content = container.querySelector('#customModalContent');
         if (content) {
@@ -747,9 +747,9 @@ export function showExportSuccess(filename, format) {
         'docx': '📝',
         'json': '📋'
     };
-    
+
     const icon = formatIcons[format] || '📄';
-    
+
     return showModal({
         type: 'success',
         title: 'Export Successful! 🎉',
@@ -919,7 +919,7 @@ function initAdminModal() {
 
         closeBtn?.addEventListener('click', closeModal);
         cancelBtn?.addEventListener('click', closeModal);
-        
+
         // Close on backdrop click
         if (backdrop) {
             backdrop.addEventListener('click', closeModal);
@@ -1095,3 +1095,566 @@ export function showAdminCreateUserModal(onConfirm) {
     }, 100);
 }
 
+// ============================================================================
+// DAILY TRANSACTIONS MODAL FUNCTIONS
+// ============================================================================
+// These functions are specifically for Daily Transactions (Budget) page
+// Shows modal with transaction details
+
+/**
+ * Show daily transaction view modal (read-only, wider, 3 columns)
+ * @param {Object} transaction - Transaction data object
+ */
+export async function showDailyTransactionViewModal(transaction) {
+    if (!transaction) return;
+
+    const defaultData = {
+        glCode: transaction.glCode || '1000',
+        dvDate: transaction.dvDate || '',
+        dvNo: transaction.dvNo || 'MOOE2025-01-0000',
+        requestedBy: transaction.requestedBy || '',
+        checkAmount: transaction.checkAmount || '',
+        payee: transaction.payee || '',
+        particulars: transaction.particulars || '',
+        checkNo: transaction.checkNo || '',
+        fileDate: transaction.fileDate || '',
+        mooe: transaction.mooe || '',
+        spf: transaction.spf || '',
+        mcpFacility: transaction.mcpFacility || '',
+        konsultaFacility: transaction.konsultaFacility || '',
+        konsultaPf: transaction.konsultaPf || ''
+    };
+
+    await Swal.fire({
+        title: 'Transaction Details',
+        html: `
+            <div class="text-left p-1 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                    
+                    <!-- Column 1: Transaction Origin (LEFT) -->
+                    <div class="space-y-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 h-full">
+                        <div class="flex items-center gap-2 pb-2 border-b border-slate-200/60">
+                            <div class="w-1.5 h-4 bg-[#224796] rounded-full"></div>
+                            <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Transaction Origin</h3>
+                        </div>
+                        <div class="space-y-3.5">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">G/L Account Code</label>
+                                <div class="px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono text-[#224796]">
+                                    ${escapeHtml(defaultData.glCode)}
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Voucher Number</label>
+                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-[#224796]">
+                                    ${escapeHtml(defaultData.dvNo)}
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Voucher Date</label>
+                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700">
+                                    ${escapeHtml(defaultData.dvDate) || '<span class="text-slate-400">-</span>'}
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Filing Date</label>
+                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700">
+                                    ${escapeHtml(defaultData.fileDate) || '<span class="text-slate-400">-</span>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Party Information (MIDDLE) -->
+                    <div class="space-y-4 bg-emerald-50/20 p-4 rounded-2xl border border-emerald-100/50 h-full">
+                        <div class="flex items-center gap-2 pb-2 border-b border-emerald-200/40">
+                            <div class="w-1.5 h-4 bg-emerald-500 rounded-full"></div>
+                            <h3 class="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Party Information</h3>
+                        </div>
+                        <div class="space-y-3.5">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Payee Name</label>
+                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800">
+                                    ${escapeHtml(defaultData.payee) || '<span class="text-slate-400">-</span>'}
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Requested By</label>
+                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700">
+                                    ${escapeHtml(defaultData.requestedBy) || '<span class="text-slate-400">-</span>'}
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Check Amount</label>
+                                    <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-black text-[#224796]">
+                                        ${defaultData.checkAmount ? '₱' + parseFloat(defaultData.checkAmount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '₱0.00'}
+                                    </div>
+                                </div>
+                                <div class="space-y-1.5">
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Check No.</label>
+                                    <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-700">
+                                        ${escapeHtml(defaultData.checkNo) || '<span class="text-slate-400">-</span>'}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Particulars</label>
+                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 min-h-[80px]">
+                                    ${escapeHtml(defaultData.particulars) || '<span class="text-slate-400">No particulars provided</span>'}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 3: Secondary Expense Allocation (RIGHT) -->
+                    <div class="space-y-4 bg-amber-50/20 p-4 rounded-2xl border border-amber-100/50 h-full">
+                        <div class="flex items-center gap-2 pb-2 border-b border-amber-200/40">
+                            <div class="w-1.5 h-4 bg-amber-500 rounded-full"></div>
+                            <h3 class="text-[10px] font-black text-amber-700 uppercase tracking-widest">Expense Allocation</h3>
+                        </div>
+                        <div class="space-y-3.5">
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">MOOE Funds</label>
+                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700">
+                                    ${defaultData.mooe ? '₱' + parseFloat(defaultData.mooe).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '₱0.00'}
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">SPF Funds</label>
+                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700">
+                                    ${defaultData.spf ? '₱' + parseFloat(defaultData.spf).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '₱0.00'}
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">MCP Facility</label>
+                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700">
+                                    ${defaultData.mcpFacility ? '₱' + parseFloat(defaultData.mcpFacility).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '₱0.00'}
+                                </div>
+                            </div>
+                            <div class="space-y-1.5">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Konsulta Facility</label>
+                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700">
+                                    ${defaultData.konsultaFacility ? '₱' + parseFloat(defaultData.konsultaFacility).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '₱0.00'}
+                                </div>
+                            </div>
+                            <div class="space-y-1.5 pt-1.5">
+                                <label class="text-[10px] font-black text-emerald-600 uppercase tracking-wider ml-1">Konsulta PF</label>
+                                <div class="p-3 bg-emerald-500/5 rounded-xl border border-emerald-500/20">
+                                    <div class="text-xs font-black text-emerald-700">
+                                        ${defaultData.konsultaPf ? '₱' + parseFloat(defaultData.konsultaPf).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '₱0.00'}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        `,
+        showCancelButton: false,
+        confirmButtonText: 'Close',
+        confirmButtonColor: '#224796',
+        customClass: {
+            popup: `${sweetalertPopupBaseClasses} max-w-5xl`,
+            title: 'text-xl font-bold text-slate-900 mb-4',
+            htmlContainer: 'text-left max-h-[70vh] overflow-y-auto px-1',
+            confirmButton: `${sweetalertNeutralConfirmBlueClasses} px-5 py-2 text-sm`,
+        },
+        buttonsStyling: false,
+        focusConfirm: false,
+    });
+}
+
+/**
+ * Show daily transaction edit modal (editable, wider)
+ * @param {Object} transaction - Transaction data object (null for new)
+ * @param {Function} onSave - Callback when save is clicked
+ */
+export async function showDailyTransactionEditModal(transaction = null, onSave = null) {
+    const isEdit = transaction !== null;
+    const today = new Date().toISOString().split('T')[0];
+
+    // Default values
+    const defaultData = {
+        id: transaction?.id || null,
+        glCode: transaction?.glCode || '1000',
+        dvDate: transaction?.dvDate || today,
+        dvNo: transaction?.dvNo || 'MOOE2025-01-0000',
+        requestedBy: transaction?.requestedBy || '',
+        checkAmount: transaction?.checkAmount || '',
+        payee: transaction?.payee || '',
+        particulars: transaction?.particulars || '',
+        checkNo: transaction?.checkNo || '',
+        fileDate: transaction?.fileDate || today,
+        mooe: transaction?.mooe || '',
+        spf: transaction?.spf || '',
+        mcpFacility: transaction?.mcpFacility || '',
+        konsultaFacility: transaction?.konsultaFacility || '',
+        konsultaPf: transaction?.konsultaPf || ''
+    };
+
+    const result = await Swal.fire({
+        title: isEdit ? 'Edit Transaction Details' : 'Initialize New Transaction',
+        html: `
+            <div class="text-left p-1 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+                    
+                    <!-- Column 1: Transaction Origin (LEFT) -->
+                    <div class="space-y-3 bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100 h-full">
+                        <div class="flex items-center gap-2 pb-1.5 border-b border-slate-200/60">
+                            <div class="w-1.5 h-4 bg-[#224796] rounded-full"></div>
+                            <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Transaction Origin</h3>
+                        </div>
+                        <div class="space-y-2.5">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">G/L Account Code</label>
+                                <input type="text" id="modal-gl-code" value="${escapeHtml(defaultData.glCode)}" readonly 
+                                    class="w-full px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono text-[#224796] cursor-not-allowed outline-hidden">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Voucher Number <span class="text-rose-500">*</span></label>
+                                <input type="text" id="modal-dv-no" value="${escapeHtml(defaultData.dvNo)}" placeholder="MOOE-2025-..." 
+                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] transition-all outline-hidden font-mono text-[#224796]">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Voucher Date <span class="text-rose-500">*</span></label>
+                                <input type="date" id="modal-dv-date" value="${defaultData.dvDate}" 
+                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] transition-all outline-hidden">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Filing Date</label>
+                                <input type="date" id="modal-file-date" value="${defaultData.fileDate}" 
+                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] transition-all outline-hidden">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 2: Party Information (MIDDLE) -->
+                    <div class="space-y-3 bg-emerald-50/20 p-3.5 rounded-2xl border border-emerald-100/50 h-full">
+                        <div class="flex items-center gap-2 pb-1.5 border-b border-emerald-200/40">
+                            <div class="w-1.5 h-4 bg-emerald-500 rounded-full"></div>
+                            <h3 class="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Party Information</h3>
+                        </div>
+                        <div class="space-y-2.5">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Payee Name <span class="text-rose-500">*</span></label>
+                                <input type="text" id="modal-payee" value="${escapeHtml(defaultData.payee)}" placeholder="Entity or Person"
+                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-hidden">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Requested By <span class="text-rose-500">*</span></label>
+                                <input type="text" id="modal-requested-by" value="${escapeHtml(defaultData.requestedBy)}" placeholder="Full Name"
+                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-hidden">
+                            </div>
+                            <div class="grid grid-cols-2 gap-2.5">
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Check Amount</label>
+                                    <div class="relative">
+                                        <span class="absolute left-3 top-1.5 text-slate-400 text-[10px] font-bold">₱</span>
+                                        <input type="number" step="0.01" id="modal-check-amount" value="${escapeHtml(defaultData.checkAmount)}" 
+                                            class="w-full pl-6 pr-2 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-black text-[#224796] outline-hidden">
+                                    </div>
+                                </div>
+                                <div class="space-y-1">
+                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Check No.</label>
+                                    <input type="text" id="modal-check-no" value="${escapeHtml(defaultData.checkNo)}" 
+                                        class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-mono outline-hidden">
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Particulars</label>
+                                <textarea id="modal-particulars" rows="2" placeholder="Description..."
+                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs transition-all outline-hidden resize-none">${escapeHtml(defaultData.particulars)}</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Column 3: Secondary Expense Allocation (RIGHT) -->
+                    <div class="space-y-3 bg-amber-50/20 p-3.5 rounded-2xl border border-amber-100/50 h-full">
+                        <div class="flex items-center gap-2 pb-1.5 border-b border-amber-200/40">
+                            <div class="w-1.5 h-4 bg-amber-500 rounded-full"></div>
+                            <h3 class="text-[10px] font-black text-amber-700 uppercase tracking-widest">Expense Allocation</h3>
+                        </div>
+                        <div class="space-y-2.5">
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">MOOE Funds</label>
+                                <input type="number" step="0.01" id="modal-mooe" value="${escapeHtml(defaultData.mooe)}" placeholder="0.00" 
+                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all outline-hidden text-slate-700">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">SPF Funds</label>
+                                <input type="number" step="0.01" id="modal-spf" value="${escapeHtml(defaultData.spf)}" placeholder="0.00" 
+                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all outline-hidden text-slate-700">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">MCP Facility</label>
+                                <input type="number" step="0.01" id="modal-mcp-facility" value="${escapeHtml(defaultData.mcpFacility)}" placeholder="0.00" 
+                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all outline-hidden text-slate-700">
+                            </div>
+                            <div class="space-y-1">
+                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Konsulta Facility</label>
+                                <input type="number" step="0.01" id="modal-konsulta-facility" value="${escapeHtml(defaultData.konsultaFacility)}" placeholder="0.00" 
+                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all outline-hidden text-slate-700">
+                            </div>
+                            <div class="space-y-1 pt-1">
+                                <label class="text-[10px] font-black text-emerald-600 uppercase tracking-wider ml-1">Konsulta PF</label>
+                                <div class="p-2.5 bg-emerald-500/5 rounded-xl border border-emerald-500/20">
+                                    <input type="number" step="0.01" id="modal-konsulta-pf" value="${escapeHtml(defaultData.konsultaPf)}" placeholder="0.00" 
+                                        class="w-full bg-transparent text-xs font-black text-emerald-700 outline-hidden">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Live Allocation Summary -->
+                <div class="mt-8 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 p-6 rounded-3xl space-y-4 shadow-xl border border-white/5">
+                    <div class="flex items-center gap-2">
+                        <div class="w-1.5 h-4 bg-emerald-400 rounded-full animate-pulse"></div>
+                        <h3 class="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Real-time Distribution Analysis</h3>
+                    </div>
+                    <div class="grid grid-cols-3 gap-8 text-left">
+                        <div class="space-y-1">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest opacity-80">Total Distributed</p>
+                            <p id="modal-total-distributed" class="text-2xl font-black text-white tracking-tight">₱0.00</p>
+                        </div>
+                        <div class="space-y-1 col-span-2 border-l border-white/10 pl-8">
+                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest opacity-80" id="modal-balance-label">Unallocated Balance</p>
+                            <div class="flex items-baseline gap-2">
+                                <p id="modal-unallocated-amount" class="text-2xl font-black text-white tracking-tight">₱0.00</p>
+                                <span id="modal-status-badge" class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">Balanced</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `,
+        icon: 'info',
+        iconColor: '#224796',
+        showCancelButton: true,
+        confirmButtonText: isEdit ? 'Update Transaction' : 'Record Transaction',
+        cancelButtonText: 'Dismiss',
+        confirmButtonColor: '#10b981',
+        cancelButtonColor: '#64748b',
+        customClass: {
+            popup: `${sweetalertPopupBaseClasses} max-w-7xl rounded-3xl`,
+            title: 'text-2xl font-black text-slate-900 mt-6 tracking-tight',
+            htmlContainer: `${sweetalertHtmlScrollableClasses}`,
+            confirmButton: `inline-flex items-center px-6 py-2.5 bg-emerald-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:shadow-lg transition-all cursor-pointer m-2`,
+            cancelButton: `inline-flex items-center px-6 py-2.5 bg-slate-100 text-slate-600 rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all cursor-pointer m-2`,
+        },
+        buttonsStyling: false,
+        focusConfirm: false,
+        didOpen: () => {
+            const checkAmountInput = document.getElementById('modal-check-amount');
+            const mooeInput = document.getElementById('modal-mooe');
+            const spfInput = document.getElementById('modal-spf');
+            const mcpInput = document.getElementById('modal-mcp-facility');
+            const konsultaFacInput = document.getElementById('modal-konsulta-facility');
+            const konsultaPfInput = document.getElementById('modal-konsulta-pf');
+
+            const totalDistEl = document.getElementById('modal-total-distributed');
+            const unallocatedEl = document.getElementById('modal-unallocated-amount');
+            const balanceLabelEl = document.getElementById('modal-balance-label');
+            const statusBadgeEl = document.getElementById('modal-status-badge');
+
+            const updateSummary = () => {
+                const checkAmount = parseFloat(checkAmountInput?.value) || 0;
+                const mooe = parseFloat(mooeInput?.value) || 0;
+                const spf = parseFloat(spfInput?.value) || 0;
+                const mcp = parseFloat(mcpInput?.value) || 0;
+                const kFac = parseFloat(konsultaFacInput?.value) || 0;
+                const kPf = parseFloat(konsultaPfInput?.value) || 0;
+
+                const totalDist = mooe + spf + mcp + kFac + kPf;
+                const balance = checkAmount - totalDist;
+
+                totalDistEl.textContent = '₱' + totalDist.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                unallocatedEl.textContent = '₱' + Math.abs(balance).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+                if (Math.abs(balance) < 0.01) {
+                    balanceLabelEl.textContent = 'Unallocated Balance';
+                    unallocatedEl.className = 'text-2xl font-black text-emerald-400 tracking-tight';
+                    statusBadgeEl.textContent = 'Balanced';
+                    statusBadgeEl.className = 'px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter bg-emerald-500/20 text-emerald-400 border border-emerald-500/20';
+                } else if (balance > 0) {
+                    balanceLabelEl.textContent = 'Unallocated Balance';
+                    unallocatedEl.className = 'text-2xl font-black text-white tracking-tight';
+                    statusBadgeEl.textContent = 'Under-allocated';
+                    statusBadgeEl.className = 'px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter bg-amber-500/20 text-amber-400 border border-amber-500/20';
+                } else {
+                    balanceLabelEl.textContent = 'Excess Distribution';
+                    unallocatedEl.className = 'text-2xl font-black text-rose-400 tracking-tight';
+                    statusBadgeEl.textContent = 'Over-allocated';
+                    statusBadgeEl.className = 'px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter bg-rose-500/20 text-rose-400 border border-rose-500/20';
+                }
+            };
+
+            [checkAmountInput, mooeInput, spfInput, mcpInput, konsultaFacInput, konsultaPfInput].forEach(input => {
+                if (input) input.addEventListener('input', updateSummary);
+            });
+
+            // Initial calculation
+            updateSummary();
+        },
+        preConfirm: () => {
+            const glCode = document.getElementById('modal-gl-code')?.value.trim();
+            const dvDate = document.getElementById('modal-dv-date')?.value;
+            const dvNo = document.getElementById('modal-dv-no')?.value.trim();
+            const requestedBy = document.getElementById('modal-requested-by')?.value.trim();
+            const checkAmount = document.getElementById('modal-check-amount')?.value.trim();
+            const payee = document.getElementById('modal-payee')?.value.trim();
+            const particulars = document.getElementById('modal-particulars')?.value.trim();
+            const checkNo = document.getElementById('modal-check-no')?.value.trim();
+            const fileDate = document.getElementById('modal-file-date')?.value;
+            const mooe = document.getElementById('modal-mooe')?.value.trim();
+            const spf = document.getElementById('modal-spf')?.value.trim();
+            const mcpFacility = document.getElementById('modal-mcp-facility')?.value.trim();
+            const konsultaFacility = document.getElementById('modal-konsulta-facility')?.value.trim();
+            const konsultaPf = document.getElementById('modal-konsulta-pf')?.value.trim();
+
+            if (!glCode) { Swal.showValidationMessage('G/L Code is missing'); return false; }
+            if (!dvDate) { Swal.showValidationMessage('Date is required'); return false; }
+            if (!dvNo) { Swal.showValidationMessage('Voucher Number is required'); return false; }
+            if (!requestedBy) { Swal.showValidationMessage('Requester is required'); return false; }
+            if (!checkAmount) { Swal.showValidationMessage('Check amount is required'); return false; }
+            if (!payee) { Swal.showValidationMessage('Payee is required'); return false; }
+
+            return {
+                id: defaultData.id,
+                glCode, dvDate, dvNo, requestedBy, checkAmount, payee, particulars,
+                checkNo, fileDate, mooe, spf, mcpFacility, konsultaFacility, konsultaPf
+            };
+        },
+    });
+
+    if (result.isConfirmed && result.value) {
+        if (onSave) onSave(result.value);
+        return result.value;
+    }
+    return null;
+}
+
+/**
+ * Show high-end Export Configuration Modal
+ * @param {Object} options - Configuration options
+ * @param {Object} options.currentFilters - Current filter state
+ * @param {Array} options.columns - Available columns to toggle
+ * @param {Array} options.sources - Available data sources
+ * @param {Function} options.onApply - Callback when "Generate" is clicked
+ * @param {Function} options.onSourceChange - Callback when Source is changed
+ */
+/**
+ * Show high-end Export Configuration Modal
+ */
+export function showExportConfigModal({ currentFilters, columns, sources, onApply, onSourceChange }) {
+    const filters = { ...currentFilters };
+    const years = [];
+    const currentYear = new Date().getFullYear();
+    for (let y = currentYear + 1; y >= 2018; y--) years.push(y);
+
+    Swal.fire({
+        title: 'Export Configuration',
+        html: `
+            <div class="text-left space-y-6">
+                <!-- Data Source & Year Section -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Data Source</label>
+                        <select id="config-source" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#224796] cursor-pointer font-semibold text-[#224796]">
+                            ${sources.map(s => `<option value="${s.value}" ${filters.source === s.value ? 'selected' : ''}>${s.label}</option>`).join('')}
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Fiscal Year</label>
+                        <select id="config-year" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#224796] cursor-pointer font-semibold text-emerald-600">
+                            ${years.map(y => `<option value="${y}" ${Number(filters.year) === y ? 'selected' : ''}>${y}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Search & Sort Section -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Search Data</label>
+                        <div class="relative">
+                            <input type="text" id="config-search" class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#224796] transition-all" placeholder="Keywords..." value="${filters.search || ''}">
+                            <svg class="w-4 h-4 absolute left-3 top-2.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Sort Order</label>
+                        <select id="config-sortBy" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-[#224796] cursor-pointer">
+                            <option value="none" ${filters.sortBy === 'none' ? 'selected' : ''}>Default</option>
+                            <option value="name" ${filters.sortBy === 'name' ? 'selected' : ''}>A-Z</option>
+                            <option value="id" ${filters.sortBy === 'id' ? 'selected' : ''}>ID</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Column visibility -->
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider">Columns to Include</label>
+                        <button type="button" id="reset-cols" class="text-[10px] font-bold text-[#224796] hover:underline uppercase cursor-pointer">Select All</button>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 nano-grid max-h-48 overflow-y-auto pr-2">
+                        ${columns.map(col => `
+                            <label class="flex items-center p-2 rounded-lg border border-slate-100 bg-slate-50/50 cursor-pointer hover:bg-slate-100 transition-colors">
+                                <div class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" value="${col.id}" class="sr-only peer col-toggle" ${filters.columns.includes(col.id) ? 'checked' : ''}>
+                                    <div class="w-7 h-4 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-[#224796]"></div>
+                                </div>
+                                <span class="ml-2 text-[10px] font-bold text-slate-600 truncate" title="${col.label}">${col.label}</span>
+                            </label>
+                        `).join('')}
+                    </div>
+                </div>
+            </div>
+        `,
+        confirmButtonText: 'Apply & Generate',
+        showCancelButton: true,
+        cancelButtonText: 'Cancel',
+        confirmButtonColor: '#224796',
+        width: '42rem',
+        customClass: {
+            popup: 'rounded-2xl shadow-2xl border border-slate-200',
+            title: 'text-xl font-bold text-slate-900 border-b border-slate-100 pb-4',
+            htmlContainer: 'px-6 py-4',
+            confirmButton: 'rounded-lg px-8 py-2.5 text-sm font-bold order-2 bg-emerald-600 text-white hover:bg-emerald-700 transition-all shadow-md cursor-pointer',
+            cancelButton: 'rounded-lg px-6 py-2.5 text-sm font-medium order-1 bg-rose-500 text-white hover:bg-rose-600 transition-all shadow-md cursor-pointer',
+            actions: 'flex items-center gap-3 pt-2'
+        },
+        buttonsStyling: false,
+        didOpen: () => {
+            const popup = Swal.getPopup();
+            const sourceSelect = popup.querySelector('#config-source');
+            if (sourceSelect && onSourceChange) {
+                sourceSelect.addEventListener('change', (e) => onSourceChange(e.target.value));
+            }
+            popup.querySelector('#reset-cols').onclick = () => {
+                popup.querySelectorAll('.col-toggle').forEach(box => box.checked = true);
+            };
+        },
+        preConfirm: () => {
+            const popup = Swal.getPopup();
+            const selectedCols = Array.from(popup.querySelectorAll('.col-toggle:checked')).map(b => b.value);
+            if (selectedCols.length === 0) {
+                Swal.showValidationMessage('Select at least one column');
+                return false;
+            }
+            return {
+                ...filters,
+                source: popup.querySelector('#config-source').value,
+                year: popup.querySelector('#config-year').value,
+                search: popup.querySelector('#config-search').value.trim(),
+                sortBy: popup.querySelector('#config-sortBy').value,
+                columns: selectedCols
+            };
+        }
+    }).then(result => {
+        if (result.isConfirmed) onApply(result.value);
+    });
+}
