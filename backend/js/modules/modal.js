@@ -1108,174 +1108,194 @@ export function showAdminCreateUserModal(onConfirm) {
 export async function showDailyTransactionViewModal(transaction) {
     if (!transaction) return;
 
+    const formatCurrency = (val) => {
+        const num = parseFloat(val);
+        return isNaN(num) ? '₱0.00' : '₱' + num.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    };
+
     const defaultData = {
         glCode: transaction.glCode || '1000',
         dvDate: transaction.dvDate || '',
         dvNo: transaction.dvNo || 'MOOE2025-01-0000',
         requestedBy: transaction.requestedBy || '',
-        checkAmount: transaction.checkAmount || '',
+        checkAmount: transaction.checkAmount || 0,
         payee: transaction.payee || '',
         particulars: transaction.particulars || '',
         checkNo: transaction.checkNo || '',
         fileDate: transaction.fileDate || '',
-        mooe: transaction.mooe || '',
-        spf: transaction.spf || '',
-        mcpFacility: transaction.mcpFacility || '',
-        konsultaFacility: transaction.konsultaFacility || '',
-        konsultaPf: transaction.konsultaPf || ''
+        mooe: transaction.mooe || 0,
+        spf: transaction.spf || 0,
+        mcpFacility: transaction.mcpFacility || 0,
+        konsultaFacility: transaction.konsultaFacility || 0,
+        konsultaPf: transaction.konsultaPf || 0
     };
 
     await Swal.fire({
-        title: 'Transaction Details',
+        title: '',
         html: `
-            <div class="text-left p-1 max-h-[75vh] overflow-y-auto custom-scrollbar">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-                    
-                    <!-- Column 1: Transaction Origin (LEFT) -->
-                    <div class="space-y-4 bg-slate-50/50 p-4 rounded-2xl border border-slate-100 h-full">
-                        <div class="flex items-center gap-2 pb-2 border-b border-slate-200/60">
-                            <div class="w-1.5 h-4 bg-[#224796] rounded-full"></div>
-                            <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Transaction Origin</h3>
-                        </div>
-                        <div class="space-y-3.5">
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">G/L Account Code</label>
-                                <div class="px-3 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono text-[#224796]">
-                                    ${escapeHtml(defaultData.glCode)}
-                                </div>
-                            </div>
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Voucher Number</label>
-                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-[#224796]">
-                                    ${escapeHtml(defaultData.dvNo)}
-                                </div>
-                            </div>
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Voucher Date</label>
-                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700">
-                                    ${escapeHtml(defaultData.dvDate) || '<span class="text-slate-400">-</span>'}
-                                </div>
-                            </div>
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Filing Date</label>
-                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700">
-                                    ${escapeHtml(defaultData.fileDate) || '<span class="text-slate-400">-</span>'}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="relative text-left font-sans text-slate-600">
 
-                    <!-- Column 2: Party Information (MIDDLE) -->
-                    <div class="space-y-4 bg-emerald-50/20 p-4 rounded-2xl border border-emerald-100/50 h-full">
-                        <div class="flex items-center gap-2 pb-2 border-b border-emerald-200/40">
-                            <div class="w-1.5 h-4 bg-emerald-500 rounded-full"></div>
-                            <h3 class="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Party Information</h3>
-                        </div>
-                        <div class="space-y-3.5">
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Payee Name</label>
-                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800">
-                                    ${escapeHtml(defaultData.payee) || '<span class="text-slate-400">-</span>'}
-                                </div>
-                            </div>
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Requested By</label>
-                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700">
-                                    ${escapeHtml(defaultData.requestedBy) || '<span class="text-slate-400">-</span>'}
-                                </div>
-                            </div>
-                            <div class="grid grid-cols-2 gap-3">
-                                <div class="space-y-1.5">
-                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Check Amount</label>
-                                    <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-black text-[#224796]">
-                                        ${defaultData.checkAmount ? '₱' + parseFloat(defaultData.checkAmount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '₱0.00'}
-                                    </div>
-                                </div>
-                                <div class="space-y-1.5">
-                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Check No.</label>
-                                    <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-700">
-                                        ${escapeHtml(defaultData.checkNo) || '<span class="text-slate-400">-</span>'}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Particulars</label>
-                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700 min-h-[80px]">
-                                    ${escapeHtml(defaultData.particulars) || '<span class="text-slate-400">No particulars provided</span>'}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                <button id="modal-close-x" class="absolute -top-2 -right-2 p-2 text-red-500 hover:bg-red-50 hover:text-red-700 rounded-full transition-colors cursor-pointer z-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
 
-                    <!-- Column 3: Secondary Expense Allocation (RIGHT) -->
-                    <div class="space-y-4 bg-amber-50/20 p-4 rounded-2xl border border-amber-100/50 h-full">
-                        <div class="flex items-center gap-2 pb-2 border-b border-amber-200/40">
-                            <div class="w-1.5 h-4 bg-amber-500 rounded-full"></div>
-                            <h3 class="text-[10px] font-black text-amber-700 uppercase tracking-widest">Expense Allocation</h3>
-                        </div>
-                        <div class="space-y-3.5">
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">MOOE Funds</label>
-                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700">
-                                    ${defaultData.mooe ? '₱' + parseFloat(defaultData.mooe).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '₱0.00'}
-                                </div>
-                            </div>
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">SPF Funds</label>
-                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700">
-                                    ${defaultData.spf ? '₱' + parseFloat(defaultData.spf).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '₱0.00'}
-                                </div>
-                            </div>
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">MCP Facility</label>
-                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700">
-                                    ${defaultData.mcpFacility ? '₱' + parseFloat(defaultData.mcpFacility).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '₱0.00'}
-                                </div>
-                            </div>
-                            <div class="space-y-1.5">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Konsulta Facility</label>
-                                <div class="px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-700">
-                                    ${defaultData.konsultaFacility ? '₱' + parseFloat(defaultData.konsultaFacility).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '₱0.00'}
-                                </div>
-                            </div>
-                            <div class="space-y-1.5 pt-1.5">
-                                <label class="text-[10px] font-black text-emerald-600 uppercase tracking-wider ml-1">Konsulta PF</label>
-                                <div class="p-3 bg-emerald-500/5 rounded-xl border border-emerald-500/20">
-                                    <div class="text-xs font-black text-emerald-700">
-                                        ${defaultData.konsultaPf ? '₱' + parseFloat(defaultData.konsultaPf).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '₱0.00'}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
+                <div class="mb-5 pr-8">
+                    <h3 class="text-lg font-bold text-slate-800">Transaction Details</h3>
+                    <p class="text-xs text-slate-400">View the financial breakdown and narrative.</p>
                 </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[350px]">
+
+                    <div class="flex flex-col gap-3">
+                        
+                        <div class="flex gap-2">
+                            <div class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                                <label class="text-[9px] uppercase font-bold text-slate-400 block mb-0.5">DV NO.</label>
+                                <div class="font-mono text-xs font-bold text-slate-700">${escapeHtml(defaultData.dvNo)}</div>
+                            </div>
+                            <div class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-lg">
+                                <label class="text-[9px] uppercase font-bold text-slate-400 block mb-0.5">G/L Code</label>
+                                <div class="font-mono text-xs font-bold text-slate-800">${escapeHtml(defaultData.glCode)}</div>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-white border border-slate-200 rounded-xl shadow-sm flex-none">
+                            <div class="flex items-center gap-3">
+                                <div class="p-2 bg-slate-100 rounded-lg text-slate-500">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                </div>
+                                <div class="overflow-hidden">
+                                    <label class="text-[9px] uppercase font-bold text-slate-400 block">Payee</label>
+                                    <div class="text-sm font-bold text-slate-800 truncate leading-tight">${escapeHtml(defaultData.payee)}</div>
+                                </div>
+                            </div>
+                            <div class="mt-2 pt-2 border-t border-slate-100 flex justify-between items-start gap-4">
+                                <span class="text-[9px] uppercase font-bold text-slate-400 whitespace-nowrap">Requested by</span>
+                                <span class="text-[9px] font-semibold text-slate-600 leading-tight text-right">
+                                    ${escapeHtml(defaultData.requestedBy)}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex-grow flex flex-col">
+                            <label class="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-1 block">PARTICULARS</label>
+                            <p class="text-xs text-slate-600 leading-relaxed overflow-y-auto custom-scrollbar flex-1">
+                                ${escapeHtml(defaultData.particulars) || '<span class="italic text-slate-400">No particulars provided.</span>'}
+                            </p>
+                        </div>
+
+                         <div class="grid grid-cols-2 gap-2 flex-none">
+                            <div class="p-2 border border-slate-100 rounded-lg bg-white">
+                                <label class="text-[9px] font-bold text-slate-400 uppercase block">DV DATE</label>
+                                <div class="text-xs font-semibold text-slate-700 mt-0.5">${escapeHtml(defaultData.dvDate) || '-'}</div>
+                            </div>
+                             <div class="p-2 border border-slate-100 rounded-lg bg-white">
+                                <label class="text-[9px] font-bold text-slate-400 uppercase block">CHECK NO.</label>
+                                <div class="text-xs font-mono font-semibold text-slate-700 mt-0.5">${escapeHtml(defaultData.checkNo) || '-'}</div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="bg-slate-50/50 rounded-2xl p-1 border border-slate-100 h-full flex flex-col">
+                        
+                        <div class="bg-gradient-to-b from-slate-800 to-slate-900 rounded-xl p-5 text-white text-center shadow-lg shadow-slate-900/10 mb-3 relative overflow-hidden flex-none">
+                            <div class="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
+                            
+                            <div class="relative z-10">
+                                <div class="text-slate-300 text-[9px] font-bold uppercase tracking-widest mb-1">Check Amount</div>
+                                <div class="text-3xl font-black tracking-tight text-white">
+                                    ${formatCurrency(defaultData.checkAmount)}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 px-3 pb-2 flex flex-col justify-center">
+                            <div class="flex items-center gap-2 mb-3 justify-center opacity-80">
+                                <div class="h-[1px] w-4 bg-slate-300"></div>
+                                <h4 class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Fund Allocation</h4>
+                                <div class="h-[1px] w-4 bg-slate-300"></div>
+                            </div>
+                            
+                            <div class="space-y-1">
+                                <div class="flex justify-between items-center px-2 py-1.5 border-b border-slate-200 border-dashed last:border-0">
+                                    <span class="text-xs font-medium text-slate-500">MOOE</span>
+                                    <span class="text-xs font-bold text-slate-700 font-mono">${formatCurrency(defaultData.mooe)}</span>
+                                </div>
+
+                                <div class="flex justify-between items-center px-2 py-1.5 border-b border-slate-200 border-dashed last:border-0">
+                                    <span class="text-xs font-medium text-slate-500">SPF</span>
+                                    <span class="text-xs font-bold text-slate-700 font-mono">${formatCurrency(defaultData.spf)}</span>
+                                </div>
+
+                                <div class="flex justify-between items-center px-2 py-1.5 border-b border-slate-200 border-dashed last:border-0">
+                                    <span class="text-xs font-medium text-slate-500">MCP FACILITY</span>
+                                    <span class="text-xs font-bold text-slate-700 font-mono">${formatCurrency(defaultData.mcpFacility)}</span>
+                                </div>
+
+                                <div class="flex justify-between items-center px-2 py-1.5 border-b border-slate-200 border-dashed last:border-0">
+                                    <span class="text-xs font-medium text-slate-500">KONSULTA FACILITY</span>
+                                    <span class="text-xs font-bold text-slate-700 font-mono">${formatCurrency(defaultData.konsultaFacility)}</span>
+                                </div>
+
+                                <div class="flex justify-between items-center p-2 rounded-lg bg-emerald-50/50 border border-emerald-100 mt-2">
+                                    <span class="text-xs font-bold text-emerald-700">KONSULTA PF</span>
+                                    <span class="text-xs font-black text-emerald-700 font-mono">${formatCurrency(defaultData.konsultaPf)}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
             </div>
         `,
-        showCancelButton: false,
-        confirmButtonText: 'Close',
-        confirmButtonColor: '#224796',
+        // Configuration
+        width: 'auto',
+        showConfirmButton: false,
+
         customClass: {
-            popup: `${sweetalertPopupBaseClasses} max-w-5xl`,
-            title: 'text-xl font-bold text-slate-900 mb-4',
-            htmlContainer: 'text-left max-h-[70vh] overflow-y-auto px-1',
-            confirmButton: `${sweetalertNeutralConfirmBlueClasses} px-5 py-2 text-sm`,
+            /* !max-w-3xl: Increases width to 768px (Standard Tablet/Laptop size).
+               If you want it even wider, try !max-w-4xl (896px).
+            */
+            popup: '!rounded-2xl !shadow-2xl !border !border-slate-100 !max-w-4xl !w-full !p-0',
+
+            htmlContainer: '!m-0 !p-6 !overflow-visible',
         },
+        // bind the close action manually once the modal is injected into the DOM
+        didOpen: () => {
+            const closeBtn = document.getElementById('modal-close-x');
+
+            if (closeBtn) {
+
+                closeBtn.addEventListener('click', () => {
+
+                    Swal.close();
+
+                });
+
+            }
+
+        },
+
         buttonsStyling: false,
-        focusConfirm: false,
+
     });
+
 }
 
 /**
- * Show daily transaction edit modal (editable, wider)
+ * Show daily transaction edit modal (editable, compact 3-column)
  * @param {Object} transaction - Transaction data object (null for new)
  * @param {Function} onSave - Callback when save is clicked
  */
 export async function showDailyTransactionEditModal(transaction = null, onSave = null) {
-    const isEdit = transaction !== null;
+    const isEdit = !!transaction?.id;
     const today = new Date().toISOString().split('T')[0];
 
-    // Default values
+    // Default values for form fields
     const defaultData = {
         id: transaction?.id || null,
         glCode: transaction?.glCode || '1000',
@@ -1295,113 +1315,121 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
     };
 
     const result = await Swal.fire({
-        title: isEdit ? 'Edit Transaction Details' : 'Initialize New Transaction',
+        title: '',
         html: `
-            <div class="text-left p-1 max-h-[70vh] overflow-y-auto custom-scrollbar">
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 items-start">
+            <div class="relative text-left font-sans text-slate-600">
+                <button id="edit-modal-close-x" class="absolute -top-2 -right-2 p-2 text-rose-500 hover:bg-rose-50 hover:text-rose-700 rounded-full transition-colors cursor-pointer z-50">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+
+                <div class="mb-4 pr-8">
+                    <h3 class="text-lg font-bold text-slate-800">${isEdit ? 'Update Transaction' : 'ADD DATA'}</h3>
+                    <p class="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">City Health Office Management</p>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 items-start max-h-[60vh] overflow-y-auto custom-scrollbar pr-1">
                     
-                    <!-- Column 1: Transaction Origin (LEFT) -->
-                    <div class="space-y-3 bg-slate-50/50 p-3.5 rounded-2xl border border-slate-100 h-full">
+                    <div class="space-y-3 bg-slate-50/50 p-3 rounded-xl border border-slate-100">
                         <div class="flex items-center gap-2 pb-1.5 border-b border-slate-200/60">
-                            <div class="w-1.5 h-4 bg-[#224796] rounded-full"></div>
-                            <h3 class="text-[10px] font-black text-slate-500 uppercase tracking-widest">Transaction Origin</h3>
+                            <div class="w-1 h-3 bg-slate-800 rounded-full"></div>
+                            <h3 class="text-[9px] font-black text-slate-500 uppercase tracking-widest">Origin</h3>
                         </div>
-                        <div class="space-y-2.5">
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">G/L Account Code</label>
+                        <div class="space-y-2">
+                            <div class="space-y-0.5">
+                                <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">G/L Code</label>
                                 <input type="text" id="modal-gl-code" value="${escapeHtml(defaultData.glCode)}" readonly 
-                                    class="w-full px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono text-[#224796] cursor-not-allowed outline-hidden">
+                                    class="w-full px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-xs font-mono text-slate-500 cursor-not-allowed outline-none">
                             </div>
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Voucher Number <span class="text-rose-500">*</span></label>
-                                <input type="text" id="modal-dv-no" value="${escapeHtml(defaultData.dvNo)}" placeholder="MOOE-2025-..." 
-                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] transition-all outline-hidden font-mono text-[#224796]">
+                            <div class="space-y-0.5">
+                                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">DV NO. <span class="text-rose-500">*</span></label>
+                                <input type="text" id="modal-dv-no" value="${escapeHtml(defaultData.dvNo)}" 
+                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-slate-200 focus:border-slate-400 transition-all outline-none font-mono">
                             </div>
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Voucher Date <span class="text-rose-500">*</span></label>
+                            <div class="space-y-0.5">
+                                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">DV DATE <span class="text-rose-500">*</span></label>
                                 <input type="date" id="modal-dv-date" value="${defaultData.dvDate}" 
-                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] transition-all outline-hidden">
+                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-slate-200 outline-none text-slate-700">
                             </div>
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Filing Date</label>
+                            <div class="space-y-0.5">
+                                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">File Date</label>
                                 <input type="date" id="modal-file-date" value="${defaultData.fileDate}" 
-                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] transition-all outline-hidden">
+                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-slate-200 outline-none text-slate-700">
                             </div>
                         </div>
                     </div>
 
-                    <!-- Column 2: Party Information (MIDDLE) -->
-                    <div class="space-y-3 bg-emerald-50/20 p-3.5 rounded-2xl border border-emerald-100/50 h-full">
-                        <div class="flex items-center gap-2 pb-1.5 border-b border-emerald-200/40">
-                            <div class="w-1.5 h-4 bg-emerald-500 rounded-full"></div>
-                            <h3 class="text-[10px] font-black text-emerald-700 uppercase tracking-widest">Party Information</h3>
+                    <div class="space-y-3 bg-white p-3 rounded-xl border border-slate-200 shadow-sm">
+                        <div class="flex items-center gap-2 pb-1.5 border-b border-slate-100">
+                            <div class="w-1 h-3 bg-slate-800 rounded-full"></div>
+                            <h3 class="text-[9px] font-black text-slate-600 uppercase tracking-widest">Party Details</h3>
                         </div>
-                        <div class="space-y-2.5">
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Payee Name <span class="text-rose-500">*</span></label>
+                        <div class="space-y-2">
+                            <div class="space-y-0.5">
+                                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">Payee <span class="text-rose-500">*</span></label>
                                 <input type="text" id="modal-payee" value="${escapeHtml(defaultData.payee)}" placeholder="Entity or Person"
-                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-hidden">
+                                    class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white transition-all outline-none">
                             </div>
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Requested By <span class="text-rose-500">*</span></label>
-                                <input type="text" id="modal-requested-by" value="${escapeHtml(defaultData.requestedBy)}" placeholder="Full Name"
-                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-hidden">
+                            <div class="space-y-0.5">
+                                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">Requested by <span class="text-rose-500">*</span></label>
+                                <input type="text" id="modal-requested-by" value="${escapeHtml(defaultData.requestedBy)}" placeholder="Requester Name"
+                                    class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white transition-all outline-none">
                             </div>
-                            <div class="grid grid-cols-2 gap-2.5">
-                                <div class="space-y-1">
-                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Check Amount</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="space-y-0.5">
+                                    <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">Check Amount <span class="text-rose-500">*</span></label>
                                     <div class="relative">
-                                        <span class="absolute left-3 top-1.5 text-slate-400 text-[10px] font-bold">₱</span>
+                                        <span class="absolute left-2.5 top-1.5 text-slate-400 text-[10px] font-bold">₱</span>
                                         <input type="number" step="0.01" id="modal-check-amount" value="${escapeHtml(defaultData.checkAmount)}" 
-                                            class="w-full pl-6 pr-2 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-black text-[#224796] outline-hidden">
+                                            class="w-full pl-6 pr-2 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-black text-slate-800 outline-none">
                                     </div>
                                 </div>
-                                <div class="space-y-1">
-                                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Check No.</label>
-                                    <input type="text" id="modal-check-no" value="${escapeHtml(defaultData.checkNo)}" 
-                                        class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs font-mono outline-hidden">
+                                <div class="space-y-0.5">
+                                    <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">CHECK NO.</label>
+                                    <input type="text" id="modal-check-no" value="${escapeHtml(defaultData.checkNo)}" placeholder="000000"
+                                        class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono outline-none">
                                 </div>
                             </div>
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Particulars</label>
+                            <div class="space-y-0.5">
+                                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">PARTICULARS</label>
                                 <textarea id="modal-particulars" rows="2" placeholder="Description..."
-                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs transition-all outline-hidden resize-none">${escapeHtml(defaultData.particulars)}</textarea>
+                                    class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs transition-all outline-none resize-none custom-scrollbar focus:bg-white">${escapeHtml(defaultData.particulars)}</textarea>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Column 3: Secondary Expense Allocation (RIGHT) -->
-                    <div class="space-y-3 bg-amber-50/20 p-3.5 rounded-2xl border border-amber-100/50 h-full">
-                        <div class="flex items-center gap-2 pb-1.5 border-b border-amber-200/40">
-                            <div class="w-1.5 h-4 bg-amber-500 rounded-full"></div>
-                            <h3 class="text-[10px] font-black text-amber-700 uppercase tracking-widest">Expense Allocation</h3>
+                    <div class="space-y-3 bg-emerald-50/20 p-3 rounded-xl border border-emerald-100/50 h-full">
+                        <div class="flex items-center gap-2 pb-1.5 border-b border-emerald-200/30">
+                            <div class="w-1.5 h-3 bg-emerald-500 rounded-full"></div>
+                            <h3 class="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Allocation</h3>
                         </div>
-                        <div class="space-y-2.5">
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">MOOE Funds</label>
+                        <div class="space-y-2">
+                            <div class="space-y-0.5">
+                                <label class="text-[8px] font-bold text-emerald-600/70 uppercase tracking-wider ml-1">MOOE</label>
                                 <input type="number" step="0.01" id="modal-mooe" value="${escapeHtml(defaultData.mooe)}" placeholder="0.00" 
-                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all outline-hidden text-slate-700">
+                                    class="w-full px-3 py-1 bg-white border border-emerald-100 rounded-lg text-xs font-mono outline-none">
                             </div>
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">SPF Funds</label>
+                            <div class="space-y-0.5">
+                                <label class="text-[8px] font-bold text-emerald-600/70 uppercase tracking-wider ml-1">SPF</label>
                                 <input type="number" step="0.01" id="modal-spf" value="${escapeHtml(defaultData.spf)}" placeholder="0.00" 
-                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all outline-hidden text-slate-700">
+                                    class="w-full px-3 py-1 bg-white border border-emerald-100 rounded-lg text-xs font-mono outline-none">
                             </div>
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">MCP Facility</label>
+                            <div class="space-y-0.5">
+                                <label class="text-[8px] font-bold text-emerald-600/70 uppercase tracking-wider ml-1">MCP FACILITY</label>
                                 <input type="number" step="0.01" id="modal-mcp-facility" value="${escapeHtml(defaultData.mcpFacility)}" placeholder="0.00" 
-                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all outline-hidden text-slate-700">
+                                    class="w-full px-3 py-1 bg-white border border-emerald-100 rounded-lg text-xs font-mono outline-none">
                             </div>
-                            <div class="space-y-1">
-                                <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Konsulta Facility</label>
+                            <div class="space-y-0.5">
+                                <label class="text-[8px] font-bold text-emerald-600/70 uppercase tracking-wider ml-1">KONSULTA FACILITY</label>
                                 <input type="number" step="0.01" id="modal-konsulta-facility" value="${escapeHtml(defaultData.konsultaFacility)}" placeholder="0.00" 
-                                    class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-xl text-xs focus:ring-4 focus:ring-amber-500/10 focus:border-amber-500 transition-all outline-hidden text-slate-700">
+                                    class="w-full px-3 py-1 bg-white border border-emerald-100 rounded-lg text-xs font-mono outline-none">
                             </div>
-                            <div class="space-y-1 pt-1">
-                                <label class="text-[10px] font-black text-emerald-600 uppercase tracking-wider ml-1">Konsulta PF</label>
-                                <div class="p-2.5 bg-emerald-500/5 rounded-xl border border-emerald-500/20">
+                            <div class="space-y-0.5 pt-1">
+                                <label class="text-[8px] font-black text-emerald-600 uppercase tracking-wider ml-1">KONSULTA PF</label>
+                                <div class="p-1 bg-emerald-100/50 rounded-lg border border-emerald-200">
                                     <input type="number" step="0.01" id="modal-konsulta-pf" value="${escapeHtml(defaultData.konsultaPf)}" placeholder="0.00" 
-                                        class="w-full bg-transparent text-xs font-black text-emerald-700 outline-hidden">
+                                        class="w-full bg-transparent text-xs font-black text-emerald-700 outline-none text-center">
                                 </div>
                             </div>
                         </div>
@@ -1409,45 +1437,43 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
 
                 </div>
 
-                <!-- Live Allocation Summary -->
-                <div class="mt-8 bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 p-6 rounded-3xl space-y-4 shadow-xl border border-white/5">
-                    <div class="flex items-center gap-2">
-                        <div class="w-1.5 h-4 bg-emerald-400 rounded-full animate-pulse"></div>
-                        <h3 class="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Real-time Distribution Analysis</h3>
-                    </div>
-                    <div class="grid grid-cols-3 gap-8 text-left">
-                        <div class="space-y-1">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest opacity-80">Total Distributed</p>
-                            <p id="modal-total-distributed" class="text-2xl font-black text-white tracking-tight">₱0.00</p>
+                <div class="mt-4 bg-gradient-to-r from-slate-800 to-slate-900 p-4 rounded-xl shadow-lg border border-slate-700">
+                    <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+                        <div class="text-center sm:text-left">
+                            <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5">Check Amount</p>
+                            <p class="text-lg font-black text-white" id="summary-check-amount">₱0.00</p>
                         </div>
-                        <div class="space-y-1 col-span-2 border-l border-white/10 pl-8">
-                            <p class="text-[9px] font-bold text-slate-400 uppercase tracking-widest opacity-80" id="modal-balance-label">Unallocated Balance</p>
-                            <div class="flex items-baseline gap-2">
-                                <p id="modal-unallocated-amount" class="text-2xl font-black text-white tracking-tight">₱0.00</p>
-                                <span id="modal-status-badge" class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter bg-emerald-500/20 text-emerald-400 border border-emerald-500/20">Balanced</span>
-                            </div>
+                        <div class="text-center sm:text-left">
+                             <p class="text-[8px] font-bold text-emerald-400 uppercase tracking-widest mb-0.5">Total Allocated</p>
+                             <p class="text-lg font-bold text-emerald-400" id="modal-total-distributed">₱0.00</p>
+                        </div>
+                        <div class="text-center sm:text-right">
+                             <p class="text-[8px] font-bold text-slate-400 uppercase tracking-widest mb-0.5" id="modal-balance-label">Remaining Balance</p>
+                             <div class="flex items-center gap-2">
+                                <p class="text-lg font-bold text-white transition-all duration-300" id="modal-unallocated-amount">₱0.00</p>
+                                <span id="modal-status-badge" class="px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider transition-all duration-300 bg-slate-700 text-slate-400">Ready</span>
+                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         `,
-        icon: 'info',
-        iconColor: '#224796',
+        width: 'auto',
         showCancelButton: true,
-        confirmButtonText: isEdit ? 'Update Transaction' : 'Record Transaction',
-        cancelButtonText: 'Dismiss',
-        confirmButtonColor: '#10b981',
-        cancelButtonColor: '#64748b',
+        confirmButtonText: isEdit ? 'Update Changes' : 'ADD DATA',
+        cancelButtonText: 'Discard',
         customClass: {
-            popup: `${sweetalertPopupBaseClasses} max-w-7xl rounded-3xl`,
-            title: 'text-2xl font-black text-slate-900 mt-6 tracking-tight',
-            htmlContainer: `${sweetalertHtmlScrollableClasses}`,
-            confirmButton: `inline-flex items-center px-6 py-2.5 bg-emerald-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:shadow-lg transition-all cursor-pointer m-2`,
-            cancelButton: `inline-flex items-center px-6 py-2.5 bg-slate-100 text-slate-600 rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all cursor-pointer m-2`,
+            popup: '!rounded-2xl !shadow-2xl !border !border-slate-100 !max-w-4xl !w-full !p-0',
+            htmlContainer: '!m-0 !p-5 !overflow-visible',
+            actions: '!mt-0 !w-full !px-5 !pb-5 !justify-end !gap-2',
+            confirmButton: '!bg-emerald-50 hover:!bg-emerald-100 !text-emerald-600 hover:!text-emerald-700 !font-bold !py-2.5 !px-6 !rounded-lg !shadow-none !uppercase !text-[10px] !tracking-widest !transition-all !cursor-pointer',
+            cancelButton: '!bg-rose-50 hover:!bg-rose-100 !text-rose-500 hover:!text-rose-700 !font-bold !py-2.5 !px-6 !rounded-lg !shadow-none !uppercase !text-[10px] !tracking-widest !transition-all !cursor-pointer',
         },
         buttonsStyling: false,
-        focusConfirm: false,
         didOpen: () => {
+            const closeBtn = document.getElementById('edit-modal-close-x');
+            if (closeBtn) closeBtn.addEventListener('click', () => Swal.close());
+
             const checkAmountInput = document.getElementById('modal-check-amount');
             const mooeInput = document.getElementById('modal-mooe');
             const spfInput = document.getElementById('modal-spf');
@@ -1455,6 +1481,7 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
             const konsultaFacInput = document.getElementById('modal-konsulta-facility');
             const konsultaPfInput = document.getElementById('modal-konsulta-pf');
 
+            const summaryCheckAmountEl = document.getElementById('summary-check-amount');
             const totalDistEl = document.getElementById('modal-total-distributed');
             const unallocatedEl = document.getElementById('modal-unallocated-amount');
             const balanceLabelEl = document.getElementById('modal-balance-label');
@@ -1471,70 +1498,77 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                 const totalDist = mooe + spf + mcp + kFac + kPf;
                 const balance = checkAmount - totalDist;
 
-                totalDistEl.textContent = '₱' + totalDist.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-                unallocatedEl.textContent = '₱' + Math.abs(balance).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                summaryCheckAmountEl.textContent = '₱' + checkAmount.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+                totalDistEl.textContent = '₱' + totalDist.toLocaleString('en-PH', { minimumFractionDigits: 2 });
+                unallocatedEl.textContent = '₱' + Math.abs(balance).toLocaleString('en-PH', { minimumFractionDigits: 2 });
 
-                if (Math.abs(balance) < 0.01) {
-                    balanceLabelEl.textContent = 'Unallocated Balance';
-                    unallocatedEl.className = 'text-2xl font-black text-emerald-400 tracking-tight';
+                // ANIMATION EFFECT LOGIC
+                if (checkAmount > 0 && Math.abs(balance) < 0.01) {
+                    // Balanced Status
+                    balanceLabelEl.textContent = 'Status';
+                    unallocatedEl.className = 'text-lg font-black text-emerald-400 scale-110 transition-transform duration-300';
                     statusBadgeEl.textContent = 'Balanced';
-                    statusBadgeEl.className = 'px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter bg-emerald-500/20 text-emerald-400 border border-emerald-500/20';
+                    statusBadgeEl.className = 'px-2 py-0.5 rounded text-[8px] font-bold uppercase bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-bounce';
                 } else if (balance > 0) {
-                    balanceLabelEl.textContent = 'Unallocated Balance';
-                    unallocatedEl.className = 'text-2xl font-black text-white tracking-tight';
-                    statusBadgeEl.textContent = 'Under-allocated';
-                    statusBadgeEl.className = 'px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter bg-amber-500/20 text-amber-400 border border-amber-500/20';
-                } else {
+                    // Under-allocated
+                    balanceLabelEl.textContent = 'Remaining Balance';
+                    unallocatedEl.className = 'text-lg font-bold text-white';
+                    statusBadgeEl.textContent = 'Incomplete';
+                    statusBadgeEl.className = 'px-2 py-0.5 rounded text-[8px] font-bold uppercase bg-amber-500/20 text-amber-400 border border-amber-500/20';
+                } else if (balance < 0) {
+                    // Over-allocated
                     balanceLabelEl.textContent = 'Excess Distribution';
-                    unallocatedEl.className = 'text-2xl font-black text-rose-400 tracking-tight';
-                    statusBadgeEl.textContent = 'Over-allocated';
-                    statusBadgeEl.className = 'px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-tighter bg-rose-500/20 text-rose-400 border border-rose-500/20';
+                    unallocatedEl.className = 'text-lg font-bold text-rose-400';
+                    statusBadgeEl.textContent = 'Over Limit';
+                    statusBadgeEl.className = 'px-2 py-0.5 rounded text-[8px] font-bold uppercase bg-rose-500/20 text-rose-400 border border-rose-500/20';
+                } else {
+                    // Empty/Default
+                    balanceLabelEl.textContent = 'Remaining Balance';
+                    unallocatedEl.className = 'text-lg font-bold text-slate-500';
+                    statusBadgeEl.textContent = 'Ready';
+                    statusBadgeEl.className = 'px-2 py-0.5 rounded text-[8px] font-bold uppercase bg-slate-700 text-slate-400';
                 }
             };
 
+            // Bind listeners to all inputs
             [checkAmountInput, mooeInput, spfInput, mcpInput, konsultaFacInput, konsultaPfInput].forEach(input => {
-                if (input) input.addEventListener('input', updateSummary);
+                input?.addEventListener('input', updateSummary);
             });
 
-            // Initial calculation
             updateSummary();
         },
         preConfirm: () => {
-            const glCode = document.getElementById('modal-gl-code')?.value.trim();
-            const dvDate = document.getElementById('modal-dv-date')?.value;
-            const dvNo = document.getElementById('modal-dv-no')?.value.trim();
-            const requestedBy = document.getElementById('modal-requested-by')?.value.trim();
-            const checkAmount = document.getElementById('modal-check-amount')?.value.trim();
-            const payee = document.getElementById('modal-payee')?.value.trim();
-            const particulars = document.getElementById('modal-particulars')?.value.trim();
-            const checkNo = document.getElementById('modal-check-no')?.value.trim();
-            const fileDate = document.getElementById('modal-file-date')?.value;
-            const mooe = document.getElementById('modal-mooe')?.value.trim();
-            const spf = document.getElementById('modal-spf')?.value.trim();
-            const mcpFacility = document.getElementById('modal-mcp-facility')?.value.trim();
-            const konsultaFacility = document.getElementById('modal-konsulta-facility')?.value.trim();
-            const konsultaPf = document.getElementById('modal-konsulta-pf')?.value.trim();
-
-            if (!glCode) { Swal.showValidationMessage('G/L Code is missing'); return false; }
-            if (!dvDate) { Swal.showValidationMessage('Date is required'); return false; }
-            if (!dvNo) { Swal.showValidationMessage('Voucher Number is required'); return false; }
-            if (!requestedBy) { Swal.showValidationMessage('Requester is required'); return false; }
-            if (!checkAmount) { Swal.showValidationMessage('Check amount is required'); return false; }
-            if (!payee) { Swal.showValidationMessage('Payee is required'); return false; }
-
-            return {
+            const data = {
                 id: defaultData.id,
-                glCode, dvDate, dvNo, requestedBy, checkAmount, payee, particulars,
-                checkNo, fileDate, mooe, spf, mcpFacility, konsultaFacility, konsultaPf
+                glCode: document.getElementById('modal-gl-code')?.value.trim(),
+                dvDate: document.getElementById('modal-dv-date')?.value,
+                dvNo: document.getElementById('modal-dv-no')?.value.trim(),
+                requestedBy: document.getElementById('modal-requested-by')?.value.trim(),
+                checkAmount: document.getElementById('modal-check-amount')?.value.trim(),
+                payee: document.getElementById('modal-payee')?.value.trim(),
+                particulars: document.getElementById('modal-particulars')?.value.trim(),
+                checkNo: document.getElementById('modal-check-no')?.value.trim(),
+                fileDate: document.getElementById('modal-file-date')?.value,
+                mooe: document.getElementById('modal-mooe')?.value.trim(),
+                spf: document.getElementById('modal-spf')?.value.trim(),
+                mcpFacility: document.getElementById('modal-mcp-facility')?.value.trim(),
+                konsultaFacility: document.getElementById('modal-konsulta-facility')?.value.trim(),
+                konsultaPf: document.getElementById('modal-konsulta-pf')?.value.trim()
             };
-        },
+
+            if (!data.dvDate) return Swal.showValidationMessage('Voucher Date is required');
+            if (!data.dvNo) return Swal.showValidationMessage('Voucher Number is required');
+            if (!data.payee) return Swal.showValidationMessage('Payee Name is required');
+            if (!data.requestedBy) return Swal.showValidationMessage('Requested By is required');
+            if (!data.checkAmount) return Swal.showValidationMessage('Total Amount is required');
+
+            return data;
+        }
     });
 
-    if (result.isConfirmed && result.value) {
-        if (onSave) onSave(result.value);
-        return result.value;
+    if (result.isConfirmed && result.value && onSave) {
+        onSave(result.value);
     }
-    return null;
 }
 
 /**

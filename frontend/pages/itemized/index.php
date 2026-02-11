@@ -129,7 +129,7 @@ requireAuth();
             <!-- Filters & Actions -->
             <section class="mb-4">
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-5">
-                    <div class="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
+                    <div class="flex flex-col md:flex-row gap-4 md:items-end md:justify-between">
                         <!-- Search -->
                         <div class="w-full md:flex-1">
                             <label for="itemizedSearch" class="block text-xs font-medium text-slate-500 mb-1">
@@ -148,7 +148,7 @@ requireAuth();
                             </div>
                         </div>
 
-                        <!-- Category Filters -->
+                        <!-- Category Filters & Actions -->
                         <div class="flex flex-col sm:flex-row gap-3">
                             <!-- Requested By Filter -->
                             <div class="w-full sm:w-48">
@@ -172,28 +172,17 @@ requireAuth();
                                     <option value="">All</option>
                                 </select>
                             </div>
-                        </div>
 
-                        <!-- Right controls -->
-                        <div class="flex flex-col sm:flex-row gap-3 md:gap-4 md:items-center">
-                            <div class="flex items-center gap-3">
+                            <!-- Action -->
+                            <div class="flex items-end">
                                 <button id="itemizedAddBtn" type="button"
-                                    class="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-black uppercase tracking-widest text-white shadow-sm hover:bg-emerald-600 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 cursor-pointer transition-all">
+                                    class="w-full sm:w-auto inline-flex items-center justify-center rounded-lg bg-emerald-500 px-4 py-2.5 text-sm font-black uppercase tracking-widest text-white shadow-sm hover:bg-emerald-600 hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 cursor-pointer transition-all">
                                     <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
                                         viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M12 4v16m8-8H4" />
                                     </svg>
                                     Add Entry
-                                </button>
-                                <button id="itemizedExportBtn" type="button"
-                                    class="inline-flex items-center justify-center rounded-lg bg-[#224796] px-4 py-2.5 text-sm font-black uppercase tracking-widest text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-all">
-                                    <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none"
-                                        viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                    </svg>
-                                    Export
                                 </button>
                             </div>
                         </div>
@@ -214,7 +203,7 @@ requireAuth();
                                     </th>
                                     <th scope="col"
                                         class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-white">
-                                        DV Date
+                                        DV DATE
                                     </th>
                                     <th scope="col"
                                         class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-white">
@@ -222,7 +211,7 @@ requireAuth();
                                     </th>
                                     <th scope="col"
                                         class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-white">
-                                        Requested By
+                                        Requested by
                                     </th>
                                     <th scope="col"
                                         class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-white">

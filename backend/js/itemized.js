@@ -42,7 +42,7 @@ function getFilteredAndSortedRows() {
 
     // Filter out archived transactions
     let filtered = transactionRows.filter(row => !row.archived);
-    
+
     // Search filter
     if (trimmed) {
         filtered = filtered.filter((row) => {
@@ -68,7 +68,7 @@ function getFilteredAndSortedRows() {
 
     const sorted = [...filtered].sort((a, b) => {
         let aVal, bVal;
-        
+
         if (sortField === 'dvDate' || sortField === 'fileDate') {
             aVal = new Date(a[sortField] || 0).getTime();
             bVal = new Date(b[sortField] || 0).getTime();
@@ -112,7 +112,7 @@ function renderTable() {
             const rowId = row.id || `row-${index}`;
 
             return `
-                <tr class="${isStriped ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-100 transition-colors" data-row-id="${rowId}" data-transaction-index="${index}">
+                <tr class="${isStriped ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-100 transition-colors cursor-pointer" data-row-id="${rowId}" data-transaction-index="${index}">
                     <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm font-medium text-slate-900">
                         ${row.glCode || '1000'}
                     </td>
@@ -169,7 +169,7 @@ function renderTable() {
     }
 
     renderPagination(total, totalPages);
-    
+
     // Add click handlers to rows for view modal
     tbody.querySelectorAll('tr[data-transaction-index]').forEach((tr) => {
         tr.addEventListener('click', (e) => {
@@ -194,8 +194,8 @@ function renderTable() {
             const row = visibleRows[index];
             if (row) {
                 // Find the full row data from transactionRows to preserve ID
-                const fullRow = transactionRows.find(r => 
-                    r.id === row.id || 
+                const fullRow = transactionRows.find(r =>
+                    r.id === row.id ||
                     (r.glCode === row.glCode && r.dvNo === row.dvNo)
                 ) || row;
                 showDailyTransactionEditModal(fullRow, handleSaveTransaction);
@@ -257,7 +257,7 @@ function renderPagination(total, totalPages) {
 
 // Generate next G/L Code (auto-increment from 1000)
 function getNextGlCode() {
-    const maxGlCode = transactionRows.length > 0 
+    const maxGlCode = transactionRows.length > 0
         ? Math.max(...transactionRows.map(r => parseInt(r.glCode) || 1000))
         : 999;
     return String(Math.max(1000, maxGlCode + 1));
@@ -268,7 +268,7 @@ function getNextDvNo() {
     const year = new Date().getFullYear();
     const month = String(new Date().getMonth() + 1).padStart(2, '0');
     const prefix = `MOOE${year}-${month}-`;
-    
+
     // Find highest counter for this prefix
     const matchingDvNos = transactionRows
         .map(r => r.dvNo || '')
@@ -277,10 +277,10 @@ function getNextDvNo() {
             const match = no.match(/-(\d+)$/);
             return match ? parseInt(match[1]) : 0;
         });
-    
+
     const maxCounter = matchingDvNos.length > 0 ? Math.max(...matchingDvNos) : -1;
     const nextCounter = maxCounter + 1;
-    
+
     return `${prefix}${String(nextCounter).padStart(4, '0')}`;
 }
 
@@ -303,18 +303,18 @@ function handleAddClick() {
         konsultaFacility: '',
         konsultaPf: ''
     };
-    
+
     showDailyTransactionEditModal(newTransaction, handleSaveTransaction);
 }
 
 function handleSaveTransaction(transactionData) {
     if (!transactionData) return;
-    
+
     // Add ID if new
     if (!transactionData.id) {
         transactionData.id = `trans-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     }
-    
+
     // Find existing or add new
     const existingIndex = transactionRows.findIndex(r => r.id === transactionData.id);
     if (existingIndex >= 0) {
@@ -322,11 +322,11 @@ function handleSaveTransaction(transactionData) {
     } else {
         transactionRows.push(transactionData);
     }
-    
+
     currentPage = 1;
     updateFilterDropdowns();
     renderTable();
-    
+
     Swal.fire({
         icon: 'success',
         title: transactionData.id && existingIndex >= 0 ? 'Transaction updated' : 'Transaction added',
@@ -361,7 +361,7 @@ function handleArchiveTransaction(rowId) {
                 currentPage = 1;
                 updateFilterDropdowns();
                 renderTable();
-                
+
                 Swal.fire({
                     icon: 'success',
                     title: 'Archived',
@@ -376,12 +376,7 @@ function handleArchiveTransaction(rowId) {
     });
 }
 
-function handleExportClick() {
-    // Redirect to export page
-    const path = window.location.pathname || '/';
-    const basePath = path.substring(0, path.indexOf('/frontend/') !== -1 ? path.indexOf('/frontend/') : path.lastIndexOf('/')) || '';
-    window.location.href = `${basePath}/frontend/pages/export/`;
-}
+
 
 function updateFilterDropdowns() {
     // Get unique Requested By values (excluding archived)
@@ -389,16 +384,16 @@ function updateFilterDropdowns() {
     const requestedBySelect = document.getElementById('itemizedRequestedByFilter');
     if (requestedBySelect) {
         const currentValue = requestedBySelect.value;
-        requestedBySelect.innerHTML = '<option value="">All</option>' + 
+        requestedBySelect.innerHTML = '<option value="">All</option>' +
             requestedByValues.map(val => `<option value="${val}" ${val === currentValue ? 'selected' : ''}>${val}</option>`).join('');
     }
-    
+
     // Get unique Payee values (excluding archived)
     const payeeValues = [...new Set(transactionRows.filter(r => !r.archived).map(r => r.payee).filter(Boolean))].sort();
     const payeeSelect = document.getElementById('itemizedPayeeFilter');
     if (payeeSelect) {
         const currentValue = payeeSelect.value;
-        payeeSelect.innerHTML = '<option value="">All</option>' + 
+        payeeSelect.innerHTML = '<option value="">All</option>' +
             payeeValues.map(val => `<option value="${val}" ${val === currentValue ? 'selected' : ''}>${val}</option>`).join('');
     }
 }
@@ -424,7 +419,7 @@ function initializeSampleData() {
             konsultaFacility: '',
             konsultaPf: ''
         });
-        
+
         // Update counters
         glCodeCounter = 1001;
         dvNoCounter = 24;
@@ -436,7 +431,6 @@ function bindEvents() {
     const prevBtn = document.getElementById('itemizedPrevPage');
     const nextBtn = document.getElementById('itemizedNextPage');
     const addBtn = document.getElementById('itemizedAddBtn');
-    const exportBtn = document.getElementById('itemizedExportBtn');
 
     if (searchInput) {
         searchInput.addEventListener('input', (event) => {
@@ -473,7 +467,7 @@ function bindEvents() {
             renderTable();
         });
     }
-    
+
     const payeeFilterEl = document.getElementById('itemizedPayeeFilter');
     if (payeeFilterEl) {
         payeeFilterEl.addEventListener('change', (event) => {
@@ -487,9 +481,7 @@ function bindEvents() {
         addBtn.addEventListener('click', handleAddClick);
     }
 
-    if (exportBtn) {
-        exportBtn.addEventListener('click', handleExportClick);
-    }
+
 }
 
 export function init() {
