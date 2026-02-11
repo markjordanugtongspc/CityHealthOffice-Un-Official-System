@@ -16,3 +16,5 @@ config/.env
 Thumbs.db
 *.log
 
+# Database
+*.sql
