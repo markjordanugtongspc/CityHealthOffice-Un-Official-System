@@ -1338,9 +1338,16 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                         </div>
                         <div class="space-y-2">
                             <div class="space-y-0.5">
-                                <label class="text-[9px] font-bold text-slate-400 uppercase tracking-wider ml-1">G/L Code</label>
-                                <input type="text" id="modal-gl-code" value="${escapeHtml(defaultData.glCode)}" readonly 
-                                    class="w-full px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg text-xs font-mono text-slate-500 cursor-not-allowed outline-none">
+                                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">G/L Code <span class="text-rose-500">*</span></label>
+                                <div class="relative">
+                                    <span class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                                    </span>
+                                    <input type="text" id="modal-gl-code" value="${escapeHtml(defaultData.glCode)}" placeholder="Type to search (e.g. Trave...)" autocomplete="off"
+                                        class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono focus:ring-2 focus:ring-slate-200 focus:border-slate-400 outline-none">
+                                    <div id="modal-gl-code-suggestions" class="absolute z-50 left-0 right-0 mt-1 max-h-36 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg hidden">
+                                    </div>
+                                </div>
                             </div>
                             <div class="space-y-0.5">
                                 <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">DV NO. <span class="text-rose-500">*</span></label>
@@ -1368,13 +1375,19 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                         <div class="space-y-2">
                             <div class="space-y-0.5">
                                 <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">Payee <span class="text-rose-500">*</span></label>
-                                <input type="text" id="modal-payee" value="${escapeHtml(defaultData.payee)}" placeholder="Entity or Person"
-                                    class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white transition-all outline-none">
+                                <div class="relative">
+                                    <input type="text" id="modal-payee" value="${escapeHtml(defaultData.payee)}" placeholder="Entity or Person"
+                                        class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:bg-white transition-all outline-none">
+                                    <div id="modal-payee-suggestions" class="absolute z-50 left-0 right-0 mt-1 max-h-40 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg hidden"></div>
+                                </div>
                             </div>
                             <div class="space-y-0.5">
                                 <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">Requested by <span class="text-rose-500">*</span></label>
-                                <input type="text" id="modal-requested-by" value="${escapeHtml(defaultData.requestedBy)}" placeholder="Requester Name"
-                                    class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white transition-all outline-none">
+                                <div class="relative">
+                                    <input type="text" id="modal-requested-by" value="${escapeHtml(defaultData.requestedBy)}" placeholder="Requester Name"
+                                        class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:bg-white transition-all outline-none">
+                                    <div id="modal-requestedBy-suggestions" class="absolute z-50 left-0 right-0 mt-1 max-h-40 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg hidden"></div>
+                                </div>
                             </div>
                             <div class="grid grid-cols-2 gap-2">
                                 <div class="space-y-0.5">
@@ -1474,6 +1487,120 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
             const closeBtn = document.getElementById('edit-modal-close-x');
             if (closeBtn) closeBtn.addEventListener('click', () => Swal.close());
 
+            const path = window.location.pathname || '/';
+            const apiBase = path.substring(0, path.indexOf('/frontend/') !== -1 ? path.indexOf('/frontend/') : path.lastIndexOf('/')) || '';
+            const glInput = document.getElementById('modal-gl-code');
+            const glSuggestions = document.getElementById('modal-gl-code-suggestions');
+            const payeeInput = document.getElementById('modal-payee');
+            const payeeSuggestions = document.getElementById('modal-payee-suggestions');
+            const requestedByInput = document.getElementById('modal-requested-by');
+            const requestedBySuggestions = document.getElementById('modal-requestedBy-suggestions');
+
+            let cachedPartySuggestions = null;
+
+            const esc = (s) => String(s)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+
+            const ensurePartySuggestionsLoaded = async () => {
+                if (cachedPartySuggestions) return cachedPartySuggestions;
+                try {
+                    const res = await fetch(`${apiBase}/api/itemized/suggestions.php`, { credentials: 'same-origin' });
+                    const data = await res.json();
+                    if (!data.success) {
+                        cachedPartySuggestions = { requestedBy: [], payee: [] };
+                        return cachedPartySuggestions;
+                    }
+                    cachedPartySuggestions = {
+                        requestedBy: Array.isArray(data.requestedBy) ? data.requestedBy : [],
+                        payee: Array.isArray(data.payee) ? data.payee : [],
+                    };
+                } catch {
+                    cachedPartySuggestions = { requestedBy: [], payee: [] };
+                }
+                return cachedPartySuggestions;
+            };
+
+            const bindSuggestionDropdown = (inputEl, dropdownEl, sourceKey) => {
+                if (!inputEl || !dropdownEl) return;
+
+                const hide = () => {
+                    dropdownEl.classList.add('hidden');
+                };
+
+                const showFiltered = async () => {
+                    const all = await ensurePartySuggestionsLoaded();
+                    const list = all[sourceKey] || [];
+                    const q = (inputEl.value || '').toLowerCase().trim();
+                    const filtered = q
+                        ? list.filter((name) => String(name).toLowerCase().includes(q))
+                        : list;
+
+                    if (!filtered.length) {
+                        dropdownEl.innerHTML = `<div class="px-3 py-2 text-xs text-slate-400 border border-slate-100 bg-slate-50 rounded-lg">No previous entries yet</div>`;
+                        dropdownEl.classList.remove('hidden');
+                        return;
+                    }
+
+                    dropdownEl.innerHTML = filtered
+                        .map((name) => `<div class="px-3 py-2 hover:bg-slate-100 text-xs text-slate-700 border-b border-slate-100 last:border-b-0 cursor-pointer">${esc(name)}</div>`)
+                        .join('');
+                    dropdownEl.classList.remove('hidden');
+
+                    Array.from(dropdownEl.children).forEach((child) => {
+                        child.addEventListener('click', () => {
+                            inputEl.value = child.textContent || '';
+                            hide();
+                            inputEl.focus();
+                        });
+                    });
+                };
+
+                inputEl.addEventListener('focus', showFiltered);
+                inputEl.addEventListener('input', showFiltered);
+                inputEl.addEventListener('blur', () => {
+                    setTimeout(hide, 120);
+                });
+            };
+
+            bindSuggestionDropdown(payeeInput, payeeSuggestions, 'payee');
+            bindSuggestionDropdown(requestedByInput, requestedBySuggestions, 'requestedBy');
+            const showGlSuggestions = (q) => {
+                if (!glSuggestions) return;
+                fetch(`${apiBase}/api/account-titles/search.php?q=${encodeURIComponent(q || '')}`)
+                    .then(r => r.json())
+                    .then(res => {
+                        if (!res.success || !res.data) return;
+                        const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        glSuggestions.innerHTML = res.data.map(item => {
+                            const gl = esc(item.gl_code || '');
+                            const title = esc(item.account_title || '');
+                            return `<div class="px-3 py-2 hover:bg-slate-100 cursor-pointer text-xs text-slate-700 border-b border-slate-100 last:border-b-0 flex items-center gap-2" data-gl="${gl}"><svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg><span>${gl} - ${title}</span></div>`;
+                        }).join('');
+                        glSuggestions.classList.remove('hidden');
+                        glSuggestions.querySelectorAll('[data-gl]').forEach(el => {
+                            el.addEventListener('click', () => {
+                                glInput.value = el.dataset.gl || '';
+                                glSuggestions.classList.add('hidden');
+                            });
+                        });
+                    })
+                    .catch(() => { glSuggestions.classList.add('hidden'); });
+            };
+            let glDebounce;
+            if (glInput) {
+                glInput.addEventListener('input', () => {
+                    clearTimeout(glDebounce);
+                    glDebounce = setTimeout(() => showGlSuggestions(glInput.value.trim()), 150);
+                });
+                glInput.addEventListener('focus', () => showGlSuggestions(glInput.value.trim()));
+            }
+            document.addEventListener('click', (e) => {
+                if (glSuggestions && !glSuggestions.contains(e.target) && e.target !== glInput) glSuggestions.classList.add('hidden');
+            });
+
             const checkAmountInput = document.getElementById('modal-check-amount');
             const mooeInput = document.getElementById('modal-mooe');
             const spfInput = document.getElementById('modal-spf');
@@ -1556,6 +1683,7 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                 konsultaPf: document.getElementById('modal-konsulta-pf')?.value.trim()
             };
 
+            if (!data.glCode) return Swal.showValidationMessage('G/L Code is required');
             if (!data.dvDate) return Swal.showValidationMessage('Voucher Date is required');
             if (!data.dvNo) return Swal.showValidationMessage('Voucher Number is required');
             if (!data.payee) return Swal.showValidationMessage('Payee Name is required');

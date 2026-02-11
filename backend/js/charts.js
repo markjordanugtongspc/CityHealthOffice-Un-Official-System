@@ -37,6 +37,12 @@ function formatCurrency(value) {
 let ApexCharts;
 const chartInstances = {};
 
+function getApiBasePath() {
+    const path = window.location.pathname || '/';
+    const idx = path.indexOf('/frontend/');
+    return idx !== -1 ? path.substring(0, idx) : path.substring(0, path.lastIndexOf('/')) || '';
+}
+
 /**
  * Initialize all charts
  */
@@ -1284,15 +1290,52 @@ function initDailyTransactionsPieChart() {
 /**
  * Monthly Transactions Chart
  */
-function initMonthlyTransactionsChart() {
+async function initMonthlyTransactionsChart() {
     const chartElement = document.getElementById('monthlyTransactionsChart');
     if (!chartElement || !ApexCharts) return;
 
+    const apiBase = getApiBasePath();
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthlyData = months.map(() => Math.floor(Math.random() * 5000) + 2000);
+    let monthlyData = new Array(12).fill(0);
+
+    const year = new Date().getFullYear();
+
+    try {
+        const res = await fetch(`${apiBase}/api/monthly-expenses/list.php?year=${year}`, { credentials: 'same-origin' });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+            const totals = {
+                january: 0, february: 0, march: 0, april: 0,
+                may: 0, june: 0, july: 0, august: 0,
+                september: 0, october: 0, november: 0, december: 0,
+            };
+            data.data.forEach((row) => {
+                const m = row.months || {};
+                totals.january += Number(m.january || 0);
+                totals.february += Number(m.february || 0);
+                totals.march += Number(m.march || 0);
+                totals.april += Number(m.april || 0);
+                totals.may += Number(m.may || 0);
+                totals.june += Number(m.june || 0);
+                totals.july += Number(m.july || 0);
+                totals.august += Number(m.august || 0);
+                totals.september += Number(m.september || 0);
+                totals.october += Number(m.october || 0);
+                totals.november += Number(m.november || 0);
+                totals.december += Number(m.december || 0);
+            });
+            monthlyData = [
+                totals.january, totals.february, totals.march, totals.april,
+                totals.may, totals.june, totals.july, totals.august,
+                totals.september, totals.october, totals.november, totals.december,
+            ];
+        }
+    } catch (e) {
+        console.error('Failed to load monthly-expenses for monthly transactions chart:', e);
+    }
 
     const options = {
-        series: [{ name: 'Transactions', data: monthlyData }],
+        series: [{ name: 'Total Expenses', data: monthlyData }],
         colors: [colors.primary],
         chart: {
             type: 'bar',
@@ -1501,14 +1544,53 @@ function initQuarterlyComparisonChart() {
 }
 
 /**
- * Expenses Overview Chart
+ * Expenses Overview Chart - now driven by real monthly_expenses data
  */
-function initExpensesOverviewChart() {
+async function initExpensesOverviewChart() {
     const chartElement = document.getElementById('expensesOverviewChart');
     if (!chartElement || !ApexCharts) return;
 
+    const apiBase = getApiBasePath();
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const expensesData = months.map(() => Math.floor(Math.random() * 50000) + 10000);
+    let expensesData = new Array(12).fill(0);
+
+    const year = new Date().getFullYear();
+
+    try {
+        const res = await fetch(`${apiBase}/api/monthly-expenses/list.php?year=${year}`, { credentials: 'same-origin' });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+            // Aggregate per-month totals across all GL codes
+            const totals = {
+                january: 0, february: 0, march: 0, april: 0,
+                may: 0, june: 0, july: 0, august: 0,
+                september: 0, october: 0, november: 0, december: 0,
+            };
+            data.data.forEach((row) => {
+                const m = row.months || {};
+                totals.january += Number(m.january || 0);
+                totals.february += Number(m.february || 0);
+                totals.march += Number(m.march || 0);
+                totals.april += Number(m.april || 0);
+                totals.may += Number(m.may || 0);
+                totals.june += Number(m.june || 0);
+                totals.july += Number(m.july || 0);
+                totals.august += Number(m.august || 0);
+                totals.september += Number(m.september || 0);
+                totals.october += Number(m.october || 0);
+                totals.november += Number(m.november || 0);
+                totals.december += Number(m.december || 0);
+            });
+            expensesData = [
+                totals.january, totals.february, totals.march, totals.april,
+                totals.may, totals.june, totals.july, totals.august,
+                totals.september, totals.october, totals.november, totals.december,
+            ];
+        }
+    } catch (e) {
+        // Fallback: keep zeros, dashboard will just show 0s
+        console.error('Failed to load monthly-expenses for dashboard:', e);
+    }
 
     const totalExpenses = expensesData.reduce((sum, val) => sum + val, 0);
 

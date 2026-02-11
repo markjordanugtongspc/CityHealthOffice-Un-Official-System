@@ -240,6 +240,10 @@ requireAuth();
                                         class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
                                         Remaining %
                                     </th>
+                                    <th scope="col"
+                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-600">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
                             <tbody id="budgetTableBody" class="divide-y divide-slate-100 bg-white">

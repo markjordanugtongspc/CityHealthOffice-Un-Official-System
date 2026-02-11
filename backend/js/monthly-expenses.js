@@ -42,11 +42,32 @@ const currencyFormatter = new Intl.NumberFormat('en-PH', {
     maximumFractionDigits: 2,
 });
 
+function getApiBasePath() {
+    const path = window.location.pathname || '/';
+    const idx = path.indexOf('/frontend/');
+    return idx !== -1 ? path.substring(0, idx) : path.substring(0, path.lastIndexOf('/')) || '';
+}
+
 function getCurrentYearFromGlobal() {
     if (typeof window !== 'undefined' && typeof window.appCurrentYear === 'number') {
         return window.appCurrentYear;
     }
     return new Date().getFullYear();
+}
+
+async function loadMonthlyExpensesData() {
+    const apiBase = getApiBasePath();
+    try {
+        const res = await fetch(`${apiBase}/api/monthly-expenses/list.php?year=${selectedYear || getCurrentYearFromGlobal()}`, { credentials: 'same-origin' });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+            monthlyExpensesRows = data.data;
+        } else {
+            monthlyExpensesRows = [];
+        }
+    } catch {
+        monthlyExpensesRows = [];
+    }
 }
 
 function formatCurrency(value) {
@@ -132,7 +153,7 @@ function renderTable() {
             const isStriped = index % 2 === 1;
 
             return `
-                <tr class="${isStriped ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-100 transition-colors" data-row-index="${index}" data-gl-code="${row.glCode}">
+                <tr class="${isStriped ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-100 transition-colors" data-row-index="${index}" data-gl-code="${row.glCode}" data-row-id="${row.id ?? ''}">
                     <td class="whitespace-nowrap px-3 py-2 text-xs md:text-sm font-medium text-slate-900 w-[80px] min-w-[80px]">
                         ${row.glCode}
                     </td>
@@ -274,14 +295,11 @@ function renderYearSelector() {
         yearSelect.appendChild(option);
     }
 
-    yearSelect.addEventListener('change', (e) => {
+    yearSelect.addEventListener('change', async (e) => {
         selectedYear = parseInt(e.target.value);
-        // Update year display
         const yearDisplay = document.getElementById('monthlyExpensesCurrentYear');
-        if (yearDisplay) {
-            yearDisplay.textContent = String(selectedYear);
-        }
-        // Re-render table (in future, this would filter by year from backend)
+        if (yearDisplay) yearDisplay.textContent = String(selectedYear);
+        await loadMonthlyExpensesData();
         renderTable();
     });
 }
@@ -293,44 +311,17 @@ function handleAddClick() {
         title: `Add Monthly Expense Entry (${year})`,
         html: `
             <div class="space-y-4 md:space-y-5 text-left">
-                <!-- G/L Code Field (Note: Will be auto-incremented by backend) -->
+                <!-- Account Title with G/L Code (searchable from backend) -->
                 <div class="grid grid-cols-1 md:grid-cols-[128px_1fr] gap-2 md:gap-3 items-start">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1">G/L Code</label>
-                    <div class="w-full">
-                        <input
-                            id="swal-glCode"
-                            type="text"
-                            placeholder="Auto-incremented by backend"
-                            readonly
-                            class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2.5 text-sm text-slate-500 cursor-not-allowed"
-                        />
-                        <p class="mt-1.5 text-xs text-slate-500">Note: G/L Code will be auto-incremented by backend</p>
-                    </div>
-                </div>
-                
-                <!-- Account Title Field with Autocomplete -->
-                <div class="grid grid-cols-1 md:grid-cols-[128px_1fr] gap-2 md:gap-3 items-start">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1">Account Title</label>
+                    <label class="text-sm font-medium text-slate-700 md:mb-1">Account Title <span class="text-rose-500">*</span></label>
                     <div class="relative w-full">
-                        <input
-                            id="swal-accountTitle"
-                            type="text"
-                            placeholder="e.g., Travelling Expense"
-                            autocomplete="off"
-                            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 pr-8 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] transition-colors"
-                        />
-                        <button
-                            type="button"
-                            id="swal-accountTitle-toggle"
-                            class="absolute right-2 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-slate-600 transition-colors hidden cursor-pointer"
-                            title="Show suggestions"
-                        >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                            </svg>
-                        </button>
-                        <div id="swal-accountTitle-suggestions" class="absolute z-50 mt-1 hidden max-h-48 w-full overflow-y-auto rounded-lg border border-slate-300 bg-white shadow-lg">
-                            <!-- Suggestions will be populated dynamically -->
+                        <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                        </span>
+                        <input id="swal-accountTitle" type="text" placeholder="Type to search (e.g. Trave...)" autocomplete="off"
+                            class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] transition-colors">
+                        <input id="swal-glCode" type="hidden" value="">
+                        <div id="swal-accountTitle-suggestions" class="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-300 bg-white shadow-lg hidden">
                         </div>
                     </div>
                 </div>
@@ -384,194 +375,116 @@ function handleAddClick() {
             actions: sweetalertActionsLeftAlignedClasses,
         },
         didOpen: () => {
-            // TODO: Replace with backend fetch API call when integrating with backend
-            // Example: const existingAccounts = await fetch('/api/monthly-expenses/account-titles').then(r => r.json());
-            const existingAccountTitles = [...new Set(monthlyExpensesRows.map(row => row.accountTitle))].filter(Boolean);
-            
+            const apiBase = getApiBasePath();
             const accountTitleInput = document.getElementById('swal-accountTitle');
+            const glCodeInput = document.getElementById('swal-glCode');
             const suggestionsContainer = document.getElementById('swal-accountTitle-suggestions');
-            const toggleButton = document.getElementById('swal-accountTitle-toggle');
-            
-            // Show/hide toggle button based on existing accounts
-            if (existingAccountTitles.length > 0 && toggleButton) {
-                toggleButton.classList.remove('hidden');
-            }
-            
-            // Function to auto-fill monthly values from existing data
-            const autoFillMonthlyValues = (accountTitle) => {
-                // TODO: Replace with backend fetch API call when integrating with backend
-                // Example: const existingData = await fetch(`/api/monthly-expenses/by-title/${encodeURIComponent(accountTitle)}`).then(r => r.json());
-                const existingRow = monthlyExpensesRows.find(row => row.accountTitle === accountTitle);
-                if (existingRow && existingRow.months) {
-                    monthKeys.forEach(monthKey => {
-                        const input = document.getElementById(`swal-${monthKey}`);
-                        if (input && existingRow.months[monthKey] && existingRow.months[monthKey] > 0) {
-                            input.value = existingRow.months[monthKey];
-                        }
-                    });
-                    // Update total
-                    updateTotal();
-                }
-            };
-            
-            // Function to update total
+
             const updateTotal = () => {
                 let total = 0;
                 monthKeys.forEach(monthKey => {
                     const input = document.getElementById(`swal-${monthKey}`);
-                    if (input) {
-                        total += parseFloat(input.value) || 0;
-                    }
+                    if (input) total += parseFloat(input.value) || 0;
                 });
                 const totalEl = document.getElementById('swal-total-amount');
-                if (totalEl) {
-                    totalEl.textContent = formatCurrency(total);
-                }
+                if (totalEl) totalEl.textContent = formatCurrency(total);
             };
-            
-            // Function to filter and show suggestions based on input
-            const showSuggestions = (searchTerm = '') => {
-                if (!suggestionsContainer) return;
-                suggestionsContainer.innerHTML = '';
-                
-                if (existingAccountTitles.length === 0) {
-                    suggestionsContainer.classList.add('hidden');
-                    return;
-                }
-                
-                // Filter suggestions based on search term
-                const filtered = searchTerm.trim() === '' 
-                    ? existingAccountTitles 
-                    : existingAccountTitles.filter(title => 
-                        title.toLowerCase().includes(searchTerm.toLowerCase())
-                    );
-                
-                if (filtered.length === 0) {
-                    suggestionsContainer.classList.add('hidden');
-                    return;
-                }
-                
-                suggestionsContainer.classList.remove('hidden');
-                
-                filtered.forEach(title => {
-                    const suggestionItem = document.createElement('div');
-                    suggestionItem.className = 'px-3 py-2 hover:bg-slate-100 cursor-pointer text-sm text-slate-700 border-b border-slate-100 last:border-b-0 transition-colors';
-                    suggestionItem.textContent = title;
-                    suggestionItem.addEventListener('click', () => {
-                        accountTitleInput.value = title;
-                        suggestionsContainer.classList.add('hidden');
-                        // Auto-fill monthly values if data exists
-                        autoFillMonthlyValues(title);
+
+            const autoFillMonthlyValues = (accountTitle) => {
+                const row = monthlyExpensesRows.find(r => r.accountTitle === accountTitle);
+                if (row?.months) {
+                    monthKeys.forEach(m => {
+                        const inp = document.getElementById(`swal-${m}`);
+                        if (inp && row.months[m] > 0) inp.value = row.months[m];
                     });
-                    suggestionsContainer.appendChild(suggestionItem);
-                });
+                    updateTotal();
+                }
             };
-            
-            // Show suggestions on input (auto-detect as user types)
+
+            const showSuggestions = (q) => {
+                if (!suggestionsContainer) return;
+                fetch(`${apiBase}/api/account-titles/search.php?q=${encodeURIComponent(q || '')}`)
+                    .then(r => r.json())
+                    .then(res => {
+                        if (!res.success || !res.data) return;
+                        const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                        suggestionsContainer.innerHTML = res.data.map(item => {
+                            const gl = esc(item.gl_code || '');
+                            const title = esc(item.account_title || '');
+                            return `<div class="px-4 py-2.5 hover:bg-slate-100 cursor-pointer text-sm text-slate-700 border-b border-slate-100 last:border-b-0 flex items-center gap-2" data-gl="${gl}" data-title="${esc(title)}"><svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg><span>${gl} - ${title}</span></div>`;
+                        }).join('');
+                        suggestionsContainer.classList.remove('hidden');
+                        suggestionsContainer.querySelectorAll('[data-gl]').forEach(el => {
+                            el.addEventListener('click', () => {
+                                glCodeInput.value = el.dataset.gl || '';
+                                accountTitleInput.value = el.dataset.title || '';
+                                suggestionsContainer.classList.add('hidden');
+                                autoFillMonthlyValues(accountTitleInput.value);
+                            });
+                        });
+                    })
+                    .catch(() => { suggestionsContainer.classList.add('hidden'); });
+            };
+
+            let debounceTimer;
             if (accountTitleInput) {
-                accountTitleInput.addEventListener('input', (e) => {
-                    const value = e.target.value.trim();
-                    if (value.length > 0 && existingAccountTitles.length > 0) {
-                        showSuggestions(value);
-                    } else {
-                        suggestionsContainer.classList.add('hidden');
-                    }
+                accountTitleInput.addEventListener('input', () => {
+                    clearTimeout(debounceTimer);
+                    debounceTimer = setTimeout(() => showSuggestions(accountTitleInput.value.trim()), 150);
                 });
-                
-                accountTitleInput.addEventListener('focus', () => {
-                    if (existingAccountTitles.length > 0 && accountTitleInput.value.trim().length > 0) {
-                        showSuggestions(accountTitleInput.value.trim());
-                    }
-                });
+                accountTitleInput.addEventListener('focus', () => showSuggestions(accountTitleInput.value.trim()));
             }
-            
-            // Toggle suggestions dropdown on button click
-            if (toggleButton) {
-                toggleButton.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (suggestionsContainer.classList.contains('hidden')) {
-                        showSuggestions(accountTitleInput.value.trim());
-                    } else {
-                        suggestionsContainer.classList.add('hidden');
-                    }
-                });
-            }
-            
-            // Close suggestions when clicking outside
-            const handleClickOutside = (e) => {
-                if (!suggestionsContainer.contains(e.target) && 
-                    e.target !== accountTitleInput && 
-                    e.target !== toggleButton &&
-                    !toggleButton?.contains(e.target)) {
-                    suggestionsContainer.classList.add('hidden');
-                }
-            };
-            
-            // Use setTimeout to avoid immediate closure on modal open
-            setTimeout(() => {
-                document.addEventListener('click', handleClickOutside);
-            }, 100);
-            
-            // Calculate total when any month input changes
-            monthKeys.forEach(monthKey => {
-                const input = document.getElementById(`swal-${monthKey}`);
-                if (input) {
-                    input.addEventListener('input', updateTotal);
-                }
+            document.addEventListener('click', (e) => {
+                if (suggestionsContainer && !suggestionsContainer.contains(e.target) && e.target !== accountTitleInput) suggestionsContainer.classList.add('hidden');
+            });
+
+            monthKeys.forEach(m => {
+                const inp = document.getElementById(`swal-${m}`);
+                if (inp) inp.addEventListener('input', updateTotal);
             });
         },
         preConfirm: () => {
+            const glCode = document.getElementById('swal-glCode')?.value?.trim();
             const accountTitle = document.getElementById('swal-accountTitle')?.value?.trim();
             const months = {};
+            monthKeys.forEach(m => {
+                const inp = document.getElementById(`swal-${m}`);
+                months[m] = parseFloat(inp?.value) || 0;
+            });
+            const total = Object.values(months).reduce((s, v) => s + v, 0);
 
-            if (!accountTitle) {
-                Swal.showValidationMessage('Account Title is required');
+            if (!glCode || !accountTitle) {
+                Swal.showValidationMessage('Please select an Account Title from the suggestions');
                 return false;
             }
 
-            // Collect monthly values
-            monthKeys.forEach(monthKey => {
-                const input = document.getElementById(`swal-${monthKey}`);
-                months[monthKey] = parseFloat(input?.value) || 0;
-            });
-
-            // Calculate total
-            const total = Object.values(months).reduce((sum, val) => sum + val, 0);
-
-            // TODO: Replace with backend POST API call when integrating with backend
-            // Example: const response = await fetch('/api/monthly-expenses', { method: 'POST', body: JSON.stringify({ accountTitle, months, year: selectedYear }) });
-            // G/L Code will be auto-incremented by backend
-            // Generate next G/L Code (temporary - backend will handle this)
-            const maxGlCode = monthlyExpensesRows.reduce((max, row) => {
-                const code = parseInt(row.glCode) || 0;
-                return Math.max(max, code);
-            }, 0);
-            const nextGlCode = String(maxGlCode + 1000);
-
-            return {
-                glCode: nextGlCode, // TODO: Backend will auto-increment this
-                accountTitle,
-                months,
-                total,
-            };
+            return { glCode, accountTitle, months, total };
         },
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed && result.value) {
-            monthlyExpensesRows.push(result.value);
-            currentPage = 1;
-            renderTable();
-            renderAccountTitleFilters();
-            
-            Swal.fire({
-                icon: 'success',
-                title: 'Entry added',
-                text: 'Monthly expense entry has been added successfully.',
-                confirmButtonText: 'OK',
-                customClass: {
-                    confirmButton: sweetalertNeutralConfirmBlueClasses,
-                },
-            });
+            const apiBase = getApiBasePath();
+            try {
+                const res = await fetch(`${apiBase}/api/monthly-expenses/create.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        year: selectedYear || getCurrentYearFromGlobal(),
+                        glCode: result.value.glCode,
+                        accountTitle: result.value.accountTitle,
+                        months: result.value.months,
+                    }),
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+                await loadMonthlyExpensesData();
+                currentPage = 1;
+                renderTable();
+                renderAccountTitleFilters();
+                Swal.fire({ icon: 'success', title: 'Entry added', text: 'Monthly expense entry has been added successfully.', confirmButtonText: 'OK', customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses } });
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'Failed to create entry', confirmButtonText: 'OK', customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses } });
+            }
         }
     });
 }
@@ -750,44 +663,57 @@ function initInlineEditing() {
     
     editableCells.forEach(cell => {
         const row = cell.closest('tr');
+        const rowId = row?.getAttribute('data-row-id');
         const glCode = row?.getAttribute('data-gl-code') || '';
         const fieldName = cell.getAttribute('data-editable');
         const fieldType = cell.getAttribute('data-type') || 'text';
         const monthKey = cell.getAttribute('data-month') || '';
-        
-        // Find the row data
-        const rowData = monthlyExpensesRows.find(r => r.glCode === glCode);
+
+        const rowData = monthlyExpensesRows.find(r => (r.id && String(r.id) === rowId) || r.glCode === glCode);
         if (!rowData) return;
-        
+
         initInlineEdit(cell, {
             type: fieldType,
             rowData: rowData,
             fieldName: fieldName,
-            onSave: (newValue, oldValue, rowData, fieldName) => {
-                // Update the row data
+            onSave: async (newValue, oldValue, rowData, fieldName) => {
                 if (fieldName === 'accountTitle') {
                     rowData.accountTitle = newValue;
                 } else if (fieldName === 'month' && monthKey) {
                     rowData.months[monthKey] = parseFloat(newValue) || 0;
-                    // Recalculate total
+                    rowData.total = calculateTotal(rowData);
+                } else return;
+
+                const apiBase = getApiBasePath();
+                try {
+                    const body = fieldName === 'accountTitle'
+                        ? { id: rowData.id, accountTitle: newValue }
+                        : { id: rowData.id, months: { ...rowData.months } };
+                    const res = await fetch(`${apiBase}/api/monthly-expenses/update.php`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify(body),
+                    });
+                    const data = await res.json();
+                    if (!data.success) throw new Error(data.message);
+                    await loadMonthlyExpensesData();
+                } catch (err) {
+                    if (fieldName === 'accountTitle') rowData.accountTitle = oldValue;
+                    else if (monthKey) rowData.months[monthKey] = parseFloat(oldValue) || 0;
                     rowData.total = calculateTotal(rowData);
                 }
-                
-                // Re-render table to update calculated values
                 renderTable();
             },
-            onCancel: (originalValue, rowData, fieldName) => {
-                // Edit was cancelled, no action needed
-            }
+            onCancel: () => {}
         });
     });
 }
 
-export function init() {
+export async function init() {
     const table = document.getElementById('monthlyExpensesTable');
     if (!table) return;
 
-    // Expose monthlyExpensesRows to window for export module
     if (typeof window !== 'undefined') {
         window.monthlyExpensesRows = monthlyExpensesRows;
     }
@@ -796,6 +722,7 @@ export function init() {
     renderYearSelector();
     renderAccountTitleFilters();
     bindEvents();
+    await loadMonthlyExpensesData();
     renderTable();
 }
 

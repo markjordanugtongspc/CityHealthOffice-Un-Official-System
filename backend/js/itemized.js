@@ -20,10 +20,40 @@ let sortDirection = 'desc';
 let searchTerm = '';
 let requestedByFilter = '';
 let payeeFilter = '';
+let selectedYear = new Date().getFullYear();
 
-// Auto-increment counters
-let glCodeCounter = 1000;
-let dvNoCounter = 0;
+function getApiBasePath() {
+    const path = window.location.pathname || '/';
+    const idx = path.indexOf('/frontend/');
+    return idx !== -1 ? path.substring(0, idx) : path.substring(0, path.lastIndexOf('/')) || '';
+}
+
+async function loadItemizedData() {
+    const apiBase = getApiBasePath();
+    try {
+        const res = await fetch(`${apiBase}/api/itemized/list.php?year=${selectedYear}`, { credentials: 'same-origin' });
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+            transactionRows = data.data;
+        } else {
+            transactionRows = [];
+        }
+    } catch {
+        transactionRows = [];
+    }
+}
+
+async function triggerMonthlySync() {
+    const apiBase = getApiBasePath();
+    try {
+        await fetch(`${apiBase}/api/monthly-expenses/sync-from-itemized.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ year: selectedYear }),
+        });
+    } catch { /* ignore */ }
+}
 
 // Formatters
 const currencyFormatter = new Intl.NumberFormat('en-PH', {
@@ -255,42 +285,26 @@ function renderPagination(total, totalPages) {
     }
 }
 
-// Generate next G/L Code (auto-increment from 1000)
-function getNextGlCode() {
-    const maxGlCode = transactionRows.length > 0
-        ? Math.max(...transactionRows.map(r => parseInt(r.glCode) || 1000))
-        : 999;
-    return String(Math.max(1000, maxGlCode + 1));
-}
-
-// Generate next DV NO. (format: MOOE2025-01-####)
-function getNextDvNo() {
-    const year = new Date().getFullYear();
+function getNextDvNoFromRows() {
+    const year = selectedYear;
     const month = String(new Date().getMonth() + 1).padStart(2, '0');
     const prefix = `MOOE${year}-${month}-`;
-
-    // Find highest counter for this prefix
-    const matchingDvNos = transactionRows
-        .map(r => r.dvNo || '')
-        .filter(no => no.startsWith(prefix))
-        .map(no => {
-            const match = no.match(/-(\d+)$/);
-            return match ? parseInt(match[1]) : 0;
+    const matching = transactionRows
+        .filter(r => (r.dvNo || '').startsWith(prefix))
+        .map(r => {
+            const m = (r.dvNo || '').match(/-(\d+)$/);
+            return m ? parseInt(m[1]) : 0;
         });
-
-    const maxCounter = matchingDvNos.length > 0 ? Math.max(...matchingDvNos) : -1;
-    const nextCounter = maxCounter + 1;
-
-    return `${prefix}${String(nextCounter).padStart(4, '0')}`;
+    const max = matching.length > 0 ? Math.max(...matching) : -1;
+    return `${prefix}${String(max + 1).padStart(4, '0')}`;
 }
 
 function handleAddClick() {
-    // Generate default values with auto-increment
     const today = new Date().toISOString().split('T')[0];
     const newTransaction = {
-        glCode: getNextGlCode(),
+        glCode: '1000',
         dvDate: today,
-        dvNo: getNextDvNo(),
+        dvNo: getNextDvNoFromRows(),
         requestedBy: '',
         checkAmount: '',
         payee: '',
@@ -303,39 +317,72 @@ function handleAddClick() {
         konsultaFacility: '',
         konsultaPf: ''
     };
-
     showDailyTransactionEditModal(newTransaction, handleSaveTransaction);
 }
 
-function handleSaveTransaction(transactionData) {
+async function handleSaveTransaction(transactionData) {
     if (!transactionData) return;
 
-    // Add ID if new
-    if (!transactionData.id) {
-        transactionData.id = `trans-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    const apiBase = getApiBasePath();
+    const payload = {
+        year: selectedYear,
+        glCode: transactionData.glCode,
+        dvDate: transactionData.dvDate,
+        dvNo: transactionData.dvNo,
+        requestedBy: transactionData.requestedBy,
+        payee: transactionData.payee,
+        checkAmount: transactionData.checkAmount,
+        particulars: transactionData.particulars,
+        checkNo: transactionData.checkNo,
+        fileDate: transactionData.fileDate,
+        mooe: transactionData.mooe,
+        spf: transactionData.spf,
+        mcpFacility: transactionData.mcpFacility,
+        konsultaFacility: transactionData.konsultaFacility,
+        konsultaPf: transactionData.konsultaPf,
+    };
+
+    try {
+        if (transactionData.id && Number(transactionData.id)) {
+            const res = await fetch(`${apiBase}/api/itemized/update.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify({ ...payload, id: transactionData.id }),
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+        } else {
+            const res = await fetch(`${apiBase}/api/itemized/create.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+        }
+        await triggerMonthlySync();
+        await loadItemizedData();
+        currentPage = 1;
+        updateFilterDropdowns();
+        renderTable();
+        Swal.fire({
+            icon: 'success',
+            title: transactionData.id ? 'Transaction updated' : 'Transaction added',
+            text: 'Transaction has been saved successfully.',
+            confirmButtonText: 'OK',
+            customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses },
+        });
+    } catch (err) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: err.message || 'Failed to save transaction',
+            confirmButtonText: 'OK',
+            customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses },
+        });
     }
-
-    // Find existing or add new
-    const existingIndex = transactionRows.findIndex(r => r.id === transactionData.id);
-    if (existingIndex >= 0) {
-        transactionRows[existingIndex] = transactionData;
-    } else {
-        transactionRows.push(transactionData);
-    }
-
-    currentPage = 1;
-    updateFilterDropdowns();
-    renderTable();
-
-    Swal.fire({
-        icon: 'success',
-        title: transactionData.id && existingIndex >= 0 ? 'Transaction updated' : 'Transaction added',
-        text: 'Transaction has been saved successfully.',
-        confirmButtonText: 'OK',
-        customClass: {
-            confirmButton: sweetalertNeutralConfirmBlueClasses,
-        },
-    });
 }
 
 function handleArchiveTransaction(rowId) {
@@ -353,24 +400,31 @@ function handleArchiveTransaction(rowId) {
             confirmButton: `${sweetalertNeutralConfirmBlueClasses} bg-amber-600 hover:bg-amber-700`,
             cancelButton: sweetalertSecondaryCancelClasses,
         },
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            const index = transactionRows.findIndex(r => r.id === rowId || (r.id === undefined && `row-${transactionRows.indexOf(r)}` === rowId));
-            if (index >= 0) {
-                transactionRows[index].archived = true;
+            const id = parseInt(rowId, 10);
+            if (!id || isNaN(id)) {
+                Swal.fire({ icon: 'error', title: 'Error', text: 'Invalid transaction', confirmButtonText: 'OK', customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses } });
+                return;
+            }
+            const apiBase = getApiBasePath();
+            try {
+                const res = await fetch(`${apiBase}/api/itemized/archive.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ id }),
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message);
+                await triggerMonthlySync();
+                await loadItemizedData();
                 currentPage = 1;
                 updateFilterDropdowns();
                 renderTable();
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Archived',
-                    text: 'Transaction has been archived successfully.',
-                    confirmButtonText: 'OK',
-                    customClass: {
-                        confirmButton: sweetalertNeutralConfirmBlueClasses,
-                    },
-                });
+                Swal.fire({ icon: 'success', title: 'Archived', text: 'Transaction has been archived successfully.', confirmButtonText: 'OK', customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses } });
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'Failed to archive', confirmButtonText: 'OK', customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses } });
             }
         }
     });
@@ -398,32 +452,28 @@ function updateFilterDropdowns() {
     }
 }
 
-function initializeSampleData() {
-    // Sample data based on the image provided
-    if (transactionRows.length === 0) {
-        const today = new Date().toISOString().split('T')[0];
-        transactionRows.push({
-            id: 'trans-sample-1',
-            glCode: '1000',
-            dvDate: '2026-03-13',
-            dvNo: 'MOOE2025-01-0023',
-            requestedBy: 'AMELA NORHANIMAH A.S HADJI JAMEL',
-            checkAmount: 11400.00,
-            payee: 'AMELA NORHANIMAH A.S HADJI JAMEL',
-            particulars: 'To cash advance for the per diem and transporation expenses incurred while on official travel to attend the Review and',
-            checkNo: '2006405',
-            fileDate: today,
-            mooe: '',
-            spf: '',
-            mcpFacility: '',
-            konsultaFacility: '',
-            konsultaPf: ''
-        });
+function renderYearSelector() {
+    const yearSelect = document.getElementById('itemizedYear');
+    if (!yearSelect) return;
 
-        // Update counters
-        glCodeCounter = 1001;
-        dvNoCounter = 24;
+    const currentYear = typeof window.appCurrentYear === 'number' ? window.appCurrentYear : new Date().getFullYear();
+    selectedYear = currentYear;
+
+    yearSelect.innerHTML = '';
+    for (let y = currentYear + 2; y >= currentYear - 5; y--) {
+        const opt = document.createElement('option');
+        opt.value = y;
+        opt.textContent = y;
+        opt.selected = y === currentYear;
+        yearSelect.appendChild(opt);
     }
+
+    yearSelect.addEventListener('change', async (e) => {
+        selectedYear = parseInt(e.target.value);
+        await loadItemizedData();
+        updateFilterDropdowns();
+        renderTable();
+    });
 }
 
 function bindEvents() {
@@ -484,19 +534,17 @@ function bindEvents() {
 
 }
 
-export function init() {
+export async function init() {
     const table = document.getElementById('itemizedTable');
     if (!table) return;
 
-    // Initialize sample data
-    initializeSampleData();
-
-    // Expose transactionRows to window for export module
     if (typeof window !== 'undefined') {
         window.transactionRows = transactionRows;
     }
 
+    renderYearSelector();
     bindEvents();
+    await loadItemizedData();
     updateFilterDropdowns();
     renderTable();
 }

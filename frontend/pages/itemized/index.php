@@ -150,6 +150,12 @@ requireAuth();
 
                         <!-- Category Filters & Actions -->
                         <div class="flex flex-col sm:flex-row gap-3">
+                            <!-- Year -->
+                            <div class="w-full sm:w-32">
+                                <label for="itemizedYear" class="block text-xs font-medium text-slate-500 mb-1">Year</label>
+                                <select id="itemizedYear" class="w-full rounded-lg border border-slate-300 bg-white py-2.5 px-3 text-sm text-slate-900 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] cursor-pointer">
+                                </select>
+                            </div>
                             <!-- Requested By Filter -->
                             <div class="w-full sm:w-48">
                                 <label for="itemizedRequestedByFilter"

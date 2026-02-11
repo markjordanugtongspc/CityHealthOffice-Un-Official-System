@@ -282,16 +282,16 @@ export async function init() {
     await initCharts();
 
     // Initialize budget page if budget elements exist
-    initBudget();
+    await initBudget();
 
     // Initialize special fund page if special fund elements exist
     initSpecialFund();
 
     // Initialize monthly expenses page if monthly expenses elements exist
-    initMonthlyExpenses();
+    await initMonthlyExpenses();
 
     // Initialize itemized page if itemized elements exist
-    initItemized();
+    await initItemized();
 
     // Initialize export page if export elements exist
     initExport();
