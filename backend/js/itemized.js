@@ -1,5 +1,5 @@
 import Swal from 'sweetalert2';
-import { showDailyTransactionViewModal, showDailyTransactionEditModal } from './modules/modal.js';
+import { showDailyTransactionViewModal, showDailyTransactionEditModal, showVoucherModal } from './modules/modal.js';
 import {
     sweetalertActionsLeftAlignedClasses,
     sweetalertHtmlLeftAlignedClasses,
@@ -530,6 +530,9 @@ function bindEvents() {
     if (addBtn) {
         addBtn.addEventListener('click', handleAddClick);
     }
+
+    const voucherFloatingBtn = document.getElementById('itemizedVoucherFloatingBtn');
+    if (voucherFloatingBtn) voucherFloatingBtn.addEventListener('click', showVoucherModal);
 
 
 }

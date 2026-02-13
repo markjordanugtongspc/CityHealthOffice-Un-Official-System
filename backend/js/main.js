@@ -154,6 +154,7 @@ import { init as initSpecialFund } from './specialfund.js';
 import { init as initMonthlyExpenses } from './monthly-expenses.js';
 import { init as initItemized } from './itemized.js';
 import { init as initExport } from './modules/export.js';
+import { init as initVoucher } from './modules/voucher.js';
 import { init as initScrollToTop } from './modules/scroll-to-top.js';
 import { init as initAbout } from './about.js';
 import { init as initAdmin } from './admin.js';
@@ -295,6 +296,9 @@ export async function init() {
 
     // Initialize export page if export elements exist
     initExport();
+
+    // Initialize voucher page if voucher app exists
+    initVoucher();
 
     // Initialize about page if about elements exist
     initAbout();

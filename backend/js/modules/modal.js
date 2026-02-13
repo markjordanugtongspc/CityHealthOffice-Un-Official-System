@@ -4,6 +4,7 @@
  */
 
 import Swal from 'sweetalert2';
+import { printVoucher } from './voucher.js';
 
 let modalContainer = null;
 
@@ -733,6 +734,82 @@ export function closeModal() {
             container.style.display = 'none';
             container.innerHTML = '';
         }, 200);
+    }
+}
+
+/**
+ * Show Disbursement Voucher modal (compact, scrollable). Moves #voucher-app from #voucherFormTemplate into modal.
+ * Call closeVoucherModal() to close and return the form to the template.
+ */
+export function showVoucherModal() {
+    const template = document.getElementById('voucherFormTemplate');
+    const app = document.getElementById('voucher-app');
+    if (!template || !app) return;
+
+    initModalContainer();
+    const container = document.getElementById('customModalContainer');
+
+    const modalHTML = `
+        <div id="voucherModalContent" class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div class="flex items-center justify-between shrink-0 px-4 py-3 border-b border-slate-200 bg-slate-50">
+                <h3 class="text-lg font-bold text-slate-900">Disbursement Voucher</h3>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="voucherModalInsert" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 text-sm font-medium hover:bg-emerald-600 hover:text-white hover:font-bold transition-colors cursor-pointer">
+                        Insert
+                    </button>
+                    <button type="button" id="voucherModalPrint" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#224796] text-white text-sm font-medium hover:bg-[#163473] transition-colors cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                        Print
+                    </button>
+                    <button type="button" id="voucherModalClose" class="p-2 rounded-lg hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer" aria-label="Close">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+            </div>
+            <div id="voucherModalBody" class="flex-1 overflow-y-auto min-h-0 p-3 md:p-4">
+            </div>
+        </div>
+    `;
+
+    container.innerHTML = modalHTML;
+    const body = document.getElementById('voucherModalBody');
+    if (body) body.appendChild(app);
+    const toolbarRow = app.querySelector('.voucher-toolbar-row');
+    if (toolbarRow) toolbarRow.classList.add('hidden');
+
+    container.style.display = 'flex';
+
+    const closeBtn = document.getElementById('voucherModalClose');
+    const closeVoucher = () => {
+        const voucherApp = document.getElementById('voucher-app');
+        const toolbarRow = voucherApp?.querySelector('.voucher-toolbar-row');
+        if (toolbarRow) toolbarRow.classList.remove('hidden');
+        if (voucherApp && voucherApp.parentElement?.id === 'voucherModalBody') {
+            template.appendChild(voucherApp);
+        }
+        container.style.display = 'none';
+        container.innerHTML = '';
+    };
+
+    if (closeBtn) closeBtn.addEventListener('click', closeVoucher);
+    const printBtn = document.getElementById('voucherModalPrint');
+    if (printBtn) printBtn.addEventListener('click', printVoucher);
+    container.addEventListener('click', (e) => { if (e.target === container) closeVoucher(); });
+}
+
+/**
+ * Close voucher modal and return #voucher-app to #voucherFormTemplate.
+ */
+export function closeVoucherModal() {
+    const template = document.getElementById('voucherFormTemplate');
+    const app = document.getElementById('voucher-app');
+    const container = document.getElementById('customModalContainer');
+    if (app && app.parentElement && app.parentElement.id === 'voucherModalBody' && template) {
+        template.appendChild(app);
+    }
+    if (container) {
+        container.style.display = 'none';
+        container.innerHTML = '';
     }
 }
 
