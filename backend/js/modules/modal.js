@@ -1370,6 +1370,7 @@ export async function showDailyTransactionViewModal(transaction) {
  */
 export async function showDailyTransactionEditModal(transaction = null, onSave = null) {
     const isEdit = !!transaction?.id;
+    let isAddAllocationMode = false;
     const today = new Date().toISOString().split('T')[0];
 
     // Default values for form fields
@@ -1489,10 +1490,15 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                         </div>
                     </div>
 
-                    <div class="space-y-3 bg-emerald-50/20 p-3 rounded-xl border border-emerald-100/50 h-full">
+                    <div id="modal-allocation-section" class="space-y-3 bg-emerald-50/20 p-3 rounded-xl border border-emerald-100/50 h-full transition-all">
                         <div class="flex items-center gap-2 pb-1.5 border-b border-emerald-200/30">
                             <div class="w-1.5 h-3 bg-emerald-500 rounded-full"></div>
                             <h3 class="text-[9px] font-black text-emerald-700 uppercase tracking-widest">Allocation</h3>
+                            ${isEdit ? `
+                            <button type="button" id="modal-add-allocation-btn" title="ADD DATA" class="ml-auto p-1.5 rounded-lg text-emerald-500 hover:bg-emerald-100/80 hover:text-emerald-700 transition-colors cursor-pointer" aria-label="ADD DATA">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            </button>
+                            ` : ''}
                         </div>
                         <div class="space-y-2">
                             <div class="space-y-0.5">
@@ -1564,6 +1570,23 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
             const closeBtn = document.getElementById('edit-modal-close-x');
             if (closeBtn) closeBtn.addEventListener('click', () => Swal.close());
 
+            const addAllocBtn = document.getElementById('modal-add-allocation-btn');
+            const allocSection = document.getElementById('modal-allocation-section');
+            const allocIds = ['modal-mooe', 'modal-spf', 'modal-mcp-facility', 'modal-konsulta-facility', 'modal-konsulta-pf'];
+            if (addAllocBtn && allocSection && isEdit) {
+                addAllocBtn.addEventListener('click', () => {
+                    isAddAllocationMode = true;
+                    allocSection.classList.add('ring-2', 'ring-emerald-400', 'ring-offset-1', 'bg-emerald-100/30');
+                    allocIds.forEach((id) => {
+                        const el = document.getElementById(id);
+                        if (el) {
+                            el.value = '0.00';
+                            el.dispatchEvent(new Event('input', { bubbles: true }));
+                        }
+                    });
+                });
+            }
+
             const path = window.location.pathname || '/';
             const apiBase = path.substring(0, path.indexOf('/frontend/') !== -1 ? path.indexOf('/frontend/') : path.lastIndexOf('/')) || '';
             const glInput = document.getElementById('modal-gl-code');
@@ -1581,26 +1604,29 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                 .replace(/</g, '&lt;')
                 .replace(/>/g, '&gt;');
 
+            const suggestionsYear = transaction?._year || new Date().getFullYear();
+
             const ensurePartySuggestionsLoaded = async () => {
                 if (cachedPartySuggestions) return cachedPartySuggestions;
                 try {
-                    const res = await fetch(`${apiBase}/api/itemized/suggestions.php`, { credentials: 'same-origin' });
+                    const res = await fetch(`${apiBase}/api/itemized/suggestions.php?year=${suggestionsYear}`, { credentials: 'same-origin' });
                     const data = await res.json();
                     if (!data.success) {
-                        cachedPartySuggestions = { requestedBy: [], payee: [] };
+                        cachedPartySuggestions = { requestedBy: [], payee: [], glByRequestedBy: {} };
                         return cachedPartySuggestions;
                     }
                     cachedPartySuggestions = {
                         requestedBy: Array.isArray(data.requestedBy) ? data.requestedBy : [],
                         payee: Array.isArray(data.payee) ? data.payee : [],
+                        glByRequestedBy: (data.glByRequestedBy && typeof data.glByRequestedBy === 'object') ? data.glByRequestedBy : {},
                     };
                 } catch {
-                    cachedPartySuggestions = { requestedBy: [], payee: [] };
+                    cachedPartySuggestions = { requestedBy: [], payee: [], glByRequestedBy: {} };
                 }
                 return cachedPartySuggestions;
             };
 
-            const bindSuggestionDropdown = (inputEl, dropdownEl, sourceKey) => {
+            const bindSuggestionDropdown = (inputEl, dropdownEl, sourceKey, onSelect) => {
                 if (!inputEl || !dropdownEl) return;
 
                 const hide = () => {
@@ -1628,8 +1654,10 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
 
                     Array.from(dropdownEl.children).forEach((child) => {
                         child.addEventListener('click', () => {
-                            inputEl.value = child.textContent || '';
+                            const val = (child.textContent || '').trim();
+                            inputEl.value = val;
                             hide();
+                            if (typeof onSelect === 'function') onSelect(val);
                             inputEl.focus();
                         });
                     });
@@ -1643,7 +1671,15 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
             };
 
             bindSuggestionDropdown(payeeInput, payeeSuggestions, 'payee');
-            bindSuggestionDropdown(requestedByInput, requestedBySuggestions, 'requestedBy');
+            bindSuggestionDropdown(requestedByInput, requestedBySuggestions, 'requestedBy', (val) => {
+                const all = cachedPartySuggestions;
+                if (glInput && all?.glByRequestedBy?.[val]) glInput.value = all.glByRequestedBy[val];
+            });
+
+            ensurePartySuggestionsLoaded().then((all) => {
+                const rb = requestedByInput?.value?.trim();
+                if (rb && all?.glByRequestedBy?.[rb] && glInput) glInput.value = all.glByRequestedBy[rb];
+            });
             const showGlSuggestions = (q) => {
                 if (!glSuggestions) return;
                 fetch(`${apiBase}/api/account-titles/search.php?q=${encodeURIComponent(q || '')}`)
@@ -1757,7 +1793,8 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                 spf: document.getElementById('modal-spf')?.value.trim(),
                 mcpFacility: document.getElementById('modal-mcp-facility')?.value.trim(),
                 konsultaFacility: document.getElementById('modal-konsulta-facility')?.value.trim(),
-                konsultaPf: document.getElementById('modal-konsulta-pf')?.value.trim()
+                konsultaPf: document.getElementById('modal-konsulta-pf')?.value.trim(),
+                addAllocationMode: isAddAllocationMode
             };
 
             if (!data.glCode) return Swal.showValidationMessage('G/L Code is required');
@@ -1765,7 +1802,7 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
             if (!data.dvNo) return Swal.showValidationMessage('Voucher Number is required');
             if (!data.payee) return Swal.showValidationMessage('Payee Name is required');
             if (!data.requestedBy) return Swal.showValidationMessage('Requested By is required');
-            if (!data.checkAmount) return Swal.showValidationMessage('Total Amount is required');
+            if (!data.checkAmount && !data.addAllocationMode) return Swal.showValidationMessage('Total Amount is required');
 
             return data;
         }

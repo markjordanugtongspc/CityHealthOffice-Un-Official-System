@@ -42,20 +42,40 @@ try {
         $yearId = $yr['id'];
     }
 
-    $stmt = $pdo->prepare('
-        INSERT INTO monthly_expenses_entries (year_id, gl_code, account_title, january, february, march, april, may, june,
-            july, august, september, october, november, december, total)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ');
-    $stmt->execute([
-        $yearId, $glCode, $accountTitle,
-        $vals['january'], $vals['february'], $vals['march'], $vals['april'], $vals['may'], $vals['june'],
-        $vals['july'], $vals['august'], $vals['september'], $vals['october'], $vals['november'], $vals['december'],
-        $total,
-    ]);
-    $id = $pdo->lastInsertId();
+    $stmt = $pdo->prepare('SELECT id FROM monthly_expenses_entries WHERE year_id = ? AND gl_code = ?');
+    $stmt->execute([$yearId, $glCode]);
+    $existing = $stmt->fetch();
 
-    echo json_encode(['success' => true, 'message' => 'Entry created', 'data' => ['id' => (int)$id]]);
+    if ($existing) {
+        $stmt = $pdo->prepare('
+            UPDATE monthly_expenses_entries SET
+                account_title = ?, january = ?, february = ?, march = ?, april = ?, may = ?, june = ?,
+                july = ?, august = ?, september = ?, october = ?, november = ?, december = ?, total = ?
+            WHERE id = ?
+        ');
+        $stmt->execute([
+            $accountTitle,
+            $vals['january'], $vals['february'], $vals['march'], $vals['april'], $vals['may'], $vals['june'],
+            $vals['july'], $vals['august'], $vals['september'], $vals['october'], $vals['november'], $vals['december'],
+            $total, $existing['id'],
+        ]);
+        $id = $existing['id'];
+    } else {
+        $stmt = $pdo->prepare('
+            INSERT INTO monthly_expenses_entries (year_id, gl_code, account_title, january, february, march, april, may, june,
+                july, august, september, october, november, december, total)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ');
+        $stmt->execute([
+            $yearId, $glCode, $accountTitle,
+            $vals['january'], $vals['february'], $vals['march'], $vals['april'], $vals['may'], $vals['june'],
+            $vals['july'], $vals['august'], $vals['september'], $vals['october'], $vals['november'], $vals['december'],
+            $total,
+        ]);
+        $id = $pdo->lastInsertId();
+    }
+
+    echo json_encode(['success' => true, 'message' => 'Entry saved', 'data' => ['id' => (int)$id]]);
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);

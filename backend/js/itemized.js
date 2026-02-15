@@ -1,5 +1,6 @@
 import Swal from 'sweetalert2';
 import { showDailyTransactionViewModal, showDailyTransactionEditModal, showVoucherModal } from './modules/modal.js';
+import { getVoucherCookieData } from './modules/voucher.js';
 import {
     sweetalertActionsLeftAlignedClasses,
     sweetalertHtmlLeftAlignedClasses,
@@ -228,6 +229,7 @@ function renderTable() {
                     r.id === row.id ||
                     (r.glCode === row.glCode && r.dvNo === row.dvNo)
                 ) || row;
+                fullRow._year = selectedYear;
                 showDailyTransactionEditModal(fullRow, handleSaveTransaction);
             }
         });
@@ -301,14 +303,15 @@ function getNextDvNoFromRows() {
 
 function handleAddClick() {
     const today = new Date().toISOString().split('T')[0];
+    const voucher = getVoucherCookieData();
     const newTransaction = {
         glCode: '1000',
-        dvDate: today,
-        dvNo: getNextDvNoFromRows(),
-        requestedBy: '',
-        checkAmount: '',
-        payee: '',
-        particulars: '',
+        dvDate: voucher?.dvDate || today,
+        dvNo: voucher?.dvNo || getNextDvNoFromRows(),
+        requestedBy: voucher?.payee || '',
+        checkAmount: voucher?.checkAmount != null ? String(voucher.checkAmount) : '',
+        payee: voucher?.payee || '',
+        particulars: voucher?.particulars || '',
         checkNo: '',
         fileDate: today,
         mooe: '',
@@ -317,6 +320,7 @@ function handleAddClick() {
         konsultaFacility: '',
         konsultaPf: ''
     };
+    newTransaction._year = selectedYear;
     showDailyTransactionEditModal(newTransaction, handleSaveTransaction);
 }
 
@@ -342,8 +346,19 @@ async function handleSaveTransaction(transactionData) {
         konsultaPf: transactionData.konsultaPf,
     };
 
+    const isAddAllocation = !!transactionData.addAllocationMode;
+
     try {
-        if (transactionData.id && Number(transactionData.id)) {
+        if (isAddAllocation && transactionData.id) {
+            const res = await fetch(`${apiBase}/api/itemized/add-allocation.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'same-origin',
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message);
+        } else if (transactionData.id && Number(transactionData.id)) {
             const res = await fetch(`${apiBase}/api/itemized/update.php`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -367,10 +382,11 @@ async function handleSaveTransaction(transactionData) {
         currentPage = 1;
         updateFilterDropdowns();
         renderTable();
+        const msg = isAddAllocation ? 'Allocation log added' : (transactionData.id ? 'Transaction updated' : 'Transaction added');
         Swal.fire({
             icon: 'success',
-            title: transactionData.id ? 'Transaction updated' : 'Transaction added',
-            text: 'Transaction has been saved successfully.',
+            title: msg,
+            text: 'Data has been saved successfully.',
             confirmButtonText: 'OK',
             customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses },
         });
@@ -378,7 +394,7 @@ async function handleSaveTransaction(transactionData) {
         Swal.fire({
             icon: 'error',
             title: 'Error',
-            text: err.message || 'Failed to save transaction',
+            text: err.message || 'Failed to save',
             confirmButtonText: 'OK',
             customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses },
         });

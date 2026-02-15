@@ -124,6 +124,30 @@ export function saveVoucherToCookie() {
 }
 
 /**
+ * Get voucher cookie data as object (no DOM). For merging into modal/add forms.
+ * @returns {{ dvNo?: string, dvDate?: string, payee?: string, particulars?: string, checkAmount?: string } | null}
+ */
+export function getVoucherCookieData() {
+    const raw = getCookie(VOUCHER_COOKIE_NAME);
+    if (!raw) return null;
+    try {
+        const data = JSON.parse(raw);
+        if (typeof data !== 'object') return null;
+        const payee = [data.voucherPayee, data.voucherPayeeEtAl].filter(Boolean).join(' ').trim() || undefined;
+        const amount = (data.voucherAmountInput || '').replace(/[^0-9.-]/g, '').replace(/,/g, '');
+        return {
+            dvNo: data.voucherDvNo || undefined,
+            dvDate: data.voucherDate || undefined,
+            payee: payee || undefined,
+            particulars: data.voucherParticulars || undefined,
+            checkAmount: amount ? parseFloat(amount) : undefined
+        };
+    } catch (_) {
+        return null;
+    }
+}
+
+/**
  * Load voucher form inputs from client cookie. Returns true if data was restored.
  */
 export function loadVoucherFromCookie() {

@@ -55,9 +55,23 @@ function getCurrentYearFromGlobal() {
     return new Date().getFullYear();
 }
 
+async function triggerSyncFromItemized() {
+    const apiBase = getApiBasePath();
+    const year = selectedYear || getCurrentYearFromGlobal();
+    try {
+        await fetch(`${apiBase}/api/monthly-expenses/sync-from-itemized.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'same-origin',
+            body: JSON.stringify({ year }),
+        });
+    } catch { /* ignore */ }
+}
+
 async function loadMonthlyExpensesData() {
     const apiBase = getApiBasePath();
     try {
+        await triggerSyncFromItemized();
         const res = await fetch(`${apiBase}/api/monthly-expenses/list.php?year=${selectedYear || getCurrentYearFromGlobal()}`, { credentials: 'same-origin' });
         const data = await res.json();
         if (data.success && Array.isArray(data.data)) {
@@ -283,7 +297,7 @@ function renderYearSelector() {
     if (!yearSelect) return;
 
     const currentYear = getCurrentYearFromGlobal();
-    selectedYear = currentYear;
+    if (typeof selectedYear !== 'number' || selectedYear < 2000) selectedYear = currentYear;
 
     // Generate years (current year ± 5 years)
     yearSelect.innerHTML = '';
@@ -291,7 +305,7 @@ function renderYearSelector() {
         const option = document.createElement('option');
         option.value = year;
         option.textContent = year;
-        option.selected = year === currentYear;
+        option.selected = year === selectedYear;
         yearSelect.appendChild(option);
     }
 
@@ -685,18 +699,35 @@ function initInlineEditing() {
                 } else return;
 
                 const apiBase = getApiBasePath();
+                const year = selectedYear || getCurrentYearFromGlobal();
                 try {
-                    const body = fieldName === 'accountTitle'
-                        ? { id: rowData.id, accountTitle: newValue }
-                        : { id: rowData.id, months: { ...rowData.months } };
-                    const res = await fetch(`${apiBase}/api/monthly-expenses/update.php`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'same-origin',
-                        body: JSON.stringify(body),
-                    });
-                    const data = await res.json();
-                    if (!data.success) throw new Error(data.message);
+                    if (!rowData.id) {
+                        const res = await fetch(`${apiBase}/api/monthly-expenses/create.php`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({
+                                year,
+                                glCode: rowData.glCode,
+                                accountTitle: rowData.accountTitle,
+                                months: rowData.months,
+                            }),
+                        });
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.message);
+                    } else {
+                        const body = fieldName === 'accountTitle'
+                            ? { id: rowData.id, accountTitle: newValue }
+                            : { id: rowData.id, months: { ...rowData.months } };
+                        const res = await fetch(`${apiBase}/api/monthly-expenses/update.php`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'same-origin',
+                            body: JSON.stringify(body),
+                        });
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.message);
+                    }
                     await loadMonthlyExpensesData();
                 } catch (err) {
                     if (fieldName === 'accountTitle') rowData.accountTitle = oldValue;

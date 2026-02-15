@@ -33,24 +33,65 @@ try {
     $stmt->execute([$yearId]);
     $rows = $stmt->fetchAll();
 
-    $out = [];
+    $groups = [];
     foreach ($rows as $r) {
+        $key = $r['dv_no'] . '|' . $r['payee'] . '|' . $r['gl_code'];
+        $checkAmt = (float)$r['check_amount'];
+        if (!isset($groups[$key])) {
+            $groups[$key] = [
+                'id' => (int)$r['id'],
+                'glCode' => $r['gl_code'],
+                'dvDate' => $r['dv_date'],
+                'dvNo' => $r['dv_no'],
+                'requestedBy' => $r['requested_by'],
+                'payee' => $r['payee'],
+                'checkAmount' => $checkAmt,
+                'particulars' => $r['particulars'],
+                'checkNo' => $r['check_no'],
+                'fileDate' => $r['file_date'],
+                'mooe' => (float)($r['mooe'] ?? 0),
+                'spf' => (float)($r['spf'] ?? 0),
+                'mcpFacility' => (float)($r['mcp_facility'] ?? 0),
+                'konsultaFacility' => (float)($r['konsulta_facility'] ?? 0),
+                'konsultaPf' => (float)($r['konsulta_pf'] ?? 0),
+            ];
+        } else {
+            $g = &$groups[$key];
+            if ($checkAmt > 0 && $g['checkAmount'] <= 0) {
+                $g['id'] = (int)$r['id'];
+                $g['checkAmount'] = $checkAmt;
+                $g['particulars'] = $r['particulars'];
+                $g['checkNo'] = $r['check_no'];
+                $g['fileDate'] = $r['file_date'];
+                $g['dvDate'] = $r['dv_date'];
+                $g['requestedBy'] = $r['requested_by'];
+            }
+            $g['mooe'] += (float)($r['mooe'] ?? 0);
+            $g['spf'] += (float)($r['spf'] ?? 0);
+            $g['mcpFacility'] += (float)($r['mcp_facility'] ?? 0);
+            $g['konsultaFacility'] += (float)($r['konsulta_facility'] ?? 0);
+            $g['konsultaPf'] += (float)($r['konsulta_pf'] ?? 0);
+        }
+    }
+
+    $out = [];
+    foreach ($groups as $g) {
         $out[] = [
-            'id' => (int)$r['id'],
-            'glCode' => $r['gl_code'],
-            'dvDate' => $r['dv_date'],
-            'dvNo' => $r['dv_no'],
-            'requestedBy' => $r['requested_by'],
-            'payee' => $r['payee'],
-            'checkAmount' => (float)$r['check_amount'],
-            'particulars' => $r['particulars'],
-            'checkNo' => $r['check_no'],
-            'fileDate' => $r['file_date'],
-            'mooe' => $r['mooe'] ?? '',
-            'spf' => $r['spf'] ?? '',
-            'mcpFacility' => $r['mcp_facility'] ?? '',
-            'konsultaFacility' => $r['konsulta_facility'] ?? '',
-            'konsultaPf' => $r['konsulta_pf'] ?? '',
+            'id' => $g['id'],
+            'glCode' => $g['glCode'],
+            'dvDate' => $g['dvDate'],
+            'dvNo' => $g['dvNo'],
+            'requestedBy' => $g['requestedBy'],
+            'payee' => $g['payee'],
+            'checkAmount' => $g['checkAmount'],
+            'particulars' => $g['particulars'],
+            'checkNo' => $g['checkNo'],
+            'fileDate' => $g['fileDate'],
+            'mooe' => $g['mooe'],
+            'spf' => $g['spf'],
+            'mcpFacility' => $g['mcpFacility'],
+            'konsultaFacility' => $g['konsultaFacility'],
+            'konsultaPf' => $g['konsultaPf'],
         ];
     }
 

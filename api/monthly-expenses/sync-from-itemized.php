@@ -41,19 +41,33 @@ try {
     $allCols = array_values($monthNumToCol);
 
     $stmt = $pdo->prepare('
-        SELECT gl_code, MONTH(dv_date) AS m, SUM(check_amount) AS tot
+        SELECT gl_code, dv_no, dv_date, check_amount
         FROM itemized_transactions
         WHERE year_id = ? AND archived = 0
-        GROUP BY gl_code, MONTH(dv_date)
     ');
     $stmt->execute([$itemizedYearId]);
     $agg = [];
     while ($row = $stmt->fetch()) {
         $gl = $row['gl_code'];
-        $m = (int)$row['m'];
-        $tot = (float)$row['tot'];
+        $amt = (float)$row['check_amount'];
+        $dvNo = trim($row['dv_no'] ?? '');
+        $dvDate = $row['dv_date'] ?? null;
+
+        $m = null;
+        if (preg_match('/(\d{4})-(\d{2})/', $dvNo, $match)) {
+            $dvYr = (int)$match[1];
+            $dvMo = (int)$match[2];
+            if ($dvYr === $year && $dvMo >= 1 && $dvMo <= 12) {
+                $m = $dvMo;
+            }
+        }
+        if ($m === null && $dvDate) {
+            $m = (int)date('n', strtotime($dvDate . ' 12:00:00'));
+        }
+        if ($m === null || $m < 1 || $m > 12) $m = (int)date('n');
+
         if (!isset($agg[$gl])) $agg[$gl] = array_fill_keys($allCols, 0);
-        if (isset($monthNumToCol[$m])) $agg[$gl][$monthNumToCol[$m]] = $tot;
+        if (isset($monthNumToCol[$m])) $agg[$gl][$monthNumToCol[$m]] += $amt;
     }
 
     $stmtAt = $pdo->prepare('SELECT account_title FROM account_titles WHERE gl_code = ?');
