@@ -74,10 +74,12 @@ require_once __DIR__ . '/../../config/image_helper.php';
         </div>
     </div>
 
-    <!-- Navigation Links -->
-    <nav class="flex-1 min-h-0 px-3 pt-3 pb-4 space-y-1 overflow-y-auto overflow-x-hidden">
-        <ul class="space-y-1">
-            <!-- Dashboard -->
+           <!-- Navigation Links -->
+            <nav class="flex-1 min-h-0 px-3 pt-3 pb-4 space-y-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
+                <ul class="space-y-1">
+                    <!-- Dashboard -->
+                </ul>
+            </nav>
             <li>
                 <a href="../dashboard/" data-tooltip="Dashboard"
                     class="nav-item nav-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all group relative w-full cursor-pointer touch-manipulation">
