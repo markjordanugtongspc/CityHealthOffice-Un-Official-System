@@ -31,7 +31,7 @@ if (!function_exists('getImagePath')) {
             <div class="flex flex-col md:flex-row items-center justify-between gap-2 md:gap-3 border-b border-slate-300 pb-2 mb-2">
                 <div class="flex items-center gap-2 shrink-0">
                     <?php $imgAutoMoh = __DIR__ . '/../images/auto-rginm-moh.png'; if (file_exists($imgAutoMoh)) { ?>
-                    <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/auto-rginm-moh.png')); ?>" alt="BARMM MOH" class="w-16 h-16 md:w-20 md:h-20 object-contain">
+                    <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/auto-rginm-moh.png')); ?>" alt="BARMM MOH" class="w-10 h-10 md:w-12 md:h-12 object-contain">
                     <?php } ?>
                 </div>
                 <div class="flex-1 text-center">
@@ -42,9 +42,9 @@ if (!function_exists('getImagePath')) {
                 </div>
                 <div class="flex items-center gap-2 shrink-0">
                     <?php $imgIslamic = __DIR__ . '/../images/islamic-logo.png'; if (file_exists($imgIslamic)) { ?>
-                    <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/islamic-logo.png')); ?>" alt="Islamic City" class="w-16 h-16 md:w-20 md:h-20 object-contain">
+                    <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/islamic-logo.png')); ?>" alt="Islamic City" class="w-10 h-10 md:w-12 md:h-12 object-contain">
                     <?php } ?>
-                    <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/cityhealth-logo.png')); ?>" alt="City Health" class="w-16 h-16 md:w-20 md:h-20 object-contain">
+                    <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/cityhealth-logo.png')); ?>" alt="City Health" class="w-10 h-10 md:w-12 md:h-12 object-contain">
                 </div>
             </div>
 

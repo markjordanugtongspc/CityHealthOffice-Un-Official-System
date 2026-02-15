@@ -3,47 +3,74 @@
  */
 
 /**
- * Print the disbursement voucher (only #voucher-print-area). Call from Print button or modal.
- * Isolates #voucher-print-area via print-only CSS and cleans up on afterprint.
+ * Print generateVoucher.php #voucher-print-area (lines 23-397) entirely.
+ * Opens a dedicated print window so main page CSS cannot hide the content.
  */
 export function printVoucher() {
     const printArea = document.getElementById('voucher-print-area');
     if (!printArea) {
-        console.warn('Voucher print area not found');
         window.print();
         return;
     }
 
-    const style = document.createElement('style');
-    style.id = 'voucher-print-style';
-    style.textContent = `
-        @media print {
-            @page { margin: 0.5cm; size: A4; }
-            body * { visibility: hidden !important; }
-            #voucher-print-area, #voucher-print-area * { visibility: visible !important; }
-            #voucher-print-area {
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
-                width: 100% !important;
-                max-width: 100% !important;
-                margin: 0 !important;
-                padding: 0.5cm !important;
-                background: white !important;
-                page-break-inside: avoid;
-            }
-            .print\\:hidden { display: none !important; }
+    const clone = printArea.cloneNode(true);
+    // cloneNode does NOT copy input/textarea values — sync from original
+    printArea.querySelectorAll('input, textarea').forEach((orig) => {
+        const id = orig.id;
+        if (!id) return;
+        const copy = clone.querySelector(`#${id}`);
+        if (copy) {
+            if ('value' in copy) copy.value = orig.value;
+            if (orig.type === 'checkbox') copy.checked = orig.checked;
         }
-    `;
-    document.head.appendChild(style);
+    });
+    clone.querySelectorAll('img[src]').forEach((img) => {
+        const src = img.getAttribute('src');
+        if (src && !src.startsWith('http') && !src.startsWith('data:')) {
+            img.setAttribute('src', new URL(src, window.location.href).href);
+        }
+    });
 
-    const cleanup = () => {
-        style.remove();
-        window.removeEventListener('afterprint', cleanup);
+    // Collect stylesheets: prod has link tags; dev has CSS via Vite JS - load style.css from Vite
+    let styleLinks = Array.from(document.querySelectorAll('link[rel="stylesheet"][href]'))
+        .map((l) => `<link rel="stylesheet" href="${l.href}">`)
+        .join('');
+    if (!styleLinks) {
+        const viteScript = document.querySelector('script[type="module"][src*="5173"], script[type="module"][src*="backend/js/main"]');
+        const viteOrigin = viteScript ? new URL(viteScript.src).origin : window.location.origin;
+        styleLinks = `<link rel="stylesheet" href="${viteOrigin}/frontend/style.css">`;
+    }
+
+    const printWin = window.open('', '_blank');
+    if (!printWin) {
+        window.print();
+        return;
+    }
+
+    printWin.document.write(`
+<!DOCTYPE html>
+<html lang="en" class="voucher-print-window">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Disbursement Voucher - Print</title>
+${styleLinks}
+</head>
+<body class="voucher-print-window">${clone.outerHTML}</body>
+</html>`);
+    printWin.document.close();
+
+    let printed = false;
+    const doPrint = () => {
+        if (printed) return;
+        printed = true;
+        printWin.focus();
+        printWin.print();
+        printWin.onafterprint = () => printWin.close();
     };
-    window.addEventListener('afterprint', cleanup);
 
-    window.print();
+    printWin.onload = doPrint;
+    setTimeout(doPrint, 600);
 }
 
 const FUND_OPTIONS = [
@@ -53,6 +80,79 @@ const FUND_OPTIONS = [
 ];
 
 const STORAGE_KEY_PREFIX = 'voucher_dv_seq_';
+const VOUCHER_COOKIE_NAME = 'voucher_form';
+const VOUCHER_COOKIE_DAYS = 30;
+
+/** Cookie helpers for voucher form persistence */
+function setCookie(name, value, days) {
+    const d = new Date();
+    d.setTime(d.getTime() + days * 24 * 60 * 60 * 1000);
+    document.cookie = `${name}=${encodeURIComponent(value)};path=/;expires=${d.toUTCString()};SameSite=Lax`;
+}
+
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '=([^;]*)'));
+    return match ? decodeURIComponent(match[1]) : null;
+}
+
+/**
+ * Save voucher form inputs to client cookie.
+ */
+export function saveVoucherToCookie() {
+    const app = document.getElementById('voucher-app');
+    if (!app) return;
+    const data = {};
+    const textIds = ['voucherFund', 'voucherDvNo', 'voucherDate', 'voucherModeOthers', 'voucherPayee', 'voucherPayeeEtAl', 'voucherTin', 'voucherCafoa', 'voucherAddress', 'voucherRespCenter', 'voucherParticulars', 'voucherAmountInput', 'voucherCertifiedDate', 'voucherApprovedDate', 'voucherCheckNo', 'voucherReceiptDate', 'voucherBankAccount', 'voucherReceiptSignatureDate', 'voucherReceiptPrintedName', 'voucherOfficialReceipt'];
+    textIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el && 'value' in el) data[id] = String(el.value || '');
+    });
+    const fundEl = document.getElementById('voucherFund');
+    if (fundEl?.dataset?.code) data.fundCode = fundEl.dataset.code;
+    const modeMds = document.querySelector('#voucherModeMds input');
+    const modeCommercial = document.querySelector('#voucherModeCommercial input');
+    const modeAda = document.querySelector('#voucherModeAda input');
+    const modeOthersCheck = document.getElementById('voucherModeOthersCheck');
+    if (modeMds) data.modeMds = modeMds.checked;
+    if (modeCommercial) data.modeCommercial = modeCommercial.checked;
+    if (modeAda) data.modeAda = modeAda.checked;
+    if (modeOthersCheck) data.modeOthers = modeOthersCheck.checked;
+    try {
+        const json = JSON.stringify(data);
+        if (json.length < 3500) setCookie(VOUCHER_COOKIE_NAME, json, VOUCHER_COOKIE_DAYS);
+    } catch (_) {}
+}
+
+/**
+ * Load voucher form inputs from client cookie. Returns true if data was restored.
+ */
+export function loadVoucherFromCookie() {
+    const raw = getCookie(VOUCHER_COOKIE_NAME);
+    if (!raw) return false;
+    try {
+        const data = JSON.parse(raw);
+        if (typeof data !== 'object') return false;
+        const textIds = ['voucherFund', 'voucherDvNo', 'voucherDate', 'voucherModeOthers', 'voucherPayee', 'voucherPayeeEtAl', 'voucherTin', 'voucherCafoa', 'voucherAddress', 'voucherRespCenter', 'voucherParticulars', 'voucherAmountInput', 'voucherCertifiedDate', 'voucherApprovedDate', 'voucherCheckNo', 'voucherReceiptDate', 'voucherBankAccount', 'voucherReceiptSignatureDate', 'voucherReceiptPrintedName', 'voucherOfficialReceipt'];
+        textIds.forEach((id) => {
+            if (data[id] === undefined) return;
+            const el = document.getElementById(id);
+            if (el && 'value' in el) el.value = data[id];
+        });
+        const fundEl = document.getElementById('voucherFund');
+        if (fundEl && data.fundCode) fundEl.dataset.code = data.fundCode;
+        const modeMds = document.querySelector('#voucherModeMds input');
+        const modeCommercial = document.querySelector('#voucherModeCommercial input');
+        const modeAda = document.querySelector('#voucherModeAda input');
+        const modeOthersCheck = document.getElementById('voucherModeOthersCheck');
+        if (modeMds && data.modeMds !== undefined) modeMds.checked = data.modeMds;
+        if (modeCommercial && data.modeCommercial !== undefined) modeCommercial.checked = data.modeCommercial;
+        if (modeAda && data.modeAda !== undefined) modeAda.checked = data.modeAda;
+        if (modeOthersCheck && data.modeOthers !== undefined) modeOthersCheck.checked = data.modeOthers;
+        return true;
+    } catch (_) {
+        return false;
+    }
+}
 
 function getCurrentYear() {
     return new Date().getFullYear();
@@ -141,15 +241,22 @@ export function init() {
 
     if (!fundInput || !dvNoInput || !dateInput || !particularsInput || !amountInput || !amountDueEl) return;
 
+    const loaded = loadVoucherFromCookie();
     const today = new Date().toISOString().split('T')[0];
-    if (!dateInput.value) dateInput.value = today;
-    const receiptDateInput = document.getElementById('voucherReceiptDate');
-    if (receiptDateInput && !receiptDateInput.value) receiptDateInput.value = today;
-    if (!fundInput.value) {
-        fundInput.value = 'MOOE';
-        fundInput.dataset.code = 'MOOE';
+    if (!loaded) {
+        if (!dateInput.value) dateInput.value = today;
+        const receiptDateInput = document.getElementById('voucherReceiptDate');
+        if (receiptDateInput && !receiptDateInput.value) receiptDateInput.value = today;
+        if (!fundInput.value) {
+            fundInput.value = 'MOOE';
+            fundInput.dataset.code = 'MOOE';
+        }
+        if (!dvNoInput.value) dvNoInput.value = buildDvNo(getFundCode(), getCurrentYear(), getCurrentMonth(), undefined);
+    } else {
+        const receiptDateInput = document.getElementById('voucherReceiptDate');
+        if (receiptDateInput && !receiptDateInput.value) receiptDateInput.value = today;
+        if (!fundInput.dataset?.code) fundInput.dataset.code = getFundCode();
     }
-    if (!dvNoInput.value) dvNoInput.value = buildDvNo(getFundCode(), getCurrentYear(), getCurrentMonth(), undefined);
 
     // ----- Fund dropdown + search -----
     function renderFundSuggestions(filter) {
@@ -290,6 +397,7 @@ export function init() {
     if (modeOthersCheck) {
         modeOthersCheck.addEventListener('change', toggleModeOfPayment);
     }
+    if (loaded) toggleModeOfPayment();
 
     // ----- Amount: currency format + Amount Due + Debit/Credit -----
     function syncAmountDisplay() {
@@ -319,4 +427,22 @@ export function init() {
     if (printBtn) {
         printBtn.addEventListener('click', printVoucher);
     }
+
+    // ----- Cookie persistence: save on input/change (debounced) -----
+    let saveTimeout;
+    const debouncedSave = () => {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(saveVoucherToCookie, 300);
+    };
+    const saveIds = ['voucherFund', 'voucherDvNo', 'voucherDate', 'voucherModeOthers', 'voucherPayee', 'voucherPayeeEtAl', 'voucherTin', 'voucherCafoa', 'voucherAddress', 'voucherRespCenter', 'voucherParticulars', 'voucherAmountInput', 'voucherCertifiedDate', 'voucherApprovedDate', 'voucherCheckNo', 'voucherReceiptDate', 'voucherBankAccount', 'voucherReceiptSignatureDate', 'voucherReceiptPrintedName', 'voucherOfficialReceipt'];
+    saveIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', debouncedSave);
+            el.addEventListener('change', debouncedSave);
+            el.addEventListener('blur', debouncedSave);
+        }
+    });
+    const modeCheckboxes = [document.querySelector('#voucherModeMds input'), document.querySelector('#voucherModeCommercial input'), document.querySelector('#voucherModeAda input'), document.getElementById('voucherModeOthersCheck')];
+    modeCheckboxes.filter(Boolean).forEach((el) => el.addEventListener('change', debouncedSave));
 }

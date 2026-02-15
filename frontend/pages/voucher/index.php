@@ -12,11 +12,11 @@ requireAuth();
     <title>Generate Voucher - City Health Office</title>
     <?php vite('backend/js/main.js'); ?>
 </head>
-<body class="app-shell min-h-screen flex flex-col bg-slate-100 print:block print:min-h-0 print:bg-white">
+<body class="app-shell page-voucher min-h-screen flex flex-col bg-slate-100 print:block print:h-auto print:min-h-0 print:bg-white">
     <?php require_once __DIR__ . '/../../components/page-loader.php'; ?>
     <?php require_once __DIR__ . '/../../components/sidebar.php'; ?>
 
-    <div id="spaContentContainer" class="main-content ml-64 min-h-screen transition-all duration-300 flex-1 flex flex-col print:hidden">
+    <div id="spaContentContainer" class="main-content ml-64 min-h-screen transition-all duration-300 flex-1 flex flex-col">
         <header class="sticky top-0 z-40 flex items-center justify-between bg-white border-b border-slate-200 px-4 py-3 print:hidden">
             <div class="flex items-center space-x-3">
                 <button id="sidebarToggleHeader" type="button" class="relative z-50 lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
@@ -47,7 +47,7 @@ requireAuth();
             </div>
         </header>
 
-        <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 print:hidden">
+        <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
             <?php require_once __DIR__ . '/../../components/generateVoucher.php'; ?>
         </main>
     </div>
