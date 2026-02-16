@@ -74,15 +74,12 @@ require_once __DIR__ . '/../../config/image_helper.php';
         </div>
     </div>
 
-           <!-- Navigation Links
-            <nav class="flex-1 min-h-0 px-3 pt-3 pb-4 space-y-1 overflow-y-auto overflow-x-hidden scrollbar-hide">
-                <ul class="space-y-1">
-                    <!-- Dashboard 
-                </ul>
-            </nav> --->
+    <!-- Navigation Links -->
+    <nav class="flex-1 min-h-0 px-3 pt-3 pb-4 overflow-y-auto overflow-x-hidden scrollbar-hide">
+        <ul class="flex flex-col gap-0">
             <li>
                 <a href="../dashboard/" data-tooltip="Dashboard"
-                    class="nav-item nav-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all group relative w-full cursor-pointer touch-manipulation">
+                    class="nav-item nav-link flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all group relative w-full cursor-pointer touch-manipulation">
                     <svg class="w-5 h-5 shrink-0 transition-all duration-200" aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -96,7 +93,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <!-- Admin (Only for Administrator, CEO, Manager) -->
             <li id="adminNavItem" class="hidden">
                 <a href="../admin/" data-tooltip="User Management"
-                    class="nav-item nav-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all group relative w-full cursor-pointer touch-manipulation">
+                    class="nav-item nav-link flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all group relative w-full cursor-pointer touch-manipulation">
                     <svg class="w-5 h-5 shrink-0 transition-all duration-200" aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -110,7 +107,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <!-- Annual Budget Summary (Dropdown) -->
             <li>
                 <button type="button" data-tooltip="Annual Budget Summary"
-                    class="nav-item nav-dropdown-trigger flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all group relative w-full cursor-pointer touch-manipulation"
+                    class="nav-item nav-dropdown-trigger flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all group relative w-full cursor-pointer touch-manipulation"
                     data-dropdown="budget-dropdown">
                     <svg class="w-5 h-5 shrink-0 transition-all duration-200" aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -130,7 +127,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
                 </button>
                 <!-- Dropdown Content -->
                 <div id="budget-dropdown"
-                    class="dropdown-content overflow-hidden transition-all duration-300 max-h-0 opacity-0 mt-1">
+                    class="dropdown-content overflow-hidden transition-all duration-300 max-h-0 opacity-0 mt-0.5">
                     <a href="../budget/" data-tooltip="Actual vs Budget YTD"
                         class="nav-item nav-subitem flex items-center gap-2.5 px-3 py-2 ml-6 rounded-lg text-white/70 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all cursor-pointer touch-manipulation">
                         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,13 +151,13 @@ require_once __DIR__ . '/../../config/image_helper.php';
 
             <!-- Separator -->
             <li class="nav-separator">
-                <div class="border-t border-white/10 my-2 transition-all duration-300"></div>
+                <div class="border-t border-white/10 my-1 transition-all duration-300"></div>
             </li>
 
             <!-- Expenses (Dropdown) -->
             <li>
                 <button type="button" data-tooltip="Expenses"
-                    class="nav-item nav-dropdown-trigger flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all group relative w-full cursor-pointer touch-manipulation"
+                    class="nav-item nav-dropdown-trigger flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all group relative w-full cursor-pointer touch-manipulation"
                     data-dropdown="expenses-dropdown">
                     <svg class="w-5 h-5 shrink-0 transition-all duration-200" aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -177,7 +174,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
                 </button>
                 <!-- Dropdown Content -->
                 <div id="expenses-dropdown"
-                    class="dropdown-content overflow-hidden transition-all duration-300 max-h-0 opacity-0 mt-1">
+                    class="dropdown-content overflow-hidden transition-all duration-300 max-h-0 opacity-0 mt-0.5">
                     <a href="../monthly-expenses/" data-tooltip="Monthly Expenses Summary"
                         class="nav-item nav-subitem flex items-center gap-2.5 px-3 py-2 ml-6 rounded-lg text-white/70 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all cursor-pointer touch-manipulation">
                         <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -209,7 +206,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <!-- Export -->
             <li>
                 <a href="../export/" data-tooltip="Export"
-                    class="nav-item nav-link flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all group relative w-full cursor-pointer touch-manipulation">
+                    class="nav-item nav-link flex items-center gap-2.5 px-3 py-1.5 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all group relative w-full cursor-pointer touch-manipulation">
                     <svg class="w-5 h-5 shrink-0 transition-all duration-200" aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
