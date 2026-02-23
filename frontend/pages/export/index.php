@@ -50,7 +50,11 @@ requireAuth();
                 <div>
                     <h1 class="text-xl font-bold text-slate-900">Print Reports</h1>
                     <h3 class="text-sm text-slate-600">Print data and reports for <span id="exportCurrentYear"
-                            class="font-semibold text-slate-900"></span></h3>
+                            class="relative inline-block font-black text-slate-900 cursor-pointer group transition-all duration-300 hover:text-[#224796]">
+                            <span
+                                class="absolute bottom-0 left-0 w-0 h-0.5 bg-[#224796] transition-all duration-300 group-hover:w-full"></span>
+                            <span id="exportYearText"></span>
+                        </span></h3>
                 </div>
             </div>
 

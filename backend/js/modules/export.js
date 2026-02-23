@@ -231,6 +231,13 @@ function updateDisplays() {
         const sourceLabel = SOURCES.find(s => s.value === currentFilters.source)?.label || 'Report';
         const displayYear = currentFilters.year || new Date().getFullYear();
         printTitle.textContent = `${sourceLabel} - FY ${displayYear}`;
+
+        // Update the header year display
+        const headerYear = document.getElementById('exportCurrentYear');
+        if (headerYear) {
+            const yearText = headerYear.querySelector('#exportYearText') || headerYear;
+            yearText.textContent = displayYear;
+        }
     }
 
     if (filteredData.length === 0) {

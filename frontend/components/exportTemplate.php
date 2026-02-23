@@ -19,7 +19,6 @@
             class="relative z-10 flex items-center justify-between border-b-3 border-[#224796] pb-6 mb-8 [print-color-adjust:exact]">
             <div class="flex items-center gap-6">
                 <div class="flex items-center gap-2">
-                    <img src="../../images/islamic-logo.png" alt="Islamic Logo" class="w-14 h-14 object-contain">
                     <img src="../../images/auto-rginm-moh.png" alt="MOH Logo" class="w-16 h-16 object-contain">
                 </div>
                 <div class="border-l-2 border-slate-200 pl-6 h-14 flex flex-col justify-center">
@@ -37,7 +36,9 @@
                     <p class="text-[10px] font-mono font-bold text-slate-800 leading-none">
                         CHO-ERP-<?php echo date('Ymd'); ?></p>
                 </div>
-                <img src="../../images/ch-logo.png" alt="CHO Logo" class="w-20 h-20 object-contain drop-shadow-sm rounded-full">
+                <img src="../../images/islamic-logo.png" alt="Islamic Logo" class="w-14 h-14 object-contain">
+                <img src="../../images/ch-logo.png" alt="CHO Logo"
+                    class="w-20 h-20 object-contain drop-shadow-sm rounded-full">
             </div>
         </div>
 
