@@ -1626,6 +1626,77 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                 return cachedPartySuggestions;
             };
 
+            const staticCodeNameList = [
+                { id: 1, code: "1000", name: "Travelling Expense" },
+                { id: 2, code: "1001", name: "a. BEDs Technical Review" },
+                { id: 3, code: "1002", name: "b. Budget Call" },
+                { id: 4, code: "1003", name: "c. Management Conference" },
+                { id: 5, code: "1004", name: "d. Budget Hearing/budget cycle" },
+                { id: 6, code: "1005", name: "e.MOH SENDING AGENCY PER PROGRAM" },
+                { id: 7, code: "100500", name: "Oral Health Program" },
+                { id: 8, code: "100600", name: "Non-Communicable Disease Cluster" },
+                { id: 9, code: "100601", name: "Lifestyle Related Diseases Control and Prevention Program" },
+                { id: 10, code: "100602", name: "Chronic Obstructive Pulmonary Disease" },
+                { id: 11, code: "100603", name: "Cancer Prevention Program" },
+                { id: 12, code: "100604", name: "Visual Health (Prevention of Blindness) Program" },
+                { id: 13, code: "100605", name: "Dangerous Drug Abuse Prevention Treatment Program (DDAPTP)" },
+                { id: 14, code: "100606", name: "NATIONAL TUBERCULOSIS PROGRAM (TB)" },
+                { id: 15, code: "100700", name: "Infectious Disease Prevention & Control Program" },
+                { id: 16, code: "100701", name: "AIDS /STI Prevention and Control Program" },
+                { id: 17, code: "100702", name: "Dengue Prevention and Control Program" },
+                { id: 18, code: "100703", name: "Malaria Elimination Program" },
+                { id: 19, code: "100704", name: "Water and Sanitation Hygiene (WASH)" },
+                { id: 20, code: "100705", name: "Soil Transmitted Helminthiasis Control Program" },
+                { id: 21, code: "100706", name: "Emerging and Re-Emerging Disease Program" },
+                { id: 22, code: "100707", name: "Leprosy and Skin Disease Control Program" },
+                { id: 23, code: "100708", name: "Rabies Prevention and Control Program" },
+                { id: 24, code: "100709", name: "Epidemiology and Surveillance" },
+                { id: 25, code: "100800", name: "Family Health Cluster Program" },
+                { id: 26, code: "100801", name: "Safe Motherhood Program" },
+                { id: 27, code: "100802", name: "FAMILY PLANNING PROGRAM" },
+                { id: 28, code: "100803", name: "Essential Newborn Care Program" },
+                { id: 29, code: "100804", name: "MATERNAL PROGRAM" },
+                { id: 30, code: "100900", name: "Bangsamoro Immunization Program (BIP)" },
+                { id: 31, code: "1001000", name: "Mental Health and Psychosocial Support Program" },
+                { id: 32, code: "1002000", name: "Nutrition and Development Program (ECCD, MNS, PIMAM, & OPT)" },
+                { id: 33, code: "1003000", name: "Population and Development Program" },
+                { id: 34, code: "1003001", name: "Adolescent Health and Development Program" },
+                { id: 35, code: "1003002", name: "Women and Child Protection Program" },
+                { id: 36, code: "1003003", name: "Senior Citizen Program" },
+                { id: 37, code: "1003004", name: "Health and Wellness Program for Persons with Disabilities" },
+                { id: 38, code: "1004000", name: "Bangsamoro Voluntary Blood Services Program (BVBSP)" },
+                { id: 39, code: "1005000", name: "Health Promotion Program" },
+                { id: 40, code: "1006000", name: "LGU Health Scorecard" },
+                { id: 41, code: "1007000", name: "PUBLIC HEALTH PHARMACISTS" },
+                { id: 42, code: "1008000", name: "UHC technical orientation on the Special Health Fund for BARMM and Collaborative Learning" },
+                { id: 43, code: "1009000", name: "NATIONAL HEALTH FACILITY REGISTRY (NHFR)" },
+                { id: 44, code: "200200", name: "GAD PLANNING & BUDGETING WORKSHOP" },
+                { id: 45, code: "200201", name: "G. Entrance Conference" },
+                { id: 46, code: "200202", name: "H. Exit Conference" },
+                { id: 47, code: "200203", name: "i. SUBMIT REPORT COTABATO/OTHERS COTABATO MATTER" },
+                { id: 48, code: "200204", name: "f. OTHERS AGENCY REQUEST FOR PARTICIPANTS" },
+                { id: 49, code: "3000", name: "Training and Scholarship Expense" },
+                { id: 50, code: "4000", name: "Supplies and Materials Expenses" },
+                { id: 51, code: "3001-0", name: "Office Supplies Expenses" },
+                { id: 52, code: "3001-1", name: "CROWN PAPER & STATIONERIES SUPPLY" },
+                { id: 53, code: "3001-2", name: "ICT Office Supplies Expenses" },
+                { id: 54, code: "3001-3", name: "ILIGAN DATAVISION SALES CENTER" },
+                { id: 55, code: "3001-4", name: "Drugs and Medicines Expenses" },
+                { id: 56, code: "3001-5", name: "ROHAISA PHARMACY" },
+                { id: 57, code: "3001-6", name: "JB PHARMA AND DISTRIBUTOR" },
+                { id: 58, code: "3001-7", name: "Medical, Dental and Laboratory Supplies Expenses" },
+                { id: 59, code: "3001-8", name: "MEDBAY ENTERPRISES" },
+                { id: 60, code: "3001-9", name: "Fuel, Oil and Lubricants Expenses" },
+                { id: 61, code: "3001-10", name: "SJS GASOLINE STATION" },
+                { id: 62, code: "3001-11", name: "FOODS AND SNACK MEALS" },
+                { id: 63, code: "3001-12", name: "ALEXANDRIA CAFÉ AND HOTEL" },
+                { id: 64, code: "3001-13", name: "Other Supplies and Materials Expenses-CASH ADVANCES PROGRAM" }
+            ].sort((a, b) => {
+                let numA = parseFloat(a.code.replace('-', '.'));
+                let numB = parseFloat(b.code.replace('-', '.'));
+                return numA - numB;
+            });
+
             const bindSuggestionDropdown = (inputEl, dropdownEl, sourceKey, onSelect) => {
                 if (!inputEl || !dropdownEl) return;
 
@@ -1637,27 +1708,106 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                     const all = await ensurePartySuggestionsLoaded();
                     const list = all[sourceKey] || [];
                     const q = (inputEl.value || '').toLowerCase().trim();
-                    const filtered = q
+
+                    const filteredDB = q
                         ? list.filter((name) => String(name).toLowerCase().includes(q))
                         : list;
 
-                    if (!filtered.length) {
+                    const filteredStatic = staticCodeNameList.filter(item =>
+                        !q || item.code.toLowerCase().includes(q) || item.name.toLowerCase().includes(q)
+                    );
+
+                    if (!filteredDB.length && !filteredStatic.length) {
                         dropdownEl.innerHTML = `<div class="px-3 py-2 text-xs text-slate-400 border border-slate-100 bg-slate-50 rounded-lg">No previous entries yet</div>`;
                         dropdownEl.classList.remove('hidden');
                         return;
                     }
 
-                    dropdownEl.innerHTML = filtered
-                        .map((name) => `<div class="px-3 py-2 hover:bg-slate-100 text-xs text-slate-700 border-b border-slate-100 last:border-b-0 cursor-pointer">${esc(name)}</div>`)
-                        .join('');
+                    let html = '';
+
+                    if (filteredStatic.length > 0) {
+                        html += `<div class="px-3 py-1.5 bg-slate-100 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-widest sticky top-0">Predefined Entries</div>`;
+
+                        let currentParent = null;
+                        let lastParentOutputId = null;
+                        const outputGroups = [];
+
+                        // 1. Determine natural parents and their children
+                        staticCodeNameList.forEach(item => {
+                            const isLettered = /^[a-z]\.\s/i.test(item.name);
+                            const isNumericSub = !item.code.endsWith('00');
+                            const isSub = isLettered || isNumericSub;
+
+                            if (!isSub) {
+                                currentParent = { ...item, children: [] };
+                                outputGroups.push(currentParent);
+                            } else if (currentParent) {
+                                currentParent.children.push(item);
+                            } else {
+                                // Fallback for orphaned sub-items
+                                currentParent = { ...item, children: [] };
+                                outputGroups.push(currentParent);
+                            }
+                        });
+
+                        // 2. Filter groups based on search (show parent if parent matches OR any child matches)
+                        outputGroups.forEach(group => {
+                            const parentMatches = !q || group.code.toLowerCase().includes(q) || group.name.toLowerCase().includes(q);
+                            const matchingChildren = group.children.filter(child =>
+                                !q || child.code.toLowerCase().includes(q) || child.name.toLowerCase().includes(q)
+                            );
+
+                            if (parentMatches || matchingChildren.length > 0) {
+                                // Output Parent Header
+                                html += `<div class="px-3 py-2 bg-slate-50/80 border-b border-slate-100 flex flex-col gap-0.5 group suggestion-static cursor-pointer hover:bg-slate-100" data-code="${esc(group.code)}" data-name="${esc(group.name)}">
+                                    <div class="text-[9px] font-black text-[#224796] uppercase tracking-tighter opacity-70">Category: ${esc(group.code)}</div>
+                                    <div class="text-xs font-bold text-slate-800 group-hover:text-[#224796] transition-colors">${esc(group.name)}</div>
+                                </div>`;
+
+                                // Output Matching Children
+                                matchingChildren.forEach(child => {
+                                    html += `<div class="pl-8 pr-3 py-2 hover:bg-slate-50 border-b border-slate-100 last:border-b-0 cursor-pointer flex flex-col gap-0.5 group suggestion-static" data-code="${esc(child.code)}" data-name="${esc(child.name)}">
+                                        <div class="flex items-center gap-1.5">
+                                            <div class="w-1 h-1 rounded-full bg-slate-300 group-hover:bg-[#224796]"></div>
+                                            <div class="text-[10px] font-bold text-slate-500 group-hover:text-[#224796]">${esc(child.code)}</div>
+                                        </div>
+                                        <div class="text-xs font-medium text-slate-600 group-hover:text-slate-900 transition-colors">${esc(child.name)}</div>
+                                    </div>`;
+                                });
+                            }
+                        });
+                    }
+
+                    if (filteredDB.length > 0) {
+                        html += `<div class="px-3 py-1.5 bg-slate-100 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-widest sticky top-0">Previous Entries</div>`;
+                        html += filteredDB.map(name =>
+                            `<div class="px-3 py-2 hover:bg-slate-50 text-xs font-semibold text-slate-700 hover:text-[#224796] border-b border-slate-100 last:border-b-0 cursor-pointer suggestion-db" data-name="${esc(name)}">${esc(name)}</div>`
+                        ).join('');
+                    }
+
+                    dropdownEl.innerHTML = html;
                     dropdownEl.classList.remove('hidden');
 
-                    Array.from(dropdownEl.children).forEach((child) => {
+                    dropdownEl.querySelectorAll('.suggestion-static').forEach((child) => {
                         child.addEventListener('click', () => {
-                            const val = (child.textContent || '').trim();
-                            inputEl.value = val;
+                            const code = child.getAttribute('data-code');
+                            const name = child.getAttribute('data-name');
+                            // Automaticaly remove leading letters/labels like "a. ", "b. "
+                            const cleanName = name.replace(/^[a-zA-Z]\.\s+/, '');
+                            inputEl.value = cleanName;
+                            if (glInput) glInput.value = code;
                             hide();
-                            if (typeof onSelect === 'function') onSelect(val);
+                            if (typeof onSelect === 'function') onSelect(cleanName, code);
+                            inputEl.focus();
+                        });
+                    });
+
+                    dropdownEl.querySelectorAll('.suggestion-db').forEach((child) => {
+                        child.addEventListener('click', () => {
+                            const name = child.getAttribute('data-name');
+                            inputEl.value = name;
+                            hide();
+                            if (typeof onSelect === 'function') onSelect(name, null);
                             inputEl.focus();
                         });
                     });
@@ -1666,7 +1816,7 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                 inputEl.addEventListener('focus', showFiltered);
                 inputEl.addEventListener('input', showFiltered);
                 inputEl.addEventListener('blur', () => {
-                    setTimeout(hide, 120);
+                    setTimeout(hide, 200);
                 });
             };
 

@@ -11,6 +11,7 @@ let filteredData = [];
 let currentFilters = {
     source: '',
     search: '',
+    year: new Date().getFullYear(),
     sortBy: 'none',
     columns: []
 };
@@ -228,7 +229,8 @@ function updateDisplays() {
     if (printTimestamp) printTimestamp.textContent = getPHTimestamp();
     if (printTitle) {
         const sourceLabel = SOURCES.find(s => s.value === currentFilters.source)?.label || 'Report';
-        printTitle.textContent = `${sourceLabel} - FY ${currentFilters.year}`;
+        const displayYear = currentFilters.year || new Date().getFullYear();
+        printTitle.textContent = `${sourceLabel} - FY ${displayYear}`;
     }
 
     if (filteredData.length === 0) {
@@ -239,14 +241,15 @@ function updateDisplays() {
     }
 
     // Generate Headers
-    const headerHTML = generateTableHeader(currentFilters.columns);
+    const filteredColumns = currentFilters.columns.filter(c => c !== 'Year' && c !== 'Period');
+    const headerHTML = generateTableHeader(filteredColumns);
     webTableHeader.innerHTML = headerHTML;
     if (printTableHeader) printTableHeader.innerHTML = headerHTML;
 
     // Generate Rows
     let rowsHTML = '';
     filteredData.forEach(row => {
-        rowsHTML += generateTableRow(row, currentFilters.columns);
+        rowsHTML += generateTableRow(row, filteredColumns);
     });
 
     webTableBody.innerHTML = rowsHTML;
@@ -265,13 +268,21 @@ function updateDisplays() {
  */
 function generateTableHeader(columns) {
     return `
-        <tr class="bg-slate-50 border-b-2 border-slate-300">
+        <tr class="bg-slate-50 border-b-2 border-slate-300 [print-color-adjust:exact]">
             ${columns.map(colId => {
         const isAmount = colId.toLowerCase().includes('actual') || colId.toLowerCase().includes('budget') ||
             colId.toLowerCase().includes('amount') || colId.toLowerCase().includes('total') ||
             colId.toLowerCase().includes('remaining');
+        const isGL = colId.toLowerCase().includes('g/l') || colId.toLowerCase().includes('code');
         const align = isAmount ? 'text-right' : 'text-left';
-        return `<th class="border border-slate-300 px-4 py-3 ${align} text-xs font-bold uppercase tracking-wide text-slate-700 font-serif">${colId}</th>`;
+
+        // Refined narrower widths for printing to prevent overflow
+        let widthClass = '';
+        if (isGL) widthClass = 'w-[110px] min-w-[110px] whitespace-nowrap';
+        else if (colId.toLowerCase().includes('account title') || colId.toLowerCase().includes('program')) widthClass = 'w-auto min-w-[150px]';
+        else widthClass = 'w-[90px] min-w-[90px]';
+
+        return `<th class="border border-slate-300 px-2 py-2.5 ${align} ${widthClass} text-[10px] font-bold uppercase tracking-tight text-slate-800 font-serif overflow-hidden truncate" title="${colId}">${colId}</th>`;
     }).join('')}
         </tr>
     `;
@@ -288,8 +299,13 @@ function generateTableRow(row, columns) {
         const isAmount = colId.toLowerCase().includes('actual') || colId.toLowerCase().includes('budget') ||
             colId.toLowerCase().includes('amount') || colId.toLowerCase().includes('total');
         const isRemaining = colId.toLowerCase().includes('remaining');
+        const isGL = colId.toLowerCase().includes('g/l') || colId.toLowerCase().includes('code');
 
-        let cellClass = `border border-slate-200 px-4 py-3 text-sm font-medium ${isAmount || isRemaining ? 'text-right font-mono' : 'text-left text-slate-600'}`;
+        let cellClass = `border border-slate-300 px-2 py-2 text-[10px] font-medium leading-tight ${isAmount || isRemaining ? 'text-right font-mono' : 'text-left text-slate-800'}`;
+
+        if (isGL) cellClass += " whitespace-nowrap w-[110px]";
+        else if (colId.toLowerCase().includes('account title') || colId.toLowerCase().includes('program')) cellClass += " w-auto break-words";
+        else cellClass += " w-[90px]";
 
         // DATA TAGGING for Remaining Columns - Force print colors using arbitrary property
         if (isRemaining) {
