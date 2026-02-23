@@ -45,7 +45,7 @@
 
     #sidebar.collapsed {
         width: 5.5rem !important
-        /* 72px - collapsed width */
+            /* 72px - collapsed width */
     }
 }
 
@@ -286,178 +286,124 @@ body.app-shell {
    GLOBAL PRINT & REPORT CONFIGURATION
    ============================================================================ */
 @media print {
+
+    /* DEFAULT PAGE SETTINGS */
     @page {
-        size: landscape;
-        margin: 12mm 15mm;
+        size: auto;
+        margin: 10mm;
     }
 
-    /* Clean slate for print body */
+    /* Reset body for clean print */
     body {
         background: white !important;
+        color: black !important;
         overflow: visible !important;
         -webkit-print-color-adjust: exact !important;
         print-color-adjust: exact !important;
     }
 
-    /* Target the high-fidelity template specifically */
-    #export-template {
-        display: block !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 100% !important;
-        z-index: 9999 !important;
-    }
-
-    /* Global isolation: Hide non-report elements from the body
-       Exceptions: body.page-voucher (Ctrl+P), body.voucher-print-window (Print button popup) */
-    body:not(.page-voucher):not(.voucher-print-window) > *:not(#export-template),
+    /* High-Level Isolation: Hide everything except the report templates */
+    body:not(.page-voucher):not(.voucher-print-window) main,
     body:not(.page-voucher):not(.voucher-print-window) #spaContentContainer,
     #sidebar,
     header,
     nav,
-    .invisible-on-print {
+    aside,
+    .print-hidden,
+    .invisible-on-print,
+    .voucher-toolbar-row {
         display: none !important;
+    }
+
+    /* Force show Report Area if on print */
+    #export-template,
+    #voucher-print-area {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+    }
+
+    /* SPECIFIC RULES BY CONTEXT */
+    .voucher-print-window #voucher-print-area,
+    .page-voucher #voucher-print-area {
+        display: flex !important;
+        width: 8.5in !important;
+        min-height: 13.5in !important;
+        margin: 0 auto !important;
+        padding: 0.4in 0.5in !important;
+        background: white !important;
+        flex-direction: column !important;
+        position: relative !important;
+        border: none !important;
+        box-shadow: none !important;
     }
 }
 
 /* ============================================================================
-   VOUCHER PRINT WINDOW
-   Dedicated print window opened by voucher.js - clones #voucher-print-area
+   VOUCHER & LEGAL PRINT CONFIGURATION
    ============================================================================ */
-html.voucher-print-window,
-body.voucher-print-window {
+
+/* Voucher-specific body overrides */
+body.voucher-print-window,
+body.page-voucher {
+    background: white !important;
     margin: 0 !important;
     padding: 0 !important;
-    min-height: 0 !important;
-    height: auto !important;
-    background: white;
-    font-family: ui-serif, Georgia, serif;
 }
 
-body.voucher-print-window {
-    padding: 0 !important;
-}
-
-/* Transparent inputs (especially dates) - no visible borders/background */
-body.voucher-print-window input,
-body.voucher-print-window textarea {
-    background: transparent !important;
-    border: none !important;
-    border-bottom: 1px solid #94a3b8 !important;
-    box-shadow: none !important;
-}
-
-body.voucher-print-window input[type="date"] {
-    -webkit-appearance: none;
-    appearance: none;
-}
-
-body.voucher-print-window input[type="date"]::-webkit-calendar-picker-indicator {
-    opacity: 0;
+/* Enhanced Voucher Preview (Desktop Only) */
+.voucher-preview-container {
     width: 100%;
-    height: 100%;
-    position: absolute;
+    max-width: 8.5in;
+    min-height: 13in;
+    margin: 0 auto;
+    background: white;
+    position: relative;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e2e8f0;
+    transition: transform 0.2s ease;
 }
 
-/* Smaller logos in voucher print window only */
-body.voucher-print-window img {
-    max-width: 3rem;
-    max-height: 3rem;
-    width: 3rem !important;
-    height: 3rem !important;
-    object-fit: contain;
+@media (min-width: 1024px) {
+    .voucher-preview-container:hover {
+        transform: translateY(-2px);
+    }
 }
 
-body.voucher-print-window [id="voucher-print-area"],
-body.voucher-print-window > div {
-    max-height: 100% !important;
-    overflow: hidden !important;
+/* Dedicated Desk Background for Voucher View */
+.voucher-desk {
+    background-color: #f1f5f9;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+    transition: all 0.3s ease;
+}
+
+/* Modal Context Overrides: Hide desk styling when inside a modal */
+#voucher-app.in-modal .voucher-desk {
+    background-color: transparent !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+}
+
+#voucher-app.in-modal .voucher-preview-container {
+    box-shadow: none !important;
+    max-width: 100% !important;
+    border: none !important;
+}
+
+/* Ensure inputs look clean in the preview - Replaced @apply with standard CSS */
+.voucher-field:focus {
+    outline: 2px solid #224796;
+    outline-offset: -2px;
+}
+
+/* Floating button fix - ensure it's always on top unless in print */
+#itemizedVoucherFloatingBtn {
+    z-index: 50 !important;
 }
 
 @media print {
-    html.voucher-print-window,
-    body.voucher-print-window {
-        margin: 0 !important;
-        padding: 0 !important;
-        min-height: 0 !important;
-    }
-
-    @page {
-        margin: 0 !important;
-        size: A4;
-    }
-
-    body.voucher-print-window > * {
-        page-break-after: avoid !important;
-    }
-
-    body.voucher-print-window {
-        overflow: hidden !important;
-    }
-
-    body.voucher-print-window #voucher-print-area > div {
-        padding: 0.25cm !important;
-    }
-
-    /* ============================================================================
-       VOUCHER PAGE - Ctrl+P / PDF: show voucher only on main page
-       ============================================================================ */
-    body.page-voucher #page-loader,
-    body.page-voucher #mobileBackdrop,
-    body.page-voucher #sidebar,
-    body.page-voucher [id*="sidebar"],
-    body.page-voucher header,
-    body.page-voucher .voucher-toolbar-row {
+    #itemizedVoucherFloatingBtn {
         display: none !important;
-    }
-
-    body.page-voucher #spaContentContainer {
-        display: block !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
-    }
-
-    body.page-voucher main {
-        display: block !important;
-        padding: 0 !important;
-        overflow: visible !important;
-    }
-
-    body.page-voucher #voucher-print-area {
-        -webkit-print-color-adjust: exact;
-        print-color-adjust: exact;
-        page-break-inside: avoid !important;
-    }
-
-    body.page-voucher main,
-    body.page-voucher #spaContentContainer {
-        padding: 0 !important;
-    }
-
-    @page {
-        margin: 0 !important;
-        size: A4;
-    }
-
-    /* Transparent inputs for direct print/PDF */
-    body.page-voucher #voucher-print-area input,
-    body.page-voucher #voucher-print-area textarea {
-        background: transparent !important;
-        border: none !important;
-        border-bottom: 1px solid #94a3b8 !important;
-        box-shadow: none !important;
-    }
-
-    body.page-voucher #voucher-print-area input[type="date"] {
-        -webkit-appearance: none;
-        appearance: none;
-    }
-
-    body.page-voucher #voucher-print-area input[type="date"]::-webkit-calendar-picker-indicator {
-        opacity: 0;
-        width: 100%;
-        height: 100%;
-        position: absolute;
     }
 }

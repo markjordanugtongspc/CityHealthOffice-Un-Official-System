@@ -47,6 +47,7 @@ export function printVoucher() {
         return;
     }
 
+    // Write minimal document with guaranteed Legal print rules
     printWin.document.write(`
 <!DOCTYPE html>
 <html lang="en" class="voucher-print-window">
@@ -55,6 +56,13 @@ export function printVoucher() {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Disbursement Voucher - Print</title>
 ${styleLinks}
+<style>
+    @media print { 
+        @page { size: legal portrait !important; margin: 0 !important; } 
+    }
+    body.voucher-print-window { background: white !important; margin: 0 !important; padding: 0 !important; }
+    .print-hidden, .voucher-toolbar-row { display: none !important; }
+</style>
 </head>
 <body class="voucher-print-window">${clone.outerHTML}</body>
 </html>`);
@@ -120,7 +128,7 @@ export function saveVoucherToCookie() {
     try {
         const json = JSON.stringify(data);
         if (json.length < 3500) setCookie(VOUCHER_COOKIE_NAME, json, VOUCHER_COOKIE_DAYS);
-    } catch (_) {}
+    } catch (_) { }
 }
 
 /**

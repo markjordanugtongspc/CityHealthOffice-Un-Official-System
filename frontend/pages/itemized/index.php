@@ -20,6 +20,14 @@ requireAuth();
 </head>
 
 <body class="app-shell min-h-screen flex flex-col bg-slate-100">
+    <!-- Floating: Generate Voucher (ticket icon) -->
+    <button type="button" id="itemizedVoucherFloatingBtn" aria-label="Generate Disbursement Voucher"
+        class="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-[#224796] text-white shadow-lg hover:bg-[#163473] hover:shadow-xl transition-all cursor-pointer">
+        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.5 12A2.5 2.5 0 0 1 21 9.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v2.5a2.5 2.5 0 0 1 0 5V17a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+        </svg>
+    </button>
+
     <?php require_once __DIR__ . '/../../components/page-loader.php'; ?>
     <?php require_once __DIR__ . '/../../components/sidebar.php'; ?>
 
@@ -144,9 +152,11 @@ requireAuth();
                                     </svg>
                                 </span>
                                 <input id="itemizedSearch" type="text" placeholder="Search transactions..."
-                                    class="block w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796]" />
+                                    class="block w-full r
+                         o          unded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796]" />
                             </div>
-                        </div>
+
+                                                           </div>
 
                         <!-- Category Filters & Actions -->
                         <div class="flex flex-col sm:flex-row gap-3">
@@ -265,17 +275,11 @@ requireAuth();
     </div>
 
     <!-- Hidden voucher form template (moved into modal when "Generate Voucher" is clicked) -->
-    <div id="voucherFormTemplate" class="hidden" aria-hidden="true">
-        <?php require_once __DIR__ . '/../../components/generateVoucher.php'; ?>
-    </div>
 
-    <!-- Floating: Generate Voucher (ticket icon) -->
-    <button type="button" id="itemizedVoucherFloatingBtn" aria-label="Generate Disbursement Voucher"
-        class="fixed bottom-6 right-6 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-[#224796] text-white shadow-lg hover:bg-[#163473] hover:shadow-xl transition-all cursor-pointer">
-        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.5 12A2.5 2.5 0 0 1 21 9.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v2.5a2.5 2.5 0 0 1 0 5V17a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
-        </svg>
-    </button>
+               <div id="voucherFormTemplate" class="hidden" aria-hidden="true">
+
+                        <?php require_once __DIR__ . '/../../components/generateVoucher.php'; ?>
+    </div>
 
 </body>
 

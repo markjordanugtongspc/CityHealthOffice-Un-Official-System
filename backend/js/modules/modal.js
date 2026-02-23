@@ -773,7 +773,10 @@ export function showVoucherModal() {
 
     container.innerHTML = modalHTML;
     const body = document.getElementById('voucherModalBody');
-    if (body) body.appendChild(app);
+    if (body) {
+        app.classList.add('in-modal');
+        body.appendChild(app);
+    }
     const toolbarRow = app.querySelector('.voucher-toolbar-row');
     if (toolbarRow) toolbarRow.classList.add('hidden');
 
@@ -782,6 +785,7 @@ export function showVoucherModal() {
     const closeBtn = document.getElementById('voucherModalClose');
     const closeVoucher = () => {
         const voucherApp = document.getElementById('voucher-app');
+        voucherApp?.classList.remove('in-modal');
         const toolbarRow = voucherApp?.querySelector('.voucher-toolbar-row');
         if (toolbarRow) toolbarRow.classList.remove('hidden');
         if (voucherApp && voucherApp.parentElement?.id === 'voucherModalBody') {
