@@ -20,7 +20,10 @@ if (!function_exists('env')) {
 
         if ($vars === null) {
             $vars = [];
-            $envPath = __DIR__ . '/.env';
+            // Check root first, then config
+            $rootEnv = dirname(__DIR__) . '/.env';
+            $configEnv = __DIR__ . '/.env';
+            $envPath = is_readable($rootEnv) ? $rootEnv : $configEnv;
 
             if (is_readable($envPath)) {
                 // Use INI parser in raw mode (no type casting)

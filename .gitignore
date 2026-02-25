@@ -4,6 +4,7 @@ dist/
 
 # Local environment configuration (not committed)
 config/.env
+.env
 
 # Documentation files - ignore all Markdown as requested
 *.md

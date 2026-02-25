@@ -24,11 +24,11 @@ function setFavicon() {
     // Remove existing favicon links if any
     const existingFavicons = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]');
     existingFavicons.forEach(link => link.remove());
-    
+
     // Determine the correct path to the favicon
     // Strategy: Use sidebar logo path as reference if available, otherwise calculate based on URL
     let faviconPath = '';
-    
+
     // Method 1: Check if sidebar logo exists and use its path as reference (most reliable)
     const sidebarLogo = document.querySelector('img[src*="ch-logo.png"]');
     if (sidebarLogo) {
@@ -40,7 +40,7 @@ function setFavicon() {
         // Method 2: Calculate path based on current URL structure
         const currentPath = window.location.pathname;
         const pathParts = currentPath.split('/').filter(p => p && p !== 'index.php');
-        
+
         // Find 'pages' in the path to determine depth
         const pagesIndex = pathParts.indexOf('pages');
         if (pagesIndex >= 0) {
@@ -56,32 +56,32 @@ function setFavicon() {
             faviconPath = 'frontend/images/ch-logo.png';
         }
     }
-    
+
     // Create circular favicon using canvas
     const img = new Image();
     img.crossOrigin = 'anonymous'; // Handle CORS if needed
-    
-    img.onload = function() {
+
+    img.onload = function () {
         // Create canvas for circular favicon
         const canvas = document.createElement('canvas');
         const size = 64; // Higher resolution for better quality
         canvas.width = size;
         canvas.height = size;
         const ctx = canvas.getContext('2d');
-        
+
         // Create circular clipping path
         ctx.beginPath();
         ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
         ctx.closePath();
         ctx.clip();
-        
+
         // Calculate dimensions to maintain aspect ratio and center the image
         const imgAspect = img.width / img.height;
         let drawWidth = size;
         let drawHeight = size;
         let drawX = 0;
         let drawY = 0;
-        
+
         if (imgAspect > 1) {
             // Image is wider than tall
             drawHeight = size;
@@ -93,54 +93,54 @@ function setFavicon() {
             drawHeight = size / imgAspect;
             drawY = (size - drawHeight) / 2;
         }
-        
+
         // Draw white background first (for transparency handling)
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, size, size);
-        
+
         // Draw the image
         ctx.drawImage(img, drawX, drawY, drawWidth, drawHeight);
-        
+
         // Convert canvas to data URL
         const circularFaviconUrl = canvas.toDataURL('image/png');
-        
+
         // Create favicon link elements with circular version
         const faviconLink = document.createElement('link');
         faviconLink.rel = 'icon';
         faviconLink.type = 'image/png';
         faviconLink.href = circularFaviconUrl;
-        
+
         const shortcutLink = document.createElement('link');
         shortcutLink.rel = 'shortcut icon';
         shortcutLink.type = 'image/png';
         shortcutLink.href = circularFaviconUrl;
-        
+
         const appleTouchIcon = document.createElement('link');
         appleTouchIcon.rel = 'apple-touch-icon';
         appleTouchIcon.href = circularFaviconUrl;
-        
+
         // Add to head (insert at the beginning for better compatibility)
         document.head.insertBefore(faviconLink, document.head.firstChild);
         document.head.insertBefore(shortcutLink, document.head.firstChild);
         document.head.insertBefore(appleTouchIcon, document.head.firstChild);
     };
-    
-    img.onerror = function() {
+
+    img.onerror = function () {
         // Fallback: use original image path if canvas conversion fails
         const faviconLink = document.createElement('link');
         faviconLink.rel = 'icon';
         faviconLink.type = 'image/png';
         faviconLink.href = faviconPath;
-        
+
         const shortcutLink = document.createElement('link');
         shortcutLink.rel = 'shortcut icon';
         shortcutLink.type = 'image/png';
         shortcutLink.href = faviconPath;
-        
+
         document.head.insertBefore(faviconLink, document.head.firstChild);
         document.head.insertBefore(shortcutLink, document.head.firstChild);
     };
-    
+
     // Load the image
     img.src = faviconPath;
 }
@@ -156,6 +156,7 @@ import { init as initItemized } from './itemized.js';
 import { init as initExport } from './modules/export.js';
 import { init as initVoucher } from './modules/voucher.js';
 import { init as initScrollToTop } from './modules/scroll-to-top.js';
+import { init as initAI } from './modules/ai.js';
 import { init as initAbout } from './about.js';
 import { init as initAdmin } from './admin.js';
 import { initSidebar } from './sidebar.js';
@@ -186,26 +187,26 @@ function initNavigationPreloading() {
         // Find all internal navigation links
         const links = document.querySelectorAll('a[href*="frontend/pages"], a[href*="index.php"]');
         const preloadedPages = new Set();
-        
+
         links.forEach(link => {
             const href = link.getAttribute('href');
             if (!href || href.startsWith('#') || href.startsWith('javascript:')) {
                 return;
             }
-            
+
             // Skip external links
             if (href.startsWith('http') && !href.includes(window.location.hostname)) {
                 return;
             }
-            
+
             // Resolve relative URLs to absolute
             const absoluteUrl = new URL(href, window.location.href).href;
-            
+
             // Preload on hover (mouseenter) - cache the page for instant future loads
             link.addEventListener('mouseenter', async () => {
                 if (!preloadedPages.has(absoluteUrl)) {
                     preloadedPages.add(absoluteUrl);
-                    
+
                     // Check if already cached
                     try {
                         const cached = await isPageCached(absoluteUrl);
@@ -218,7 +219,7 @@ function initNavigationPreloading() {
                     }
                 }
             }, { once: true });
-            
+
             // Handle clicks - service worker will serve cached pages instantly
             link.addEventListener('click', (e) => {
                 // Only handle internal navigation
@@ -239,7 +240,7 @@ function initNavigationPreloading() {
                         </style>
                     `;
                     document.body.appendChild(loader);
-                    
+
                     // If page is cached, loader will be removed quickly by main.js init()
                     // If not cached, normal navigation will occur
                 }
@@ -257,13 +258,13 @@ export async function init() {
     import('./modules/cache-manager.js').then(({ registerServiceWorker }) => {
         registerServiceWorker();
     });
-    
+
     // Remove page loader if it exists (for page transitions)
     removePageLoader();
-    
+
     // Set favicon for all pages (must be first)
     setFavicon();
-    
+
     // Initialize sidebar navigation (must be first)
     initSidebar();
 
@@ -308,10 +309,13 @@ export async function init() {
 
     // Floating scroll-to-top button (mobile/desktop)
     initScrollToTop();
-    
+
+    // AI Chatbot
+    initAI();
+
     // Initialize navigation preloading for smoother page transitions
     initNavigationPreloading();
-    
+
     // Ensure loader is removed after all initialization
     removePageLoader();
 }
