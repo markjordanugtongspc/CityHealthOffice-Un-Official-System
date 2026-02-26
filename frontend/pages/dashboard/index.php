@@ -319,8 +319,20 @@ requireAuth();
                             </div>
                         </div>
 
-                        <!-- Donut Chart -->
-                        <div class="py-4 sm:py-6" id="monthlyVouchersChart"></div>
+                        <!-- Chart and Legend Flanking Container -->
+                        <div class="flex flex-col lg:flex-row items-center justify-between gap-4 py-4 sm:py-6 relative">
+                            <!-- Desktop Left Legend (Months 1-6) -->
+                            <div id="monthlyVouchersLegendLeft" class="hidden lg:flex flex-col gap-2 w-1/4"></div>
+                            
+                            <!-- Center Chart Area -->
+                            <div class="w-full lg:w-2/4" id="monthlyVouchersChart"></div>
+                            
+                            <!-- Desktop Right Legend (Months 7-12) -->
+                            <div id="monthlyVouchersLegendRight" class="hidden lg:flex flex-col gap-2 w-1/4 items-end text-right"></div>
+
+                            <!-- Mobile Legend (Combined Grid below chart) -->
+                            <div id="monthlyVouchersLegendMobile" class="grid lg:hidden grid-cols-2 gap-4 w-full px-2 mt-4"></div>
+                        </div>
 
                         <!-- Footer with Year and Category Dropdowns -->
                         <div
@@ -379,7 +391,7 @@ requireAuth();
                                 <div class="relative inline-flex w-fit">
                                     <button id="cashCategoryButton" data-dropdown-toggle="cashCategoryDropdown"
                                         data-dropdown-placement="top-end"
-                                        class="text-sm font-medium text-[#224796] hover:text-[#163473] text-center inline-flex items-center cursor-pointer transition-colors bg-transparent box-border border border-transparent hover:bg-slate-100 focus:ring-4 focus:ring-slate-200 rounded-lg px-3 py-2 focus:outline-none"
+                                        class="text-sm font-medium text-[#224796] hover:text-[#163473] text-center inline-flex items-center cursor-pointer transition-colors bg-[#224796]/5 border border-[#224796]/10 hover:bg-[#224796]/10 focus:ring-4 focus:ring-slate-200 rounded-lg px-3 py-2 focus:outline-none"
                                         type="button">
                                         All Categories
                                         <svg class="w-4 h-4 ms-1.5 rotate-180" aria-hidden="true"
@@ -390,74 +402,66 @@ requireAuth();
                                         </svg>
                                     </button>
                                     <div id="cashCategoryDropdown"
-                                        class="absolute right-0 bottom-full mb-2 z-999 hidden bg-white border border-slate-200 rounded-lg shadow-xl w-44 ring-1 ring-slate-200">
+                                        class="absolute right-0 bottom-full mb-2 z-999 hidden bg-white border border-slate-200 rounded-lg shadow-xl w-52 ring-1 ring-slate-200">
                                         <ul class="p-2 text-sm text-slate-600 font-medium">
                                             <li><a href="#" data-category="all"
                                                     class="block px-3 py-2 hover:bg-slate-100 rounded cursor-pointer">All
                                                     Categories</a></li>
                                             <li><a href="#" data-category="MOOE"
-                                                    class="block px-3 py-2 hover:bg-slate-100 rounded cursor-pointer">MOOE</a>
+                                                    class="block px-3 py-2 hover:bg-slate-100 rounded cursor-pointer border-b border-slate-100 mb-1 pb-2">MOOE</a>
                                             </li>
-                                            <li><a href="#" data-category="PHM"
-                                                    class="block px-3 py-2 hover:bg-slate-100 rounded cursor-pointer">PHM</a>
-                                            </li>
-                                            <li><a href="#" data-category="PHIC"
-                                                    class="block px-3 py-2 hover:bg-slate-100 rounded cursor-pointer">PHIC</a>
-                                            </li>
-                                        </ul>
-                                    </div>
-                                </div>
 
-                                <!-- PHM Subtype Dropdown (shown only when PHM is active) -->
-                                <div id="phmWrapper" class="relative inline-flex w-fit hidden">
-                                    <button id="phmSubtypeButton" data-dropdown-toggle="phmSubtypeDropdown"
-                                        data-dropdown-placement="top-end"
-                                        class="text-xs sm:text-sm font-medium text-slate-500 hover:text-slate-800 text-center inline-flex items-center cursor-pointer transition-colors bg-transparent box-border border border-slate-200 hover:bg-slate-50 focus:ring-4 focus:ring-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none"
-                                        type="button">
-                                        PHM Type
-                                        <svg class="w-4 h-4 ms-1.5 rotate-180" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                            viewBox="0 0 24 24">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="2" d="m19 9-7 7-7-7" />
-                                        </svg>
-                                    </button>
-                                    <div id="phmSubtypeDropdown"
-                                        class="absolute right-0 bottom-full mb-2 z-999 hidden bg-white border border-slate-200 rounded-lg shadow-xl w-48 ring-1 ring-slate-200">
-                                        <ul class="p-2 text-sm text-slate-600 font-medium">
-                                            <li><a href="#" data-phm-subtype="PHM - Konsulta"
-                                                    class="block px-3 py-2 hover:bg-slate-100 rounded cursor-pointer">PHM
-                                                    - Konsulta</a></li>
-                                            <li><a href="#" data-phm-subtype="PHM - SPF"
-                                                    class="block px-3 py-2 hover:bg-slate-100 rounded cursor-pointer">PHM
-                                                    - SPF</a></li>
-                                        </ul>
-                                    </div>
-                                </div>
+                                            <!-- PHM Nested Parent -->
+                                            <li>
+                                                <button id="phmNestedButton" data-dropdown-toggle="phmNestedDropdown"
+                                                    data-dropdown-placement="left-start"
+                                                    class="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-100 rounded text-left group">
+                                                    <span>PHM (PhilHealth)</span>
+                                                    <svg class="w-3 h-3 text-slate-400 group-hover:text-slate-900"
+                                                        aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none" viewBox="0 0 10 6">
+                                                        <path stroke="currentColor" stroke-linecap="round"
+                                                            stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
+                                                    </svg>
+                                                </button>
+                                                <div id="phmNestedDropdown"
+                                                    class="z-1000 hidden bg-white divide-y divide-slate-100 rounded-lg shadow-xl border border-slate-200 w-48">
+                                                    <ul class="p-2 text-sm text-slate-600">
+                                                        <li><a href="#" data-phm-subtype="PHM - Konsulta"
+                                                                class="block px-3 py-2 hover:bg-slate-100 rounded">PHM -
+                                                                Konsulta</a></li>
+                                                        <li><a href="#" data-phm-subtype="PHM - SPF"
+                                                                class="block px-3 py-2 hover:bg-slate-100 rounded">PHM -
+                                                                SPF</a></li>
+                                                    </ul>
+                                                </div>
+                                            </li>
 
-                                <!-- PHIC Subtype Dropdown (shown only when PHIC is active) -->
-                                <div id="phicWrapper" class="relative inline-flex w-fit hidden">
-                                    <button id="phicSubtypeButton" data-dropdown-toggle="phicSubtypeDropdown"
-                                        data-dropdown-placement="top-end"
-                                        class="text-xs sm:text-sm font-medium text-slate-500 hover:text-slate-800 text-center inline-flex items-center cursor-pointer transition-colors bg-transparent box-border border border-slate-200 hover:bg-slate-50 focus:ring-4 focus:ring-slate-200 rounded-lg px-2.5 py-1.5 focus:outline-none"
-                                        type="button">
-                                        PHIC Type
-                                        <svg class="w-4 h-4 ms-1.5 rotate-180" aria-hidden="true"
-                                            xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                            viewBox="0 0 24 24">
-                                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                                stroke-width="2" d="m19 9-7 7-7-7" />
-                                        </svg>
-                                    </button>
-                                    <div id="phicSubtypeDropdown"
-                                        class="absolute right-0 bottom-full mb-2 z-999 hidden bg-white border border-slate-200 rounded-lg shadow-xl w-48 ring-1 ring-slate-200">
-                                        <ul class="p-2 text-sm text-slate-600 font-medium">
-                                            <li><a href="#" data-phic-subtype="PHIC - PF"
-                                                    class="block px-3 py-2 hover:bg-slate-100 rounded cursor-pointer">PHIC
-                                                    - PF</a></li>
-                                            <li><a href="#" data-phic-subtype="PHIC - Facility"
-                                                    class="block px-3 py-2 hover:bg-slate-100 rounded cursor-pointer">PHIC
-                                                    - Facility</a></li>
+                                            <!-- PHIC Nested Parent -->
+                                            <li>
+                                                <button id="phicNestedButton" data-dropdown-toggle="phicNestedDropdown"
+                                                    data-dropdown-placement="left-start"
+                                                    class="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-100 rounded text-left group">
+                                                    <span>PHIC (Claims)</span>
+                                                    <svg class="w-3 h-3 text-slate-400 group-hover:text-slate-900"
+                                                        aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                                        fill="none" viewBox="0 0 10 6">
+                                                        <path stroke="currentColor" stroke-linecap="round"
+                                                            stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
+                                                    </svg>
+                                                </button>
+                                                <div id="phicNestedDropdown"
+                                                    class="z-1000 hidden bg-white divide-y divide-slate-100 rounded-lg shadow-xl border border-slate-200 w-48">
+                                                    <ul class="p-2 text-sm text-slate-600">
+                                                        <li><a href="#" data-phic-subtype="PHIC - PF"
+                                                                class="block px-3 py-2 hover:bg-slate-100 rounded">PHIC
+                                                                - PF</a></li>
+                                                        <li><a href="#" data-phic-subtype="PHIC - Facility"
+                                                                class="block px-3 py-2 hover:bg-slate-100 rounded">PHIC
+                                                                - Facility</a></li>
+                                                    </ul>
+                                                </div>
+                                            </li>
                                         </ul>
                                     </div>
                                 </div>

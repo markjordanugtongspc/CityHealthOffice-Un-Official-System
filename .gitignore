@@ -19,3 +19,5 @@ Thumbs.db
 
 # Database
 *.sql
+test_db*.php
+db_schema*.txt

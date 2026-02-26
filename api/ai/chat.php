@@ -57,6 +57,43 @@ if (isset($knowledge['about_me_link'])) {
     $systemPrompt .= "Refer users to " . $knowledge['about_me_link'] . " for more info about the developer. ";
 }
 
+// Fetch real-time DB context for the AI
+require_once __DIR__ . '/../../config/db.php';
+$dbContext = "CURRENT SYSTEM DATA FROM DATABASE:\n";
+try {
+    $pdo = getDB();
+    if ($pdo) {
+        // Budget
+        $stmt = $pdo->query("SELECT SUM(budget) as budget, SUM(actual) as actual, SUM(remaining_amount) as rem FROM budget_entries");
+        $b = $stmt->fetch(PDO::FETCH_ASSOC);
+        $dbContext .= "- Total Budget / Total Income / Fund Downloaded: ₱" . number_format($b['budget'] ?? 0, 2) . "\n";
+        $dbContext .= "- Total Expenses (Budget Actuals): ₱" . number_format($b['actual'] ?? 0, 2) . "\n";
+        $dbContext .= "- Total Remaining Budget: ₱" . number_format($b['rem'] ?? 0, 2) . "\n";
+
+        // Itemized
+        $stmt = $pdo->query("SELECT COUNT(*) as cnt, SUM(check_amount) as total, SUM(mooe) as mooe, SUM(spf) as spf, SUM(mcp_facility) as mcp, SUM(konsulta_facility) as kf, SUM(konsulta_pf) as kpf FROM itemized_transactions WHERE archived = 0");
+        $i = $stmt->fetch(PDO::FETCH_ASSOC);
+        $dbContext .= "- Total Itemized Transactions Count: " . number_format($i['cnt'] ?? 0) . "\n";
+        $dbContext .= "- Total Itemized Expenses/Vouchers/Checks Amount: ₱" . number_format($i['total'] ?? 0, 2) . "\n";
+        $dbContext .= "- Itemized Breakdown: MOOE: ₱" . number_format($i['mooe'] ?? 0, 2) . ", SPF: ₱" . number_format($i['spf'] ?? 0, 2) . ", MCP Facility: ₱" . number_format($i['mcp'] ?? 0, 2) . ", Konsulta Facility: ₱" . number_format($i['kf'] ?? 0, 2) . ", Konsulta PF: ₱" . number_format($i['kpf'] ?? 0, 2) . "\n";
+
+        // Special Fund
+        $stmt = $pdo->query("SELECT SUM(budget) as budget, SUM(actual) as actual, SUM(remaining_amount) as rem FROM special_fund_entries");
+        $sf = $stmt->fetch(PDO::FETCH_ASSOC);
+        $dbContext .= "- Total Special Fund Budget: ₱" . number_format($sf['budget'] ?? 0, 2) . "\n";
+        $dbContext .= "- Total Special Fund Expenses: ₱" . number_format($sf['actual'] ?? 0, 2) . "\n";
+        $dbContext .= "- Total Special Fund Remaining: ₱" . number_format($sf['rem'] ?? 0, 2) . "\n";
+    }
+} catch (Exception $e) {
+    // Gracefully handle if tables don't exist yet or connection fails
+}
+
+$systemPrompt .= "\n" . $dbContext . "\n";
+$systemPrompt .= "CRITICAL SYSTEM RULES:\n";
+$systemPrompt .= "1. You are READ-ONLY. You are strictly forbidden from adding, editing, or deleting any data. If the user asks to modify data, politely inform them that you do not have permission and can only read/provide information.\n";
+$systemPrompt .= "2. Whenever the user asks about financial data, amounts, total income, or expenses, use the EXACT values provided in the CURRENT SYSTEM DATA above.\n";
+$systemPrompt .= "3. You MUST format any fetched financial amounts with the Philippine Peso sign (₱) and make the amount bold (e.g., **₱123,456.00**).\n";
+
 if (!empty($knowledge['general_instructions'])) {
     $systemPrompt .= "Follow these additional rules: ";
     foreach ($knowledge['general_instructions'] as $instruction) {

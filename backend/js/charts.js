@@ -49,7 +49,7 @@ function getApiBasePath() {
 export async function init() {
     try {
         const apexchartsModule = await import('apexcharts');
-        
+
         if (typeof apexchartsModule.default !== 'undefined') {
             ApexCharts = apexchartsModule.default;
         } else if (typeof apexchartsModule.ApexCharts !== 'undefined') {
@@ -59,18 +59,18 @@ export async function init() {
         } else {
             ApexCharts = apexchartsModule.default || apexchartsModule;
         }
-        
+
         if (!ApexCharts || typeof ApexCharts !== 'function') {
             console.error('ApexCharts not found or not a constructor');
             return;
         }
-        
+
         const initCharts = () => {
             setTimeout(() => {
                 initializeCharts();
             }, 300);
         };
-        
+
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', initCharts);
         } else {
@@ -89,30 +89,30 @@ function initializeCharts() {
         console.error('ApexCharts not loaded');
         return;
     }
-    
+
     // Page 1: Vouchers Charts
     initMonthlyVouchersChart();
     initWeeklyVouchersChart();
     initDailyVouchersChart();
     initYearlyVouchersChart();
-    
+
     // Page 2: Daily Transactions Charts
     initDailyTransactionsPieChart();
     initExpensesOverviewChart();
     initExpensesCategoryChart();
-    
+
     // Page 3: Monthly/Weekly Transactions Charts
     initMonthlyTransactionsChart();
     initWeeklyTransactionsChart();
-    
+
     // Page 4: Quarterly Transactions Charts
     initQuarterlyTransactionsChart();
     initQuarterlyComparisonChart();
-    
+
     // Page 5: Expenses Charts
     initExpensesOverviewChart();
     initExpensesCategoryChart();
-    
+
     // Page 6: Fund Downloaded Charts
     initFundDownloadedTimelineChart();
     initFundDownloadedSummaryChart();
@@ -121,11 +121,11 @@ function initializeCharts() {
 /**
  * Initialize charts for a specific page
  */
-window.initPageCharts = function(pageNumber) {
+window.initPageCharts = function (pageNumber) {
     if (!ApexCharts) return;
-    
+
     setTimeout(() => {
-        switch(pageNumber) {
+        switch (pageNumber) {
             case 1:
                 initMonthlyVouchersChart();
                 initWeeklyVouchersChart();
@@ -335,23 +335,7 @@ function initMonthlyVouchersChart() {
                 enabled: false
             },
             legend: {
-                position: "bottom",
-                fontFamily: "inherit",
-                fontSize: '13px',
-                fontWeight: 500,
-                labels: {
-                    colors: '#64748B'
-                },
-                markers: {
-                    width: 10,
-                    height: 10,
-                    radius: 5
-                },
-                formatter: function(seriesName, opts) {
-                    const value = series[opts.seriesIndex];
-                    const percentage = ((value / total) * 100).toFixed(1);
-                    return seriesName + ': ' + formatCurrency(value) + ' (' + percentage + '%)';
-                }
+                show: false
             },
             tooltip: {
                 style: {
@@ -406,20 +390,62 @@ function initMonthlyVouchersChart() {
         if (chartInstances.monthly) {
             chartInstances.monthly.destroy();
         }
-        
-        // Ensure subtype dropdowns are hidden by default on initialization
-        const phmWrapperInit = document.getElementById('phmWrapper');
-        const phicWrapperInit = document.getElementById('phicWrapper');
-        if (phmWrapperInit) {
-            phmWrapperInit.classList.add('hidden');
-        }
-        if (phicWrapperInit) {
-            phicWrapperInit.classList.add('hidden');
-        }
-        
+
+        // Custom Legend Handling
+        // Custom Legend Handling (Flanking Layout)
+        const updateCustomLegend = () => {
+            const leftEl = document.getElementById('monthlyVouchersLegendLeft');
+            const rightEl = document.getElementById('monthlyVouchersLegendRight');
+            const mobileEl = document.getElementById('monthlyVouchersLegendMobile');
+
+            if (!leftEl || !rightEl || !mobileEl) return;
+
+            // Clear all containers
+            leftEl.innerHTML = '';
+            rightEl.innerHTML = '';
+            mobileEl.innerHTML = '';
+
+            const chartColors = generateColors();
+
+            labels.forEach((label, idx) => {
+                const val = series[idx];
+                const percentage = ((val / total) * 100).toFixed(1);
+                const color = chartColors[idx];
+                const isRightSide = idx >= 6; // Jul-Dec on the right side
+
+                // Standard item template
+                const createItem = (alignRight = false) => {
+                    const item = document.createElement('div');
+                    item.className = `flex ${alignRight ? 'flex-row-reverse text-right' : 'flex-row'} items-center text-[10px] sm:text-[11px] text-slate-600 transition-all hover:scale-105 duration-200 py-1 rounded-lg hover:bg-slate-50 w-full`;
+                    item.innerHTML = `
+                        <span class="w-2 h-2 rounded-full ${alignRight ? 'ml-2' : 'mr-2'} shrink-0 shadow-xs" style="background-color: ${color}"></span>
+                        <div class="flex flex-col flex-1 overflow-hidden">
+                            <div class="flex items-center ${alignRight ? 'justify-end' : ''} gap-1 leading-tight">
+                                <span class="font-bold text-slate-700">${label}</span>
+                                <span class="text-[8px] font-bold text-slate-400 bg-slate-100 px-1 rounded">(${percentage}%)</span>
+                            </div>
+                            <span class="font-extrabold text-[#224796] truncate">${formatCurrency(val)}</span>
+                        </div>
+                    `;
+                    return item;
+                };
+
+                // Add to side containers (Desktop)
+                if (isRightSide) {
+                    rightEl.appendChild(createItem(true));
+                } else {
+                    leftEl.appendChild(createItem(false));
+                }
+
+                // Add to mobile grid
+                mobileEl.appendChild(createItem(false));
+            });
+        };
+
         const chart = new ApexCharts(chartElement, getChartOptions());
         chartInstances.monthly = chart;
         chart.render();
+        updateCustomLegend();
 
         // Update Total Income stat card
         const incomeStatElement = document.getElementById('dashboardTotalIncome');
@@ -443,6 +469,7 @@ function initMonthlyVouchersChart() {
                         const data = buildData(currentYear, currentCategory);
                         chart.updateSeries(data.series);
                         chart.updateOptions({ labels: data.labels });
+                        updateCustomLegend();
                         if (incomeStatElement) {
                             incomeStatElement.textContent = formatCurrency(data.total);
                         }
@@ -470,36 +497,10 @@ function initMonthlyVouchersChart() {
                         categoryButton.textContent = item.textContent || 'All Categories';
                     }
 
-                    // Show/hide PHM subtype dropdown only when PHM is active
-                    if (phmWrapper) {
-                        if (category === 'PHM') {
-                            phmWrapper.classList.remove('hidden');
-                        } else {
-                            phmWrapper.classList.add('hidden');
-                        }
-                    }
-
-                    // Show/hide PHIC subtype dropdown only when PHIC is active
-                    if (phicWrapper) {
-                        if (category === 'PHIC') {
-                            phicWrapper.classList.remove('hidden');
-                        } else {
-                            phicWrapper.classList.add('hidden');
-                        }
-                    }
-
-                    // Ensure only one wrapper is visible at a time
-                    // When switching categories, hide the other wrapper
-                    if (category === 'PHM' && phicWrapper) {
-                        phicWrapper.classList.add('hidden');
-                    }
-                    if (category === 'PHIC' && phmWrapper) {
-                        phmWrapper.classList.add('hidden');
-                    }
-
                     const data = buildData(currentYear, currentCategory);
                     chart.updateSeries(data.series);
                     chart.updateOptions({ labels: data.labels });
+                    updateCustomLegend();
                     if (incomeStatElement) {
                         incomeStatElement.textContent = formatCurrency(data.total);
                     }
@@ -507,55 +508,55 @@ function initMonthlyVouchersChart() {
             });
         }
 
-        // PHM subtype handling (Konsulta / SPF) under PHM
-        const phmSubtypeButton = document.getElementById('phmSubtypeButton');
-        const phmSubtypeDropdown = document.getElementById('phmSubtypeDropdown');
-        if (phmSubtypeDropdown) {
-            const phmSubtypeItems = phmSubtypeDropdown.querySelectorAll('[data-phm-subtype]');
+        // NESTED PHM Subtype handling
+        const phmNestedDropdown = document.getElementById('phmNestedDropdown');
+        if (phmNestedDropdown) {
+            const phmSubtypeItems = phmNestedDropdown.querySelectorAll('[data-phm-subtype]');
             phmSubtypeItems.forEach((item) => {
                 item.addEventListener('click', (event) => {
                     event.preventDefault();
                     const subtype = item.getAttribute('data-phm-subtype');
                     if (!subtype) return;
+                    currentCategory = 'PHM';
                     currentPhmSubtype = subtype;
-                    if (phmSubtypeButton) {
-                        phmSubtypeButton.textContent = subtype;
+
+                    if (categoryButton) {
+                        categoryButton.textContent = subtype;
                     }
 
-                    if (currentCategory === 'PHM') {
-                        const data = buildData(currentYear, currentCategory);
-                        chart.updateSeries(data.series);
-                        chart.updateOptions({ labels: data.labels });
-                        if (incomeStatElement) {
-                            incomeStatElement.textContent = formatCurrency(data.total);
-                        }
+                    const data = buildData(currentYear, currentCategory);
+                    chart.updateSeries(data.series);
+                    chart.updateOptions({ labels: data.labels });
+                    updateCustomLegend();
+                    if (incomeStatElement) {
+                        incomeStatElement.textContent = formatCurrency(data.total);
                     }
                 });
             });
         }
 
-        // PHIC subtype handling (PF / Facility) under PHIC
-        const phicSubtypeButton = document.getElementById('phicSubtypeButton');
-        const phicSubtypeDropdown = document.getElementById('phicSubtypeDropdown');
-        if (phicSubtypeDropdown) {
-            const phicSubtypeItems = phicSubtypeDropdown.querySelectorAll('[data-phic-subtype]');
+        // NESTED PHIC Subtype handling
+        const phicNestedDropdown = document.getElementById('phicNestedDropdown');
+        if (phicNestedDropdown) {
+            const phicSubtypeItems = phicNestedDropdown.querySelectorAll('[data-phic-subtype]');
             phicSubtypeItems.forEach((item) => {
                 item.addEventListener('click', (event) => {
                     event.preventDefault();
                     const subtype = item.getAttribute('data-phic-subtype');
                     if (!subtype) return;
+                    currentCategory = 'PHIC';
                     currentPhicSubtype = subtype;
-                    if (phicSubtypeButton) {
-                        phicSubtypeButton.textContent = subtype;
+
+                    if (categoryButton) {
+                        categoryButton.textContent = subtype;
                     }
 
-                    if (currentCategory === 'PHIC') {
-                        const data = buildData(currentYear, currentCategory);
-                        chart.updateSeries(data.series);
-                        chart.updateOptions({ labels: data.labels });
-                        if (incomeStatElement) {
-                            incomeStatElement.textContent = formatCurrency(data.total);
-                        }
+                    const data = buildData(currentYear, currentCategory);
+                    chart.updateSeries(data.series);
+                    chart.updateOptions({ labels: data.labels });
+                    updateCustomLegend();
+                    if (incomeStatElement) {
+                        incomeStatElement.textContent = formatCurrency(data.total);
                     }
                 });
             });
@@ -569,13 +570,13 @@ function initMonthlyVouchersChart() {
             const checkbox = event.target;
             const quarter = checkbox.value;
             const isChecked = checkbox.checked;
-            
+
             // Get months for this quarter
             const currentYearData = cashInBankByYear[currentYear] || monthlyBaseData;
             const quarterMonths = Object.keys(currentYearData).filter(
                 month => currentYearData[month].quarter === quarter
             );
-            
+
             // Show or hide series for this quarter's months
             quarterMonths.forEach((month) => {
                 const seriesIndex = labels.indexOf(month);
@@ -1017,7 +1018,7 @@ function initYearlyVouchersChart() {
             categories: yearlyData.map(item => item.year),
             labels: {
                 style: {
-                    colors: yearlyData.map(item => 
+                    colors: yearlyData.map(item =>
                         isCurrentYear(item.year) ? colors.primary : '#64748B'
                     ),
                     fontSize: '12px',
