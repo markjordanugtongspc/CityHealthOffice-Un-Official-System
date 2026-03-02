@@ -14,7 +14,12 @@ export function init() {
     btn.setAttribute('aria-label', 'Open AI Chat');
     btn.setAttribute('aria-haspopup', 'dialog');
     btn.setAttribute('aria-expanded', 'false');
-    btn.className = 'fixed bottom-4 right-4 z-[1001] inline-flex items-center justify-center text-sm font-medium disabled:pointer-events-none disabled:opacity-50 rounded-full w-14 h-14 bg-[#224796] hover:bg-[#163473] text-white shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-[#224796]/30 cursor-pointer p-0';
+
+    const isItemized = window.location.pathname.includes('itemized');
+    const bottomClass = isItemized ? 'bottom-[100px]' : 'bottom-4';
+    const rightClass = isItemized ? 'right-6' : 'right-4';
+
+    btn.className = `fixed ${bottomClass} ${rightClass} z-[1001] inline-flex items-center justify-center text-sm font-medium disabled:pointer-events-none disabled:opacity-50 rounded-full w-14 h-14 bg-[#224796] hover:bg-[#163473] text-white shadow-lg transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-[#224796]/30 cursor-pointer p-0`;
 
     btn.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-7 h-7">
@@ -107,16 +112,19 @@ export function init() {
     // Toggle Chat
     const toggleChat = () => {
         const isOpen = !container.classList.contains('hidden');
+        const itemizedBtn = document.getElementById('itemizedVoucherFloatingBtn');
         if (isOpen) {
             // Close
             container.classList.add('scale-95', 'opacity-0');
             btn.setAttribute('aria-expanded', 'false');
             setTimeout(() => {
                 container.classList.add('hidden');
+                if (itemizedBtn) itemizedBtn.style.display = 'flex';
             }, 300);
         } else {
             // Open
             container.classList.remove('hidden');
+            if (itemizedBtn) itemizedBtn.style.display = 'none';
             // Small delay for animation
             setTimeout(() => {
                 container.classList.remove('scale-95', 'opacity-0');

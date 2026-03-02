@@ -456,10 +456,14 @@ if (!function_exists('getImagePath')) {
                                 <td
                                     class="border border-slate-300 px-2 py-1 w-32 font-bold text-slate-600 align-middle">
                                     Check/ADA No.</td>
-                                <td class="border border-slate-300 p-0 w-28"><input type="text" id="voucherCheckNo"
-                                        placeholder="2317608"
+                                <td class="border border-slate-300 p-0 w-28 relative">
+                                    <input type="text" id="voucherCheckNo" placeholder="2317608"
                                         class="voucher-field w-full min-h-[28px] px-2 py-1 border-0 rounded-none text-sm bg-white focus:ring-2 focus:ring-inset focus:ring-[#224796] outline-none"
-                                        style="min-height: 28px;"></td>
+                                        style="min-height: 28px;">
+                                    <p id="voucher-check-no-error"
+                                        class="hidden absolute top-full left-0 z-10 w-48 text-[10px] bg-rose-50 text-rose-500 border border-rose-200 mt-1 p-1 rounded font-bold shadow-lg">
+                                        There is an already duplicated data.</p>
+                                </td>
                                 <td
                                     class="border border-slate-300 px-2 py-1 w-16 font-bold text-slate-600 align-middle">
                                     Date:</td>

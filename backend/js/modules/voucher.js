@@ -477,4 +477,39 @@ export function init() {
     });
     const modeCheckboxes = [document.querySelector('#voucherModeMds input'), document.querySelector('#voucherModeCommercial input'), document.querySelector('#voucherModeAda input'), document.getElementById('voucherModeOthersCheck')];
     modeCheckboxes.filter(Boolean).forEach((el) => el.addEventListener('change', debouncedSave));
+
+    // ----- Duplicate Check for Check No -----
+    const voucherCheckNoInput = document.getElementById('voucherCheckNo');
+    const checkNoErrorLabel = document.getElementById('voucher-check-no-error');
+    if (voucherCheckNoInput && checkNoErrorLabel) {
+        voucherCheckNoInput.addEventListener('blur', async () => {
+            const val = voucherCheckNoInput.value.trim();
+            if (!val) {
+                checkNoErrorLabel.classList.add('hidden');
+                voucherCheckNoInput.classList.remove('ring-rose-500', 'bg-rose-50');
+                return;
+            }
+            try {
+                const path = window.location.pathname || '/';
+                const apiBase = path.substring(0, path.indexOf('/frontend/') !== -1 ? path.indexOf('/frontend/') : path.lastIndexOf('/')) || '';
+
+                const res = await fetch(`${apiBase}/api/itemized/check-duplicate-checkno.php?checkNo=${encodeURIComponent(val)}`);
+                const data = await res.json();
+                if (data.exists) {
+                    checkNoErrorLabel.classList.remove('hidden');
+                    voucherCheckNoInput.classList.add('ring-rose-500', 'bg-rose-50');
+                } else {
+                    checkNoErrorLabel.classList.add('hidden');
+                    voucherCheckNoInput.classList.remove('ring-rose-500', 'bg-rose-50');
+                }
+            } catch (e) {
+                console.error(e);
+            }
+        });
+
+        voucherCheckNoInput.addEventListener('input', () => {
+            checkNoErrorLabel.classList.add('hidden');
+            voucherCheckNoInput.classList.remove('ring-rose-500', 'bg-rose-50');
+        });
+    }
 }

@@ -16,12 +16,12 @@ let currentFilters = {
     columns: []
 };
 
-// Available Data Sources
 const SOURCES = [
     { value: 'dashboard', label: 'Dashboard Charts' },
     { value: 'budget', label: 'Budget Data' },
     { value: 'specialFund', label: 'Special Program Fund' },
-    { value: 'monthlyExpenses', label: 'Monthly Expenses Summary' }
+    { value: 'monthlyExpenses', label: 'Monthly Expenses Summary' },
+    { value: 'itemized', label: 'Itemized Transactions' }
 ];
 
 // Column Definitions Map
@@ -400,8 +400,36 @@ function exportToExcel() {
 async function getDataSource(source) {
     const formatCurrency = (val) => '₱' + Number(val).toLocaleString('en-PH', { minimumFractionDigits: 2 });
     const y = currentFilters.year;
+    const path = window.location.pathname || '/';
+    const apiBase = path.substring(0, path.indexOf('/frontend/') !== -1 ? path.indexOf('/frontend/') : path.lastIndexOf('/')) || '';
 
     switch (source) {
+        case 'itemized':
+            try {
+                const res = await fetch(`${apiBase}/api/itemized/list.php?year=${y}`);
+                const data = await res.json();
+                if (data.success && data.data) {
+                    return data.data.map(item => ({
+                        'Year': y,
+                        'DV Date': item.dvDate || '-',
+                        'DV No.': item.dvNo || '-',
+                        'G/L Code': item.glCode || '-',
+                        'Payee': item.payee || '-',
+                        'Requested By': item.requestedBy || '-',
+                        'Particulars': item.particulars || '-',
+                        'Check No.': item.checkNo || '-',
+                        'Check Amount': formatCurrency(item.checkAmount || 0),
+                        'MOOE': formatCurrency(item.mooe || 0),
+                        'SPF': formatCurrency(item.spf || 0),
+                        'MCP Fac.': formatCurrency(item.mcpFacility || 0),
+                        'Kon. Fac.': formatCurrency(item.konsultaFacility || 0),
+                        'Kon. PF': formatCurrency(item.konsultaPf || 0)
+                    }));
+                }
+            } catch (e) {
+                console.error('Failed to fetch itemized', e);
+            }
+            return [];
         case 'budget':
             return [
                 { 'Year': y, 'G/L Code': '5-02-01-010', 'Account Title': 'Traveling Expenses', 'Actual': formatCurrency(25000), 'Budget': formatCurrency(100000), 'Remaining ₱': formatCurrency(75000), 'Remaining %': '75.00%' },

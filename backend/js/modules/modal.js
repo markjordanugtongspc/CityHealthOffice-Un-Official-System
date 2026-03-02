@@ -793,11 +793,115 @@ export function showVoucherModal() {
         }
         container.style.display = 'none';
         container.innerHTML = '';
+        const aiBtn = document.getElementById('aiChatButton');
+        if (aiBtn) aiBtn.style.display = 'inline-flex';
     };
 
     if (closeBtn) closeBtn.addEventListener('click', closeVoucher);
     const printBtn = document.getElementById('voucherModalPrint');
     if (printBtn) printBtn.addEventListener('click', printVoucher);
+
+    const insertBtn = document.getElementById('voucherModalInsert');
+    if (insertBtn) {
+        insertBtn.addEventListener('click', async () => {
+            const dvNo = document.getElementById('voucherDvNo')?.value || '';
+            const dvDate = document.getElementById('voucherDate')?.value || '';
+            let payee = document.getElementById('voucherPayee')?.value || '';
+            const payeeEtAl = document.getElementById('voucherPayeeEtAl')?.value || '';
+            if (payeeEtAl) payee = (payee + ' ' + payeeEtAl).trim();
+            const particulars = document.getElementById('voucherParticulars')?.value || '';
+            const checkAmountRaw = document.getElementById('voucherAmountInput')?.value || '';
+            const checkAmount = parseFloat(checkAmountRaw.replace(/[^0-9.-]/g, '')) || 0;
+            const checkNo = document.getElementById('voucherCheckNo')?.value || '';
+
+            const dateObj = dvDate ? new Date(dvDate) : new Date();
+            const year = dateObj.getFullYear() || new Date().getFullYear();
+
+            if (!dvNo || !payee || checkAmount <= 0) {
+                showWarning('Missing Fields', 'Please ensure DV No., Payee, and Check Amount are filled before inserting.');
+                return;
+            }
+
+            const payload = {
+                year: year,
+                glCode: '1000',
+                dvDate: dvDate || new Date().toISOString().split('T')[0],
+                dvNo: dvNo,
+                requestedBy: payee,
+                payee: payee,
+                checkAmount: checkAmount,
+                particulars: particulars,
+                checkNo: checkNo,
+                fileDate: new Date().toISOString().split('T')[0],
+                mooe: 0,
+                spf: 0,
+                mcpFacility: 0,
+                konsultaFacility: 0,
+                konsultaPf: 0,
+            };
+
+            closeVoucher();
+
+            Swal.fire({
+                title: 'Inserting Data...',
+                text: 'Please wait...',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            try {
+                const basePath = window.location.pathname.includes('/frontend/')
+                    ? window.location.pathname.split('/frontend/')[0]
+                    : '';
+
+                const response = await fetch(`${basePath}/api/itemized/create.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                await fetch(`${basePath}/api/monthly-expenses/sync-from-itemized.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ year: year })
+                });
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Voucher data has been successfully inserted to Itemized Transactions.',
+                        confirmButtonText: 'OK',
+                        customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses }
+                    }).then(() => {
+                        if (window.location.pathname.includes('itemized')) {
+                            window.location.reload();
+                        }
+                    });
+                } else {
+                    throw new Error(data.message || 'Unknown error');
+                }
+            } catch (err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: err.message || 'Failed to insert voucher data.',
+                    confirmButtonText: 'OK',
+                    customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses }
+                });
+            }
+        });
+    }
+
+    container.addEventListener('click', (e) => { if (e.target === container) closeVoucher(); });
+
+    const aiBtn = document.getElementById('aiChatButton');
+    if (aiBtn) aiBtn.style.display = 'none';
     container.addEventListener('click', (e) => { if (e.target === container) closeVoucher(); });
 }
 
@@ -1573,6 +1677,46 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
         didOpen: () => {
             const closeBtn = document.getElementById('edit-modal-close-x');
             if (closeBtn) closeBtn.addEventListener('click', () => Swal.close());
+
+            const checkNoInput = document.getElementById('modal-check-no');
+            if (checkNoInput) {
+                const errP = document.createElement('p');
+                errP.id = 'check-no-error';
+                errP.className = 'text-[10px] text-rose-500 hidden mt-1 ml-1';
+                checkNoInput.parentElement.appendChild(errP);
+
+                const checkDuplicate = async () => {
+                    const val = checkNoInput.value.trim();
+                    if (!val || val === defaultData.checkNo) {
+                        errP.classList.add('hidden');
+                        checkNoInput.classList.remove('border-rose-500', 'bg-rose-50');
+                        return;
+                    }
+                    try {
+                        const path = window.location.pathname || '/';
+                        const apiBase = path.substring(0, path.indexOf('/frontend/') !== -1 ? path.indexOf('/frontend/') : path.lastIndexOf('/')) || '';
+
+                        const res = await fetch(`${apiBase}/api/itemized/check-duplicate-checkno.php?checkNo=${encodeURIComponent(val)}`);
+                        const data = await res.json();
+                        if (data.exists) {
+                            errP.textContent = 'There is an already duplicated data with this Check No.';
+                            errP.classList.remove('hidden');
+                            checkNoInput.classList.add('border-rose-500', 'bg-rose-50');
+                        } else {
+                            errP.classList.add('hidden');
+                            checkNoInput.classList.remove('border-rose-500', 'bg-rose-50');
+                        }
+                    } catch (e) {
+                        console.error('Error checking duplicate check no', e);
+                    }
+                };
+
+                checkNoInput.addEventListener('blur', checkDuplicate);
+                checkNoInput.addEventListener('input', () => {
+                    errP.classList.add('hidden');
+                    checkNoInput.classList.remove('border-rose-500', 'bg-rose-50');
+                });
+            }
 
             const addAllocBtn = document.getElementById('modal-add-allocation-btn');
             const allocSection = document.getElementById('modal-allocation-section');
