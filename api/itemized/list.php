@@ -7,10 +7,12 @@ requireAuth(true);
 
 try {
     $pdo = getDB();
-    if (!$pdo) throw new Exception('Database connection failed');
+    if (!$pdo)
+        throw new Exception('Database connection failed');
 
-    $year = isset($_GET['year']) ? (int)$_GET['year'] : (int)date('Y');
-    if ($year < 2000 || $year > 2100) $year = (int)date('Y');
+    $year = isset($_GET['year']) ? (int) $_GET['year'] : (int) date('Y');
+    if ($year < 2000 || $year > 2100)
+        $year = (int) date('Y');
 
     $stmt = $pdo->prepare('SELECT id FROM itemized_years WHERE year = ?');
     $stmt->execute([$year]);
@@ -25,7 +27,7 @@ try {
     $stmt = $pdo->prepare('
         SELECT id, gl_code, dv_date, dv_no, requested_by, payee, check_amount,
             particulars, check_no, file_date, mooe, spf, mcp_facility,
-            konsulta_facility, konsulta_pf, archived
+            konsulta_facility, konsulta_pf, archived, remarks
         FROM itemized_transactions
         WHERE year_id = ? AND archived = 0
         ORDER BY dv_date DESC, id DESC
@@ -36,10 +38,10 @@ try {
     $groups = [];
     foreach ($rows as $r) {
         $key = $r['dv_no'] . '|' . $r['payee'] . '|' . $r['gl_code'];
-        $checkAmt = (float)$r['check_amount'];
+        $checkAmt = (float) $r['check_amount'];
         if (!isset($groups[$key])) {
             $groups[$key] = [
-                'id' => (int)$r['id'],
+                'id' => (int) $r['id'],
                 'glCode' => $r['gl_code'],
                 'dvDate' => $r['dv_date'],
                 'dvNo' => $r['dv_no'],
@@ -49,28 +51,30 @@ try {
                 'particulars' => $r['particulars'],
                 'checkNo' => $r['check_no'],
                 'fileDate' => $r['file_date'],
-                'mooe' => (float)($r['mooe'] ?? 0),
-                'spf' => (float)($r['spf'] ?? 0),
-                'mcpFacility' => (float)($r['mcp_facility'] ?? 0),
-                'konsultaFacility' => (float)($r['konsulta_facility'] ?? 0),
-                'konsultaPf' => (float)($r['konsulta_pf'] ?? 0),
+                'mooe' => (float) ($r['mooe'] ?? 0),
+                'spf' => (float) ($r['spf'] ?? 0),
+                'mcpFacility' => (float) ($r['mcp_facility'] ?? 0),
+                'konsultaFacility' => (float) ($r['konsulta_facility'] ?? 0),
+                'konsultaPf' => (float) ($r['konsulta_pf'] ?? 0),
+                'remarks' => $r['remarks'] ?? '',
             ];
         } else {
             $g = &$groups[$key];
             if ($checkAmt > 0 && $g['checkAmount'] <= 0) {
-                $g['id'] = (int)$r['id'];
+                $g['id'] = (int) $r['id'];
                 $g['checkAmount'] = $checkAmt;
                 $g['particulars'] = $r['particulars'];
                 $g['checkNo'] = $r['check_no'];
                 $g['fileDate'] = $r['file_date'];
                 $g['dvDate'] = $r['dv_date'];
                 $g['requestedBy'] = $r['requested_by'];
+                $g['remarks'] = $r['remarks'] ?? '';
             }
-            $g['mooe'] += (float)($r['mooe'] ?? 0);
-            $g['spf'] += (float)($r['spf'] ?? 0);
-            $g['mcpFacility'] += (float)($r['mcp_facility'] ?? 0);
-            $g['konsultaFacility'] += (float)($r['konsulta_facility'] ?? 0);
-            $g['konsultaPf'] += (float)($r['konsulta_pf'] ?? 0);
+            $g['mooe'] += (float) ($r['mooe'] ?? 0);
+            $g['spf'] += (float) ($r['spf'] ?? 0);
+            $g['mcpFacility'] += (float) ($r['mcp_facility'] ?? 0);
+            $g['konsultaFacility'] += (float) ($r['konsulta_facility'] ?? 0);
+            $g['konsultaPf'] += (float) ($r['konsulta_pf'] ?? 0);
         }
     }
 
@@ -92,6 +96,7 @@ try {
             'mcpFacility' => $g['mcpFacility'],
             'konsultaFacility' => $g['konsultaFacility'],
             'konsultaPf' => $g['konsultaPf'],
+            'remarks' => $g['remarks'],
         ];
     }
 

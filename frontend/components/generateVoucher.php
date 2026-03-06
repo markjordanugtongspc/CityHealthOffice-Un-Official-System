@@ -304,7 +304,10 @@ if (!function_exists('getImagePath')) {
                         </thead>
                         <tbody>
                             <tr>
-                                <td class="border border-slate-300 px-2 py-1 text-center">Travel Expenses-Local</td>
+                                <td class="border border-slate-300 p-0">
+                                    <input type="text" id="voucherAccountTitle1" placeholder="Travel Expenses-Local"
+                                        class="w-full px-2 py-1 border-0 rounded-none text-xs text-center bg-white focus:ring-2 focus:ring-inset focus:ring-[#224796] outline-none">
+                                </td>
                                 <td class="border border-slate-300 px-2 py-1 font-mono text-center">5020101000</td>
                                 <td class="border border-slate-300 px-2 py-1 font-mono" id="voucherDebit"><span>₱</span>
                                     <span class="float-right">0.00</span>

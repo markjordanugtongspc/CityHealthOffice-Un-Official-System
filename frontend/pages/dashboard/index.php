@@ -214,10 +214,6 @@ requireAuth();
                             class="chart-page-btn px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors cursor-pointer text-slate-700 hover:bg-slate-100 whitespace-nowrap">
                             Quarterly Transactions
                         </button>
-                        <button data-page="6"
-                            class="chart-page-btn px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors cursor-pointer text-slate-700 hover:bg-slate-100 whitespace-nowrap">
-                            Annual
-                        </button>
                     </div>
                 </div>
 
@@ -323,15 +319,17 @@ requireAuth();
                         <div class="flex flex-col lg:flex-row items-center justify-between gap-4 py-4 sm:py-6 relative">
                             <!-- Desktop Left Legend (Months 1-6) -->
                             <div id="monthlyVouchersLegendLeft" class="hidden lg:flex flex-col gap-2 w-1/4"></div>
-                            
+
                             <!-- Center Chart Area -->
                             <div class="w-full lg:w-2/4" id="monthlyVouchersChart"></div>
-                            
+
                             <!-- Desktop Right Legend (Months 7-12) -->
-                            <div id="monthlyVouchersLegendRight" class="hidden lg:flex flex-col gap-2 w-1/4 items-end text-right"></div>
+                            <div id="monthlyVouchersLegendRight"
+                                class="hidden lg:flex flex-col gap-2 w-1/4 items-end text-right"></div>
 
                             <!-- Mobile Legend (Combined Grid below chart) -->
-                            <div id="monthlyVouchersLegendMobile" class="grid lg:hidden grid-cols-2 gap-4 w-full px-2 mt-4"></div>
+                            <div id="monthlyVouchersLegendMobile"
+                                class="grid lg:hidden grid-cols-2 gap-4 w-full px-2 mt-4"></div>
                         </div>
 
                         <!-- Footer with Year and Category Dropdowns -->
@@ -469,24 +467,44 @@ requireAuth();
                         </div>
                     </div>
 
-                    <!-- Weekly Vouchers Line Chart -->
+                    <!-- Fund Downloaded Timeline -->
                     <div
-                        class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
+                        class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
                         <div class="flex items-center justify-between mb-6">
                             <div>
-                                <h3 class="text-xl font-bold text-slate-900 mb-1">Weekly Vouchers</h3>
-                                <p class="text-sm text-slate-500">Last 8 weeks trend</p>
+                                <h3 class="text-xl font-bold text-slate-900 mb-1">Fund Downloaded Timeline</h3>
+                                <p class="text-sm text-slate-500">Monthly fund downloads</p>
                             </div>
                             <div
-                                class="w-12 h-12 rounded-xl bg-linear-to-br from-[#224796] to-[#163473] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                class="w-12 h-12 rounded-xl bg-linear-to-br from-[#16A34A] to-[#15803D] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
                                 <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z">
+                                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div id="fundDownloadedTimelineChart" class="chart-container"></div>
+                    </div>
+
+                    <!-- Fund Downloaded Summary -->
+                    <div
+                        class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-900 mb-1">Fund Downloaded Summary</h3>
+                                <p class="text-sm text-slate-500">Total funds by period</p>
+                            </div>
+                            <div
+                                class="w-12 h-12 rounded-xl bg-linear-to-br from-[#FCF350] to-[#E5D800] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <svg class="w-6 h-6 text-slate-900" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
                                     </path>
                                 </svg>
                             </div>
                         </div>
-                        <div id="weeklyVouchersChart" class="chart-container"></div>
+                        <div id="fundDownloadedSummaryChart" class="chart-container"></div>
                     </div>
 
                     <!-- Daily Vouchers Column Chart -->
@@ -592,6 +610,26 @@ requireAuth();
                                 </a>
                             </div>
                         </div>
+                    </div>
+
+                    <!-- Weekly Vouchers Line Chart -->
+                    <div
+                        class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h3 class="text-xl font-bold text-slate-900 mb-1">Weekly Vouchers</h3>
+                                <p class="text-sm text-slate-500">Last 8 weeks trend</p>
+                            </div>
+                            <div
+                                class="w-12 h-12 rounded-xl bg-linear-to-br from-[#224796] to-[#163473] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
+                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z">
+                                    </path>
+                                </svg>
+                            </div>
+                        </div>
+                        <div id="weeklyVouchersChart" class="chart-container"></div>
                     </div>
 
                     <!-- Yearly Chart 2016-2026 -->
@@ -864,53 +902,10 @@ requireAuth();
                     </div>
                 </div>
 
-                <!-- Page 6: Fund Downloaded Charts -->
-                <div id="chart-page-6" class="chart-page hidden pb-4">
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-                        <!-- Fund Downloaded Timeline -->
-                        <div
-                            class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
-                            <div class="flex items-center justify-between mb-6">
-                                <div>
-                                    <h3 class="text-xl font-bold text-slate-900 mb-1">Fund Downloaded Timeline</h3>
-                                    <p class="text-sm text-slate-500">Monthly fund downloads</p>
-                                </div>
-                                <div
-                                    class="w-12 h-12 rounded-xl bg-linear-to-br from-[#16A34A] to-[#15803D] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div id="fundDownloadedTimelineChart" class="chart-container"></div>
-                        </div>
-
-                        <!-- Fund Downloaded Summary -->
-                        <div
-                            class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
-                            <div class="flex items-center justify-between mb-6">
-                                <div>
-                                    <h3 class="text-xl font-bold text-slate-900 mb-1">Fund Downloaded Summary</h3>
-                                    <p class="text-sm text-slate-500">Total funds by period</p>
-                                </div>
-                                <div
-                                    class="w-12 h-12 rounded-xl bg-linear-to-br from-[#FCF350] to-[#E5D800] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                    <svg class="w-6 h-6 text-slate-900" fill="none" stroke="currentColor"
-                                        viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
-                                        </path>
-                                    </svg>
-                                </div>
-                            </div>
-                            <div id="fundDownloadedSummaryChart" class="chart-container"></div>
-                        </div>
-                    </div>
-                </div>
+                <!-- Note: Originally Page 6 went here, now it's been integrated into Page 1. -->
             </div>
-        </main>
+    </div>
+    </main>
     </div>
 
 </body>

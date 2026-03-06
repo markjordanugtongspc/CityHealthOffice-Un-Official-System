@@ -38,15 +38,11 @@ export function init() {
     // Create the chat container
     const container = document.createElement('div');
     container.id = 'aiChatContainer';
-    container.className = 'fixed bottom-[calc(4.5rem+1.5rem)] right-4 z-[1001] bg-white rounded-2xl border border-[#e5e7eb] shadow-2xl w-[90vw] sm:w-[400px] md:w-[440px] h-[70vh] sm:h-[600px] md:h-[634px] flex flex-col hidden transition-all duration-300 origin-bottom-right transform scale-95 opacity-0';
-
-    // Desktop vs Mobile specific classes via JS or Media Queries? 
-    // I'll use Tailwind responsive classes.
-    // For mobile (under sm): fixed inset-0 w-full h-full rounded-none
+    
+    // Using Tailwind responsive classes
     container.className = 'fixed bottom-20 right-4 z-[1001] bg-white rounded-2xl border border-[#e5e7eb] shadow-2xl w-[calc(100vw-2rem)] sm:w-[400px] md:w-[440px] h-[70vh] sm:h-[600px] md:h-[634px] flex flex-col hidden transition-all duration-300 origin-bottom-right transform scale-95 opacity-0 max-sm:bottom-2 max-sm:right-2 max-sm:left-2 max-sm:m-auto max-sm:w-[calc(100vw-1rem)] max-sm:h-[80vh] max-sm:rounded-2xl max-sm:border';
 
     container.innerHTML = `
-        <!-- Heading -->
         <div class="flex items-center justify-between p-4 border-b bg-[#224796] text-white rounded-t-2xl">
             <div class="flex items-center gap-3">
                 <button id="closeAiChatMobile" class="sm:hidden p-1 hover:bg-white/20 rounded-lg transition">
@@ -73,9 +69,7 @@ export function init() {
             </div>
         </div>
 
-        <!-- Chat Container -->
         <div id="aiChatMessages" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50">
-            <!-- Chat Message AI -->
             <div class="flex gap-3 text-sm">
                 <div class="shrink-0">
                     <div class="rounded-full bg-[#224796] text-white p-2 flex items-center justify-center shadow-md">
@@ -91,7 +85,6 @@ export function init() {
             </div>
         </div>
 
-        <!-- Input box  -->
         <div class="p-4 border-t bg-white max-sm:pb-8">
             <form id="aiChatForm" class="flex items-center gap-2">
                 <div class="relative flex-1">
@@ -133,12 +126,11 @@ export function init() {
             // Open
             container.classList.remove('hidden');
             if (itemizedBtn) itemizedBtn.style.display = 'none';
-            // Small delay for animation
             setTimeout(() => {
                 container.classList.remove('scale-95', 'opacity-0');
                 btn.setAttribute('aria-expanded', 'true');
             }, 10);
-            messages.scrollTop = messages.scrollHeight; // Scroll to bottom on open
+            messages.scrollTop = messages.scrollHeight; 
         }
     };
 
@@ -177,7 +169,6 @@ export function init() {
 
     // Initialize UI with existing history
     if (chatHistory.length > 0) {
-        // Clear default welcome message
         messages.innerHTML = '';
         chatHistory.forEach(msg => {
             renderMessage(msg.role, msg.content, false);
@@ -230,9 +221,22 @@ export function init() {
         messages.scrollTop = messages.scrollHeight;
 
         try {
-            // Determine API URL relative to the current location, accounting for /Project/ structure
-            const isLocalhostProject = window.location.pathname.startsWith('/Project/');
-            const apiUrl = isLocalhostProject ? '/Project/api/ai/chat.php' : '/api/ai/chat.php';
+            // --- THE FIX: Highly Dynamic URL Pathing ---
+            // This detects the base path dynamically regardless of where it is hosted
+            const currentPath = window.location.pathname;
+            
+            // Extract the first segment of the path (e.g., 'Project' or 'CityHealthOffice-Un-Official-System')
+            const pathSegments = currentPath.split('/').filter(segment => segment !== '');
+            let basePath = '';
+            
+            // If the application is running inside a subfolder, use that subfolder.
+            // Adjust this logic if your app is hosted at the domain root (e.g., https://my-app.com/api/...)
+            if (pathSegments.length > 0) {
+                 basePath = '/' + pathSegments[0];
+            }
+            
+            const apiUrl = `${basePath}/api/ai/chat.php`;
+            // ------------------------------------
 
             const response = await fetch(apiUrl, {
                 method: 'POST',
@@ -242,6 +246,7 @@ export function init() {
                     history: historyForApi
                 })
             });
+            
             const data = await response.json();
 
             // Remove thinking indicator
@@ -251,11 +256,9 @@ export function init() {
                 renderMessage('ai', 'Session expired. Please log in again. Chat history has been cleared.', true);
                 localStorage.removeItem(STORAGE_KEY);
                 chatHistory = [];
-                // Optionally redirect to login
                 setTimeout(() => window.location.href = '/', 2000);
             } else if (data.error) {
                 renderMessage('ai', 'Error: ' + data.error, true);
-                // Do not save error messages to history
             } else {
                 renderMessage('ai', data.response, true);
                 chatHistory.push({ role: 'ai', content: data.response });
@@ -263,6 +266,7 @@ export function init() {
             }
         } catch (err) {
             thinkingDiv.remove();
+            console.error("AI Fetch Error:", err); 
             renderMessage('ai', 'Could not connect to the AI service. Please try again later.', true);
         }
     });
@@ -270,11 +274,8 @@ export function init() {
     // Helper to format basic markdown (bold, italic, links) for UI
     function formatText(text) {
         if (!text) return '';
-        // Bold
         text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-        // Italic
         text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-        // Newlines -> <br>
         text = text.replace(/\\n/g, '<br/>');
         return text;
     }

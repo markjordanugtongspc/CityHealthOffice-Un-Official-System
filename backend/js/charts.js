@@ -92,6 +92,8 @@ function initializeCharts() {
 
     // Page 1: Vouchers Charts
     initMonthlyVouchersChart();
+    initFundDownloadedTimelineChart();
+    initFundDownloadedSummaryChart();
     initWeeklyVouchersChart();
     initDailyVouchersChart();
     initYearlyVouchersChart();
@@ -112,10 +114,6 @@ function initializeCharts() {
     // Page 5: Expenses Charts
     initExpensesOverviewChart();
     initExpensesCategoryChart();
-
-    // Page 6: Fund Downloaded Charts
-    initFundDownloadedTimelineChart();
-    initFundDownloadedSummaryChart();
 }
 
 /**
@@ -128,6 +126,8 @@ window.initPageCharts = function (pageNumber) {
         switch (pageNumber) {
             case 1:
                 initMonthlyVouchersChart();
+                initFundDownloadedTimelineChart();
+                initFundDownloadedSummaryChart();
                 initWeeklyVouchersChart();
                 initDailyVouchersChart();
                 initYearlyVouchersChart();
@@ -148,10 +148,6 @@ window.initPageCharts = function (pageNumber) {
             case 5:
                 initExpensesOverviewChart();
                 initExpensesCategoryChart();
-                break;
-            case 6:
-                initFundDownloadedTimelineChart();
-                initFundDownloadedSummaryChart();
                 break;
         }
     }, 100);
@@ -598,147 +594,115 @@ function initMonthlyVouchersChart() {
 }
 
 /**
- * Weekly Vouchers Line Chart - Modern Design
+ * Fund Downloaded Timeline Chart
  */
-function initWeeklyVouchersChart() {
-    const chartElement = document.getElementById('weeklyVouchersChart');
+function initFundDownloadedTimelineChart() {
+    const chartElement = document.getElementById('fundDownloadedTimelineChart');
     if (!chartElement || !ApexCharts) return;
 
-    const weeklyData = [
-        { label: 'W1', value: 78 },
-        { label: 'W2', value: 82 },
-        { label: 'W3', value: 75 },
-        { label: 'W4', value: 89 },
-        { label: 'W5', value: 91 },
-        { label: 'W6', value: 95 },
-        { label: 'W7', value: 88 },
-        { label: 'W8', value: 102 }
-    ];
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const fundData = months.map(() => Math.floor(Math.random() * 200000) + 50000);
 
     const options = {
-        series: [{
-            name: 'Vouchers Generated',
-            data: weeklyData.map(item => item.value)
-        }],
+        series: [{ name: 'Fund Downloaded', data: fundData }],
+        colors: [colors.accent1],
         chart: {
-            type: 'area',
-            height: 'auto',
+            type: 'line',
+            height: '350px',
             fontFamily: 'inherit',
             toolbar: { show: false },
-            zoom: { enabled: false },
-            animations: {
-                enabled: true,
-                easing: 'easeinout',
-                speed: 800,
-                animateGradually: {
-                    enabled: true,
-                    delay: 150
-                }
-            },
-            sparkline: { enabled: false }
+            animations: { enabled: true, easing: 'easeinout', speed: 800 }
         },
-        colors: [colors.primary],
-        stroke: {
-            curve: 'smooth',
-            width: 3,
-            lineCap: 'round'
-        },
-        markers: {
-            size: [5, 5, 5, 5, 5, 5, 5, 7],
-            colors: [colors.primary],
-            strokeColors: '#ffffff',
-            strokeWidth: 3,
-            hover: { size: 8 },
-            radius: 4
-        },
-        dataLabels: { enabled: false },
-        grid: {
-            borderColor: colors.accent3,
-            strokeDashArray: 3,
-            xaxis: { lines: { show: false } },
-            yaxis: { lines: { show: true } },
-            padding: {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 0
-            }
-        },
-        xaxis: {
-            categories: weeklyData.map(item => item.label),
-            labels: {
-                style: {
-                    colors: '#64748B',
-                    fontSize: '12px',
-                    fontFamily: 'inherit',
-                    fontWeight: 600
-                }
-            },
-            axisBorder: { show: false },
-            axisTicks: { show: false }
-        },
+        stroke: { curve: 'smooth', width: 3 },
+        fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3 } },
+        xaxis: { categories: months, labels: { style: { colors: '#64748B', fontSize: '12px' } } },
         yaxis: {
             labels: {
-                style: {
-                    colors: '#64748B',
-                    fontSize: '12px',
-                    fontFamily: 'inherit',
-                    fontWeight: 600
-                },
-                formatter: (val) => val.toString()
-            },
-            min: 0
-        },
-        fill: {
-            type: 'gradient',
-            gradient: {
-                shade: 'light',
-                type: 'vertical',
-                shadeIntensity: 0.4,
-                gradientToColors: [colors.primary + '30'],
-                inverseColors: false,
-                opacityFrom: 0.5,
-                opacityTo: 0.1,
-                stops: [0, 50, 100]
+                style: { colors: '#64748B', fontSize: '12px' },
+                formatter: (val) => `₱${(val / 1000).toFixed(0)}k`
             }
         },
+        grid: { borderColor: '#E2E8F0', strokeDashArray: 4 },
         tooltip: {
-            style: { fontSize: '13px', fontFamily: 'inherit' },
-            y: { formatter: (val) => val + ' vouchers' },
             theme: 'dark',
-            fillSeriesColor: true,
-            marker: { show: true }
+            style: { fontSize: '13px', fontFamily: 'inherit' },
+            y: { formatter: (val) => `₱${val.toLocaleString()}` }
         },
+        dataLabels: { enabled: false },
+        legend: { show: false },
         responsive: [{
-            breakpoint: 1024,
-            options: {
-                chart: { height: 320 }
-            }
-        }, {
             breakpoint: 768,
-            options: {
-                chart: { height: 280 },
-                markers: { size: 4 }
-            }
-        }, {
-            breakpoint: 640,
-            options: {
-                chart: { height: 250 },
-                xaxis: { labels: { fontSize: '10px' } },
-                yaxis: { labels: { fontSize: '10px' } }
-            }
+            options: { chart: { height: 300 } }
         }]
     };
 
     try {
-        if (chartInstances.weekly) {
-            chartInstances.weekly.destroy();
-        }
+        if (chartInstances.fundDownloadedTimeline) chartInstances.fundDownloadedTimeline.destroy();
         const chart = new ApexCharts(chartElement, options);
-        chartInstances.weekly = chart;
+        chartInstances.fundDownloadedTimeline = chart;
         chart.render();
     } catch (error) {
-        console.error('Error creating weekly chart:', error);
+        console.error('Error creating fund downloaded timeline chart:', error);
+    }
+}
+
+/**
+ * Fund Downloaded Summary Chart
+ */
+function initFundDownloadedSummaryChart() {
+    const chartElement = document.getElementById('fundDownloadedSummaryChart');
+    if (!chartElement || !ApexCharts) return;
+
+    const periods = ['Q1', 'Q2', 'Q3', 'Q4'];
+    const fundData = periods.map(() => Math.floor(Math.random() * 500000) + 200000);
+
+    const totalFund = fundData.reduce((sum, val) => sum + val, 0);
+
+    const options = {
+        series: [{ name: 'Fund Downloaded', data: fundData }],
+        colors: [colors.secondary],
+        chart: {
+            type: 'bar',
+            height: '350px',
+            fontFamily: 'inherit',
+            toolbar: { show: false },
+            animations: { enabled: true, easing: 'easeinout', speed: 800 }
+        },
+        plotOptions: { bar: { borderRadius: 8, columnWidth: '60%' } },
+        xaxis: { categories: periods, labels: { style: { colors: '#64748B', fontSize: '12px' } } },
+        yaxis: {
+            labels: {
+                style: { colors: '#64748B', fontSize: '12px' },
+                formatter: (val) => `₱${(val / 1000).toFixed(0)}k`
+            }
+        },
+        grid: { borderColor: '#E2E8F0', strokeDashArray: 4 },
+        tooltip: {
+            theme: 'dark',
+            style: { fontSize: '13px', fontFamily: 'inherit' },
+            y: { formatter: (val) => `₱${val.toLocaleString()}` }
+        },
+        dataLabels: { enabled: false },
+        legend: { show: false },
+        responsive: [{
+            breakpoint: 768,
+            options: { chart: { height: 300 } }
+        }]
+    };
+
+    try {
+        if (chartInstances.fundDownloadedSummary) chartInstances.fundDownloadedSummary.destroy();
+        const chart = new ApexCharts(chartElement, options);
+        chartInstances.fundDownloadedSummary = chart;
+        chart.render();
+
+        // Update Fund Downloaded Summary stat card
+        const fundStatElement = document.getElementById('dashboardFundDownloadedTotal');
+        if (fundStatElement) {
+            fundStatElement.textContent = formatCurrency(totalFund);
+        }
+    } catch (error) {
+        console.error('Error creating fund downloaded summary chart:', error);
     }
 }
 
@@ -1723,114 +1687,146 @@ function initExpensesCategoryChart() {
 }
 
 /**
- * Fund Downloaded Timeline Chart
+ * Weekly Vouchers Line Chart - Modern Design
  */
-function initFundDownloadedTimelineChart() {
-    const chartElement = document.getElementById('fundDownloadedTimelineChart');
+function initWeeklyVouchersChart() {
+    const chartElement = document.getElementById('weeklyVouchersChart');
     if (!chartElement || !ApexCharts) return;
 
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const fundData = months.map(() => Math.floor(Math.random() * 200000) + 50000);
+    const weeklyData = [
+        { label: 'W1', value: 78 },
+        { label: 'W2', value: 82 },
+        { label: 'W3', value: 75 },
+        { label: 'W4', value: 89 },
+        { label: 'W5', value: 91 },
+        { label: 'W6', value: 95 },
+        { label: 'W7', value: 88 },
+        { label: 'W8', value: 102 }
+    ];
 
     const options = {
-        series: [{ name: 'Fund Downloaded', data: fundData }],
-        colors: [colors.accent1],
+        series: [{
+            name: 'Vouchers Generated',
+            data: weeklyData.map(item => item.value)
+        }],
         chart: {
-            type: 'line',
-            height: '350px',
+            type: 'area',
+            height: 'auto',
             fontFamily: 'inherit',
             toolbar: { show: false },
-            animations: { enabled: true, easing: 'easeinout', speed: 800 }
+            zoom: { enabled: false },
+            animations: {
+                enabled: true,
+                easing: 'easeinout',
+                speed: 800,
+                animateGradually: {
+                    enabled: true,
+                    delay: 150
+                }
+            },
+            sparkline: { enabled: false }
         },
-        stroke: { curve: 'smooth', width: 3 },
-        fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3 } },
-        xaxis: { categories: months, labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        yaxis: {
-            labels: {
-                style: { colors: '#64748B', fontSize: '12px' },
-                formatter: (val) => `₱${(val / 1000).toFixed(0)}k`
-            }
+        colors: [colors.primary],
+        stroke: {
+            curve: 'smooth',
+            width: 3,
+            lineCap: 'round'
         },
-        grid: { borderColor: '#E2E8F0', strokeDashArray: 4 },
-        tooltip: {
-            theme: 'dark',
-            style: { fontSize: '13px', fontFamily: 'inherit' },
-            y: { formatter: (val) => `₱${val.toLocaleString()}` }
+        markers: {
+            size: [5, 5, 5, 5, 5, 5, 5, 7],
+            colors: [colors.primary],
+            strokeColors: '#ffffff',
+            strokeWidth: 3,
+            hover: { size: 8 },
+            radius: 4
         },
         dataLabels: { enabled: false },
-        legend: { show: false },
+        grid: {
+            borderColor: colors.accent3,
+            strokeDashArray: 3,
+            xaxis: { lines: { show: false } },
+            yaxis: { lines: { show: true } },
+            padding: {
+                top: 0,
+                right: 0,
+                bottom: 0,
+                left: 0
+            }
+        },
+        xaxis: {
+            categories: weeklyData.map(item => item.label),
+            labels: {
+                style: {
+                    colors: '#64748B',
+                    fontSize: '12px',
+                    fontFamily: 'inherit',
+                    fontWeight: 600
+                }
+            },
+            axisBorder: { show: false },
+            axisTicks: { show: false }
+        },
+        yaxis: {
+            labels: {
+                style: {
+                    colors: '#64748B',
+                    fontSize: '12px',
+                    fontFamily: 'inherit',
+                    fontWeight: 600
+                },
+                formatter: (val) => val.toString()
+            },
+            min: 0
+        },
+        fill: {
+            type: 'gradient',
+            gradient: {
+                shade: 'light',
+                type: 'vertical',
+                shadeIntensity: 0.4,
+                gradientToColors: [colors.primary + '30'],
+                inverseColors: false,
+                opacityFrom: 0.5,
+                opacityTo: 0.1,
+                stops: [0, 50, 100]
+            }
+        },
+        tooltip: {
+            style: { fontSize: '13px', fontFamily: 'inherit' },
+            y: { formatter: (val) => val + ' vouchers' },
+            theme: 'dark',
+            fillSeriesColor: true,
+            marker: { show: true }
+        },
         responsive: [{
+            breakpoint: 1024,
+            options: {
+                chart: { height: 320 }
+            }
+        }, {
             breakpoint: 768,
-            options: { chart: { height: 300 } }
+            options: {
+                chart: { height: 280 },
+                markers: { size: 4 }
+            }
+        }, {
+            breakpoint: 640,
+            options: {
+                chart: { height: 250 },
+                xaxis: { labels: { fontSize: '10px' } },
+                yaxis: { labels: { fontSize: '10px' } }
+            }
         }]
     };
 
     try {
-        if (chartInstances.fundDownloadedTimeline) chartInstances.fundDownloadedTimeline.destroy();
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.fundDownloadedTimeline = chart;
-        chart.render();
-    } catch (error) {
-        console.error('Error creating fund downloaded timeline chart:', error);
-    }
-}
-
-/**
- * Fund Downloaded Summary Chart
- */
-function initFundDownloadedSummaryChart() {
-    const chartElement = document.getElementById('fundDownloadedSummaryChart');
-    if (!chartElement || !ApexCharts) return;
-
-    const periods = ['Q1', 'Q2', 'Q3', 'Q4'];
-    const fundData = periods.map(() => Math.floor(Math.random() * 500000) + 200000);
-
-    const totalFund = fundData.reduce((sum, val) => sum + val, 0);
-
-    const options = {
-        series: [{ name: 'Fund Downloaded', data: fundData }],
-        colors: [colors.secondary],
-        chart: {
-            type: 'bar',
-            height: '350px',
-            fontFamily: 'inherit',
-            toolbar: { show: false },
-            animations: { enabled: true, easing: 'easeinout', speed: 800 }
-        },
-        plotOptions: { bar: { borderRadius: 8, columnWidth: '60%' } },
-        xaxis: { categories: periods, labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        yaxis: {
-            labels: {
-                style: { colors: '#64748B', fontSize: '12px' },
-                formatter: (val) => `₱${(val / 1000).toFixed(0)}k`
-            }
-        },
-        grid: { borderColor: '#E2E8F0', strokeDashArray: 4 },
-        tooltip: {
-            theme: 'dark',
-            style: { fontSize: '13px', fontFamily: 'inherit' },
-            y: { formatter: (val) => `₱${val.toLocaleString()}` }
-        },
-        dataLabels: { enabled: false },
-        legend: { show: false },
-        responsive: [{
-            breakpoint: 768,
-            options: { chart: { height: 300 } }
-        }]
-    };
-
-    try {
-        if (chartInstances.fundDownloadedSummary) chartInstances.fundDownloadedSummary.destroy();
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.fundDownloadedSummary = chart;
-        chart.render();
-
-        // Update Fund Downloaded Summary stat card
-        const fundStatElement = document.getElementById('dashboardFundDownloadedTotal');
-        if (fundStatElement) {
-            fundStatElement.textContent = formatCurrency(totalFund);
+        if (chartInstances.weekly) {
+            chartInstances.weekly.destroy();
         }
+        const chart = new ApexCharts(chartElement, options);
+        chartInstances.weekly = chart;
+        chart.render();
     } catch (error) {
-        console.error('Error creating fund downloaded summary chart:', error);
+        console.error('Error creating weekly chart:', error);
     }
 }

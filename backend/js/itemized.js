@@ -142,25 +142,42 @@ function renderTable() {
             const isStriped = index % 2 === 1;
             const rowId = row.id || `row-${index}`;
 
+            const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            const accountTitle = typeof window.getAccountTitle === 'function' ? window.getAccountTitle(row.glCode) : (row.glCode || '1000');
+            const tooltipGlCode = row.glCode || '1000';
+
+            let remarksTag = '<span class="text-slate-400 italic text-[10px] font-semibold">-</span>';
+            if (row.remarks === 'PROCESS') {
+                remarksTag = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700 uppercase">PROCESS</span>`;
+            } else if (row.remarks === 'CANCEL') {
+                remarksTag = `<span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-rose-100 text-rose-700 uppercase">CANCEL</span>`;
+            }
+
             return `
                 <tr class="${isStriped ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-100 transition-colors cursor-pointer" data-row-id="${rowId}" data-transaction-index="${index}">
-                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm font-medium text-slate-900">
-                        ${row.glCode || '1000'}
+                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm font-medium text-slate-800 text-center relative group">
+                        ${esc(accountTitle)}
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 hidden group-hover:block w-max max-w-xs px-2.5 py-1.5 bg-slate-900/90 backdrop-blur-sm text-white text-[10px] font-bold rounded shadow-xl z-50 pointer-events-none border border-slate-700/50">
+                            G/L CODE: ${esc(tooltipGlCode)}
+                        </div>
                     </td>
-                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-slate-700">
-                        ${row.dvDate || ''}
+                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-slate-700 text-center">
+                        ${esc(row.dvDate)}
                     </td>
-                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-slate-700">
-                        ${row.dvNo || 'MOOE2025-01-0000'}
+                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-slate-700 text-center">
+                        ${esc(row.dvNo || 'MOOE2025-01-0000')}
                     </td>
-                    <td class="px-4 py-2 text-xs md:text-sm text-slate-700">
-                        ${row.requestedBy || ''}
+                    <td class="px-4 py-2 text-xs md:text-sm text-slate-700 text-center wrap-break-word min-w-[150px]">
+                        ${esc(row.payee)}
                     </td>
-                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right font-semibold text-slate-900">
+                    <td class="px-4 py-2 text-xs md:text-sm text-slate-700 text-center font-mono">
+                        ${esc(row.checkNo || '-')}
+                    </td>
+                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-center font-semibold text-slate-900">
                         ${formatCurrency(row.checkAmount || 0)}
                     </td>
-                    <td class="px-4 py-2 text-xs md:text-sm text-slate-700">
-                        ${row.payee || ''}
+                    <td class="px-4 py-2 text-xs md:text-sm text-center">
+                        ${remarksTag}
                     </td>
                     <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-center">
                         <div class="flex items-center justify-center gap-2">
@@ -188,8 +205,8 @@ function renderTable() {
                             </button>
                         </div>
                     </td>
-                </tr>
-            `;
+                </tr >
+                `;
         })
         .join('');
 
@@ -290,7 +307,7 @@ function renderPagination(total, totalPages) {
 function getNextDvNoFromRows() {
     const year = selectedYear;
     const month = String(new Date().getMonth() + 1).padStart(2, '0');
-    const prefix = `MOOE${year}-${month}-`;
+    const prefix = `MOOE${year} -${month} -`;
     const matching = transactionRows
         .filter(r => (r.dvNo || '').startsWith(prefix))
         .map(r => {
@@ -298,7 +315,7 @@ function getNextDvNoFromRows() {
             return m ? parseInt(m[1]) : 0;
         });
     const max = matching.length > 0 ? Math.max(...matching) : -1;
-    return `${prefix}${String(max + 1).padStart(4, '0')}`;
+    return `${prefix}${String(max + 1).padStart(4, '0')} `;
 }
 
 function handleAddClick() {
@@ -344,6 +361,7 @@ async function handleSaveTransaction(transactionData) {
         mcpFacility: transactionData.mcpFacility,
         konsultaFacility: transactionData.konsultaFacility,
         konsultaPf: transactionData.konsultaPf,
+        remarks: transactionData.remarks,
     };
 
     const isAddAllocation = !!transactionData.addAllocationMode;
@@ -455,7 +473,7 @@ function updateFilterDropdowns() {
     if (requestedBySelect) {
         const currentValue = requestedBySelect.value;
         requestedBySelect.innerHTML = '<option value="">All</option>' +
-            requestedByValues.map(val => `<option value="${val}" ${val === currentValue ? 'selected' : ''}>${val}</option>`).join('');
+            requestedByValues.map(val => `< option value = "${val}" ${val === currentValue ? 'selected' : ''}> ${val}</option > `).join('');
     }
 
     // Get unique Payee values (excluding archived)
@@ -464,7 +482,7 @@ function updateFilterDropdowns() {
     if (payeeSelect) {
         const currentValue = payeeSelect.value;
         payeeSelect.innerHTML = '<option value="">All</option>' +
-            payeeValues.map(val => `<option value="${val}" ${val === currentValue ? 'selected' : ''}>${val}</option>`).join('');
+            payeeValues.map(val => `< option value = "${val}" ${val === currentValue ? 'selected' : ''}> ${val}</option > `).join('');
     }
 }
 

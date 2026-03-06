@@ -23,8 +23,10 @@ requireAuth();
     <!-- Floating: Generate Voucher (ticket icon) -->
     <button type="button" id="itemizedVoucherFloatingBtn" aria-label="Generate Disbursement Voucher"
         class="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-[#224796] text-white shadow-lg hover:bg-[#163473] hover:shadow-xl transition-all cursor-pointer">
-        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.5 12A2.5 2.5 0 0 1 21 9.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v2.5a2.5 2.5 0 0 1 0 5V17a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2.5a2.5 2.5 0 0 1-2.5-2.5Z"/>
+        <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+            viewBox="0 0 24 24">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M18.5 12A2.5 2.5 0 0 1 21 9.5V7a1 1 0 0 0-1-1H4a1 1 0 0 0-1 1v2.5a2.5 2.5 0 0 1 0 5V17a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1v-2.5a2.5 2.5 0 0 1-2.5-2.5Z" />
         </svg>
     </button>
 
@@ -156,14 +158,16 @@ requireAuth();
                          o          unded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796]" />
                             </div>
 
-                                                           </div>
+                        </div>
 
                         <!-- Category Filters & Actions -->
                         <div class="flex flex-col sm:flex-row gap-3">
                             <!-- Year -->
                             <div class="w-full sm:w-32">
-                                <label for="itemizedYear" class="block text-xs font-medium text-slate-500 mb-1">Year</label>
-                                <select id="itemizedYear" class="w-full rounded-lg border border-slate-300 bg-white py-2.5 px-3 text-sm text-slate-900 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] cursor-pointer">
+                                <label for="itemizedYear"
+                                    class="block text-xs font-medium text-slate-500 mb-1">Year</label>
+                                <select id="itemizedYear"
+                                    class="w-full rounded-lg border border-slate-300 bg-white py-2.5 px-3 text-sm text-slate-900 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] cursor-pointer">
                                 </select>
                             </div>
                             <!-- Requested By Filter -->
@@ -214,28 +218,32 @@ requireAuth();
                             <thead class="bg-[#224796]">
                                 <tr>
                                     <th scope="col"
-                                        class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-white">
-                                        G/L Code
+                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
+                                        Account Title
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-white">
+                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
                                         DV DATE
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-white">
+                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
                                         DV NO.
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-white">
-                                        Requested by
-                                    </th>
-                                    <th scope="col"
-                                        class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-white">
-                                        Check Amount
-                                    </th>
-                                    <th scope="col"
-                                        class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-white">
+                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
                                         Payee
+                                    </th>
+                                    <th scope="col"
+                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
+                                        Check No.
+                                    </th>
+                                    <th scope="col"
+                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
+                                        Amount
+                                    </th>
+                                    <th scope="col"
+                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
+                                        Remarks
                                     </th>
                                     <th scope="col"
                                         class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
@@ -276,9 +284,9 @@ requireAuth();
 
     <!-- Hidden voucher form template (moved into modal when "Generate Voucher" is clicked) -->
 
-               <div id="voucherFormTemplate" class="hidden" aria-hidden="true">
+    <div id="voucherFormTemplate" class="hidden" aria-hidden="true">
 
-                        <?php require_once __DIR__ . '/../../components/generateVoucher.php'; ?>
+        <?php require_once __DIR__ . '/../../components/generateVoucher.php'; ?>
     </div>
 
 </body>

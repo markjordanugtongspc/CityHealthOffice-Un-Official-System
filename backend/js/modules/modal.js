@@ -754,13 +754,23 @@ export function showVoucherModal() {
             <div class="flex items-center justify-between shrink-0 px-4 py-3 border-b border-slate-200 bg-slate-50">
                 <h3 class="text-lg font-bold text-slate-900">Disbursement Voucher</h3>
                 <div class="flex items-center gap-2">
-                    <button type="button" id="voucherModalInsert" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 text-sm font-medium hover:bg-emerald-600 hover:text-white hover:font-bold transition-colors cursor-pointer">
-                        Insert
-                    </button>
-                    <button type="button" id="voucherModalPrint" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#224796] text-white text-sm font-medium hover:bg-[#163473] transition-colors cursor-pointer">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
-                        Print
-                    </button>
+                    <div class="relative group inline-block">
+                        <button type="button" id="voucherModalInsert" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-100 text-emerald-700 text-sm font-medium hover:bg-emerald-600 hover:text-white hover:font-bold transition-colors cursor-pointer">
+                            Insert
+                        </button>
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 w-max max-w-[200px] px-2.5 py-1.5 mb-2 bg-slate-900/90 backdrop-blur-sm text-white text-xs text-center rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 whitespace-normal border border-slate-700/50 shadow-xl">
+                            E-Insert nimo ang voucher data sa System
+                        </div>
+                    </div>
+                    <div class="relative group inline-block">
+                        <button type="button" id="voucherModalPrint" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#224796] text-white text-sm font-medium hover:bg-[#163473] transition-colors cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                            Print
+                        </button>
+                        <div class="absolute bottom-full left-1/2 -translate-x-1/2 w-max max-w-[200px] px-2.5 py-1.5 mb-2 bg-slate-900/90 backdrop-blur-sm text-white text-xs text-center rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-50 whitespace-normal border border-slate-700/50 shadow-xl">
+                            E-Print ni niya nga voucher
+                        </div>
+                    </div>
                     <button type="button" id="voucherModalClose" class="p-2 rounded-lg hover:bg-slate-200 text-slate-600 hover:text-slate-900 transition-colors cursor-pointer" aria-label="Close">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
@@ -1307,6 +1317,7 @@ export async function showDailyTransactionViewModal(transaction) {
         payee: transaction.payee || '',
         particulars: transaction.particulars || '',
         checkNo: transaction.checkNo || '',
+        remarks: transaction.remarks || '',
         fileDate: transaction.fileDate || '',
         mooe: transaction.mooe || 0,
         spf: transaction.spf || 0,
@@ -1331,107 +1342,122 @@ export async function showDailyTransactionViewModal(transaction) {
                     <p class="text-xs text-slate-400">View the financial breakdown and narrative.</p>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 min-h-[350px]">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
 
-                    <div class="flex flex-col gap-3">
+                    <!-- Left Column: Primary Details (col-span 7) -->
+                    <div class="lg:col-span-7 space-y-3">
                         
-                        <div class="flex gap-2">
-                            <div class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-lg">
-                                <label class="text-[9px] uppercase font-bold text-slate-400 block mb-0.5">DV NO.</label>
+                        <!-- DV & GL Info -->
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="p-2 bg-slate-50 border border-slate-200 rounded-xl">
+                                <label class="text-[9px] uppercase font-black text-slate-400 block mb-0.5 tracking-widest">DV NO.</label>
                                 <div class="font-mono text-xs font-bold text-slate-700">${escapeHtml(defaultData.dvNo)}</div>
                             </div>
-                            <div class="flex-1 p-2 bg-slate-50 border border-slate-200 rounded-lg">
-                                <label class="text-[9px] uppercase font-bold text-slate-400 block mb-0.5">G/L Code</label>
+                            <div class="p-2 bg-slate-50 border border-slate-200 rounded-xl">
+                                <label class="text-[9px] uppercase font-black text-slate-400 block mb-0.5 tracking-widest">G/L Code</label>
                                 <div class="font-mono text-xs font-bold text-slate-800">${escapeHtml(defaultData.glCode)}</div>
                             </div>
                         </div>
 
-                        <div class="p-3 bg-white border border-slate-200 rounded-xl shadow-sm flex-none">
-                            <div class="flex items-center gap-3">
-                                <div class="p-2 bg-slate-100 rounded-lg text-slate-500">
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                        <!-- Payee & Remarks Row -->
+                        <div class="p-2.5 bg-white border border-slate-200 rounded-xl shadow-sm flex items-center justify-between gap-3">
+                            <div class="flex items-center gap-2.5 overflow-hidden">
+                                <div class="p-1.5 bg-slate-100 rounded-lg text-slate-500 shrink-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                                 </div>
                                 <div class="overflow-hidden">
-                                    <label class="text-[9px] uppercase font-bold text-slate-400 block">Payee</label>
-                                    <div class="text-sm font-bold text-slate-800 truncate leading-tight">${escapeHtml(defaultData.payee)}</div>
+                                    <label class="text-[8px] uppercase font-bold text-slate-400 block tracking-wider">Payee</label>
+                                    <div class="text-xs font-bold text-slate-800 truncate leading-tight">${escapeHtml(defaultData.payee)}</div>
                                 </div>
                             </div>
-                            <div class="mt-2 pt-2 border-t border-slate-100 flex justify-between items-start gap-4">
-                                <span class="text-[9px] uppercase font-bold text-slate-400 whitespace-nowrap">Requested by</span>
-                                <span class="text-[9px] font-semibold text-slate-600 leading-tight text-right">
-                                    ${escapeHtml(defaultData.requestedBy)}
-                                </span>
+                            <!-- Remarks Tag -->
+                            <div class="shrink-0">
+                                ${defaultData.remarks === 'PROCESS'
+                ? '<span class="px-2 py-0.5 rounded-lg bg-emerald-100 text-emerald-700 text-[9px] font-black uppercase tracking-wider">PROCESS</span>'
+                : defaultData.remarks === 'CANCEL'
+                    ? '<span class="px-2 py-0.5 rounded-lg bg-rose-100 text-rose-700 text-[9px] font-black uppercase tracking-wider">CANCEL</span>'
+                    : '<span class="px-2 py-0.5 rounded-lg bg-slate-100 text-slate-400 text-[9px] font-bold uppercase">NO TAG</span>'
+            }
                             </div>
                         </div>
 
-                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex-grow flex flex-col">
-                            <label class="text-[9px] uppercase font-bold text-slate-400 tracking-wider mb-1 block">PARTICULARS</label>
-                            <p class="text-xs text-slate-600 leading-relaxed overflow-y-auto custom-scrollbar flex-1">
+                        <!-- Particulars Box -->
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 min-h-[100px] flex flex-col">
+                            <label class="text-[9px] uppercase font-black text-slate-400 tracking-widest mb-1.5 block">PARTICULARS</label>
+                            <div class="text-[11px] text-slate-600 leading-relaxed overflow-y-auto custom-scrollbar flex-1 max-h-[120px]">
                                 ${escapeHtml(defaultData.particulars) || '<span class="italic text-slate-400">No particulars provided.</span>'}
-                            </p>
-                        </div>
-
-                         <div class="grid grid-cols-2 gap-2 flex-none">
-                            <div class="p-2 border border-slate-100 rounded-lg bg-white">
-                                <label class="text-[9px] font-bold text-slate-400 uppercase block">DV DATE</label>
-                                <div class="text-xs font-semibold text-slate-700 mt-0.5">${escapeHtml(defaultData.dvDate) || '-'}</div>
-                            </div>
-                             <div class="p-2 border border-slate-100 rounded-lg bg-white">
-                                <label class="text-[9px] font-bold text-slate-400 uppercase block">CHECK NO.</label>
-                                <div class="text-xs font-mono font-semibold text-slate-700 mt-0.5">${escapeHtml(defaultData.checkNo) || '-'}</div>
                             </div>
                         </div>
 
+                        <!-- Date & Requester -->
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="p-2 border border-slate-100 rounded-xl bg-white shadow-sm">
+                                <label class="text-[8px] font-bold text-slate-400 uppercase block tracking-wider">DV DATE</label>
+                                <div class="text-[11px] font-semibold text-slate-700 mt-0.5">${escapeHtml(defaultData.dvDate) || '-'}</div>
+                            </div>
+                             <div class="p-2 border border-slate-100 rounded-xl bg-white shadow-sm">
+                                <label class="text-[8px] font-bold text-slate-400 uppercase block tracking-wider">REQUESTED BY</label>
+                                <div class="text-[11px] font-semibold text-slate-700 mt-0.5 truncate" title="${escapeHtml(defaultData.requestedBy)}">${escapeHtml(defaultData.requestedBy) || '-'}</div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="bg-slate-50/50 rounded-2xl p-1 border border-slate-100 h-full flex flex-col">
+                    <!-- Right Column: Financial Analysis (col-span 5) -->
+                    <div class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-full">
                         
-                        <div class="bg-gradient-to-b from-slate-800 to-slate-900 rounded-xl p-5 text-white text-center shadow-lg shadow-slate-900/10 mb-3 relative overflow-hidden flex-none">
-                            <div class="absolute top-0 right-0 w-20 h-20 bg-white/5 rounded-full blur-2xl -mr-10 -mt-10"></div>
-                            
+                        <!-- Amount Header -->
+                        <div class="bg-slate-900 p-3.5 text-center relative overflow-hidden shrink-0">
+                            <div class="absolute top-0 right-0 w-24 h-24 bg-white/5 rounded-full blur-3xl -mr-12 -mt-12"></div>
                             <div class="relative z-10">
-                                <div class="text-slate-300 text-[9px] font-bold uppercase tracking-widest mb-1">Check Amount</div>
-                                <div class="text-3xl font-black tracking-tight text-white">
+                                <div class="text-slate-400 text-[8px] font-black uppercase tracking-[0.2em] mb-1">Check Amount</div>
+                                <div class="text-2xl font-black text-white tracking-tight">
                                     ${formatCurrency(defaultData.checkAmount)}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="flex-1 px-3 pb-2 flex flex-col justify-center">
-                            <div class="flex items-center gap-2 mb-3 justify-center opacity-80">
-                                <div class="h-[1px] w-4 bg-slate-300"></div>
-                                <h4 class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Fund Allocation</h4>
-                                <div class="h-[1px] w-4 bg-slate-300"></div>
+                        <div class="p-3.5 flex flex-col justify-center flex-grow">
+                            <div class="flex items-center gap-2 mb-4 justify-center">
+                                <div class="h-[1px] w-4 bg-slate-200"></div>
+                                <h4 class="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em]">Allocations</h4>
+                                <div class="h-[1px] w-4 bg-slate-200"></div>
                             </div>
                             
-                            <div class="space-y-1">
-                                <div class="flex justify-between items-center px-2 py-1.5 border-b border-slate-200 border-dashed last:border-0">
-                                    <span class="text-xs font-medium text-slate-500">MOOE</span>
-                                    <span class="text-xs font-bold text-slate-700 font-mono">${formatCurrency(defaultData.mooe)}</span>
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center py-1 border-b border-slate-100 border-dashed last:border-0">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">MOOE</span>
+                                    <span class="text-[10px] font-black text-slate-700 font-mono">${formatCurrency(defaultData.mooe)}</span>
                                 </div>
 
-                                <div class="flex justify-between items-center px-2 py-1.5 border-b border-slate-200 border-dashed last:border-0">
-                                    <span class="text-xs font-medium text-slate-500">SPF</span>
-                                    <span class="text-xs font-bold text-slate-700 font-mono">${formatCurrency(defaultData.spf)}</span>
+                                <div class="flex justify-between items-center py-1 border-b border-slate-100 border-dashed last:border-0">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">SPF</span>
+                                    <span class="text-[10px] font-black text-slate-700 font-mono">${formatCurrency(defaultData.spf)}</span>
                                 </div>
 
-                                <div class="flex justify-between items-center px-2 py-1.5 border-b border-slate-200 border-dashed last:border-0">
-                                    <span class="text-xs font-medium text-slate-500">MCP FACILITY</span>
-                                    <span class="text-xs font-bold text-slate-700 font-mono">${formatCurrency(defaultData.mcpFacility)}</span>
+                                <div class="flex justify-between items-center py-1 border-b border-slate-100 border-dashed last:border-0">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">MCP FAC.</span>
+                                    <span class="text-[10px] font-black text-slate-700 font-mono">${formatCurrency(defaultData.mcpFacility)}</span>
                                 </div>
 
-                                <div class="flex justify-between items-center px-2 py-1.5 border-b border-slate-200 border-dashed last:border-0">
-                                    <span class="text-xs font-medium text-slate-500">KONSULTA FACILITY</span>
-                                    <span class="text-xs font-bold text-slate-700 font-mono">${formatCurrency(defaultData.konsultaFacility)}</span>
+                                <div class="flex justify-between items-center py-1 border-b border-slate-100 border-dashed last:border-0">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">KON. FAC.</span>
+                                    <span class="text-[10px] font-black text-slate-700 font-mono">${formatCurrency(defaultData.konsultaFacility)}</span>
                                 </div>
 
-                                <div class="flex justify-between items-center p-2 rounded-lg bg-emerald-50/50 border border-emerald-100 mt-2">
-                                    <span class="text-xs font-bold text-emerald-700">KONSULTA PF</span>
-                                    <span class="text-xs font-black text-emerald-700 font-mono">${formatCurrency(defaultData.konsultaPf)}</span>
+                                <div class="flex justify-between items-center p-2 rounded-xl bg-emerald-50 border border-emerald-100 mt-3 group transition-all hover:bg-emerald-100/50">
+                                    <span class="text-[10px] font-black text-emerald-700 uppercase tracking-widest">KONSULTA PF</span>
+                                    <span class="text-[11px] font-black text-emerald-800 font-mono">${formatCurrency(defaultData.konsultaPf)}</span>
                                 </div>
                             </div>
                         </div>
 
+                        <!-- Footer indicator -->
+                        <div class="bg-slate-50 p-2 text-center border-t border-slate-100">
+                             <div class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-white border border-slate-200 shadow-sm">
+                                <div class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                                <span class="text-[8px] font-black text-slate-400 uppercase tracking-widest">Verified Record</span>
+                             </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1447,7 +1473,7 @@ export async function showDailyTransactionViewModal(transaction) {
             */
             popup: '!rounded-2xl !shadow-2xl !border !border-slate-100 !max-w-4xl !w-full !p-0',
 
-            htmlContainer: '!m-0 !p-6 !overflow-visible',
+            htmlContainer: '!m-0 !p-5 !overflow-visible',
         },
         // bind the close action manually once the modal is injected into the DOM
         didOpen: () => {
@@ -1492,6 +1518,7 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
         payee: transaction?.payee || '',
         particulars: transaction?.particulars || '',
         checkNo: transaction?.checkNo || '',
+        remarks: transaction?.remarks || '',
         fileDate: transaction?.fileDate || today,
         mooe: transaction?.mooe || '',
         spf: transaction?.spf || '',
@@ -1524,14 +1551,15 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                         </div>
                         <div class="space-y-2">
                             <div class="space-y-0.5">
-                                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">G/L Code <span class="text-rose-500">*</span></label>
+                                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">Account Title <span class="text-rose-500">*</span></label>
                                 <div class="relative">
                                     <span class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400">
                                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
                                     </span>
-                                    <input type="text" id="modal-gl-code" value="${escapeHtml(defaultData.glCode)}" placeholder="Type to search (e.g. Trave...)" autocomplete="off"
-                                        class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono focus:ring-2 focus:ring-slate-200 focus:border-slate-400 outline-none">
-                                    <div id="modal-gl-code-suggestions" class="absolute z-50 left-0 right-0 mt-1 max-h-36 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-lg hidden">
+                                    <input type="hidden" id="modal-gl-code-hidden" value="${escapeHtml(defaultData.glCode)}">
+                                    <input type="text" id="modal-gl-code" value="" placeholder="Search Account Title..." autocomplete="off"
+                                        class="w-full pl-8 pr-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-800 focus:ring-2 focus:ring-slate-200 focus:border-slate-400 outline-none">
+                                    <div id="modal-gl-code-suggestions" class="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-200 bg-white shadow-xl hidden">
                                     </div>
                                 </div>
                             </div>
@@ -1590,10 +1618,22 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                                         class="w-full px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-mono outline-none">
                                 </div>
                             </div>
-                            <div class="space-y-0.5">
-                                <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">PARTICULARS</label>
-                                <textarea id="modal-particulars" rows="2" placeholder="Description..."
-                                    class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs transition-all outline-none resize-none custom-scrollbar focus:bg-white">${escapeHtml(defaultData.particulars)}</textarea>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                <div class="space-y-0.5">
+                                    <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">PARTICULARS</label>
+                                    <textarea id="modal-particulars" rows="2" placeholder="Description..."
+                                        class="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs transition-all outline-none resize-none custom-scrollbar focus:bg-white">${escapeHtml(defaultData.particulars)}</textarea>
+                                </div>
+                                <div class="space-y-0.5">
+                                    <label class="text-[9px] font-bold text-slate-500 uppercase tracking-wider ml-1">REMARKS</label>
+                                    <select id="modal-remarks" 
+                                        class="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-bold transition-all outline-none focus:ring-2 focus:ring-slate-200 cursor-pointer font-sans appearance-none shadow-sm
+                                        ${defaultData.remarks === 'PROCESS' ? 'bg-emerald-50 text-emerald-700' : defaultData.remarks === 'CANCEL' ? 'bg-rose-50 text-rose-700' : 'bg-slate-50 text-slate-700'}">
+                                        <option value="" class="text-slate-500 font-medium">None</option>
+                                        <option value="PROCESS" ${defaultData.remarks === 'PROCESS' ? 'selected' : ''} class="text-emerald-600 font-bold bg-emerald-50">PROCESS</option>
+                                        <option value="CANCEL" ${defaultData.remarks === 'CANCEL' ? 'selected' : ''} class="text-rose-600 font-bold bg-rose-50">CANCEL</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1845,6 +1885,16 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                 return numA - numB;
             });
 
+            // Set initial Account Title from G/L Code
+            const currentGlCode = defaultData.glCode;
+            const initialMatch = staticCodeNameList.find(i => i.code === currentGlCode);
+            if (initialMatch && glInput) {
+                glInput.value = initialMatch.name;
+            } else if (glInput) {
+                glInput.value = currentGlCode; // Fallback to code if title not found
+            }
+
+
             const bindSuggestionDropdown = (inputEl, dropdownEl, sourceKey, onSelect) => {
                 if (!inputEl || !dropdownEl) return;
 
@@ -1988,12 +2038,21 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                         glSuggestions.innerHTML = res.data.map(item => {
                             const gl = esc(item.gl_code || '');
                             const title = esc(item.account_title || '');
-                            return `<div class="px-3 py-2 hover:bg-slate-100 cursor-pointer text-xs text-slate-700 border-b border-slate-100 last:border-b-0 flex items-center gap-2" data-gl="${gl}"><svg class="w-3.5 h-3.5 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg><span>${gl} - ${title}</span></div>`;
+                            return `<div class="px-3 py-2 hover:bg-slate-100 cursor-pointer text-xs text-slate-700 border-b border-slate-100 last:border-b-0 flex flex-col gap-0.5" data-gl="${gl}">
+                                <div class="text-[9px] font-black text-slate-400 uppercase tracking-tighter">Code: ${gl}</div>
+                                <div class="font-bold text-slate-800 title-text">${title}</div>
+                            </div>`;
                         }).join('');
                         glSuggestions.classList.remove('hidden');
                         glSuggestions.querySelectorAll('[data-gl]').forEach(el => {
                             el.addEventListener('click', () => {
-                                glInput.value = el.dataset.gl || '';
+                                const glValue = el.dataset.gl || '';
+                                const titleValue = el.querySelector('.title-text')?.textContent || glValue;
+                                
+                                const hiddenGl = document.getElementById('modal-gl-code-hidden');
+                                if (hiddenGl) hiddenGl.value = glValue;
+                                if (glInput) glInput.value = titleValue;
+                                
                                 glSuggestions.classList.add('hidden');
                             });
                         });
@@ -2073,12 +2132,28 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                 input?.addEventListener('input', updateSummary);
             });
 
+            const remarksSelect = document.getElementById('modal-remarks');
+            if (remarksSelect) {
+                const updateRemarksStyle = () => {
+                    const val = remarksSelect.value;
+                    remarksSelect.classList.remove('bg-emerald-50', 'text-emerald-700', 'bg-rose-50', 'text-rose-700', 'bg-slate-50', 'text-slate-700');
+                    if (val === 'PROCESS') {
+                        remarksSelect.classList.add('bg-emerald-50', 'text-emerald-700');
+                    } else if (val === 'CANCEL') {
+                        remarksSelect.classList.add('bg-rose-50', 'text-rose-700');
+                    } else {
+                        remarksSelect.classList.add('bg-slate-50', 'text-slate-700');
+                    }
+                };
+                remarksSelect.addEventListener('change', updateRemarksStyle);
+            }
+
             updateSummary();
         },
         preConfirm: () => {
             const data = {
                 id: defaultData.id,
-                glCode: document.getElementById('modal-gl-code')?.value.trim(),
+                glCode: document.getElementById('modal-gl-code-hidden')?.value.trim(),
                 dvDate: document.getElementById('modal-dv-date')?.value,
                 dvNo: document.getElementById('modal-dv-no')?.value.trim(),
                 requestedBy: document.getElementById('modal-requested-by')?.value.trim(),
@@ -2086,6 +2161,7 @@ export async function showDailyTransactionEditModal(transaction = null, onSave =
                 payee: document.getElementById('modal-payee')?.value.trim(),
                 particulars: document.getElementById('modal-particulars')?.value.trim(),
                 checkNo: document.getElementById('modal-check-no')?.value.trim(),
+                remarks: document.getElementById('modal-remarks')?.value.trim(),
                 fileDate: document.getElementById('modal-file-date')?.value,
                 mooe: document.getElementById('modal-mooe')?.value.trim(),
                 spf: document.getElementById('modal-spf')?.value.trim(),
