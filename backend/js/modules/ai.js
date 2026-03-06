@@ -7,6 +7,14 @@ export function init() {
     // Only attach once
     if (document.getElementById('aiChatButton')) return;
 
+    // Skip initialization on login page (root index.php or root /)
+    const pathname = window.location.pathname;
+    const isLoginPage = !pathname.includes('/frontend/');
+
+    if (isLoginPage) {
+        return;
+    }
+
     // Create the floating button
     const btn = document.createElement('button');
     btn.id = 'aiChatButton';
