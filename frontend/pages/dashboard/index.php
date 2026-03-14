@@ -326,8 +326,29 @@ requireAuth();
                             <!-- Desktop Left Legend (Months 1-6) -->
                             <div id="monthlyVouchersLegendLeft" class="hidden lg:flex flex-col gap-2 w-1/4"></div>
 
-                            <!-- Center Chart Area -->
-                            <div class="w-full lg:w-2/4" id="monthlyVouchersChart"></div>
+                            <!-- Center Chart Area with skeleton -->
+                            <div class="w-full lg:w-2/4">
+                                <!-- Skeleton loader for Cash In Bank donut -->
+                                <div id="monthlyVouchersSkeleton"
+                                     role="status"
+                                     class="space-y-4 animate-pulse">
+                                    <div class="h-3 bg-neutral-quaternary rounded-full w-40 mx-auto mb-2"></div>
+                                    <div class="h-3 bg-neutral-quaternary rounded-full w-24 mx-auto mb-4"></div>
+                                    <div class="flex items-center justify-center">
+                                        <div class="w-40 h-40 md:w-52 md:h-52 rounded-full border-[10px] border-neutral-quaternary/80"></div>
+                                    </div>
+                                    <div class="flex flex-wrap justify-center gap-3 pt-3">
+                                        <span class="h-2 w-16 bg-neutral-quaternary rounded-full"></span>
+                                        <span class="h-2 w-20 bg-neutral-quaternary rounded-full"></span>
+                                        <span class="h-2 w-14 bg-neutral-quaternary rounded-full"></span>
+                                        <span class="h-2 w-24 bg-neutral-quaternary rounded-full"></span>
+                                    </div>
+                                    <span class="sr-only">Loading chart...</span>
+                                </div>
+
+                                <!-- Actual chart rendered by ApexCharts -->
+                                <div class="hidden" id="monthlyVouchersChart"></div>
+                            </div>
 
                             <!-- Desktop Right Legend (Months 7-12) -->
                             <div id="monthlyVouchersLegendRight"

@@ -37,16 +37,81 @@ function formatCurrency(value) {
 let ApexCharts;
 const chartInstances = {};
 
+/**
+ * Toggle skeleton/loading state for chart containers.
+ * Expects a chart element with id=chartId and a skeleton with id=skeletonId.
+ */
+function toggleChartSkeleton(chartId, skeletonId, isLoading) {
+    const chartEl = document.getElementById(chartId);
+    const skeletonEl = document.getElementById(skeletonId);
+    if (!chartEl || !skeletonEl) return;
+    if (isLoading) {
+        skeletonEl.classList.remove('hidden');
+        chartEl.classList.add('hidden');
+    } else {
+        skeletonEl.classList.add('hidden');
+        chartEl.classList.remove('hidden');
+    }
+}
+
 function getApiBasePath() {
     const path = window.location.pathname || '/';
     const idx = path.indexOf('/frontend/');
     return idx !== -1 ? path.substring(0, idx) : path.substring(0, path.lastIndexOf('/')) || '';
 }
 
+// -----------------------------------------------------------------------------
+// Lightweight dashboard caching (localStorage)
+// -----------------------------------------------------------------------------
+
+const DASHBOARD_CACHE_KEY = 'dashboardState_v1';
+
+function loadDashboardCache() {
+    try {
+        const raw = localStorage.getItem(DASHBOARD_CACHE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+    } catch {
+        return null;
+    }
+}
+
+function saveDashboardCache(partial) {
+    try {
+        const current = loadDashboardCache() || {};
+        const next = { ...current, ...partial, updatedAt: Date.now() };
+        localStorage.setItem(DASHBOARD_CACHE_KEY, JSON.stringify(next));
+    } catch {
+        // ignore storage errors
+    }
+}
+
+function hydrateDashboardFromCache() {
+    const cache = loadDashboardCache();
+    if (!cache) return;
+
+    // Top stat cards
+    if (cache.totalIncome) {
+        const el = document.getElementById('dashboardTotalIncome');
+        if (el) el.textContent = cache.totalIncome;
+    }
+    if (cache.totalExpenses) {
+        const el = document.getElementById('dashboardTotalExpenses');
+        if (el) el.textContent = cache.totalExpenses;
+    }
+    if (cache.fundDownloadedTotal) {
+        const el = document.getElementById('dashboardFundDownloadedTotal');
+        if (el) el.textContent = cache.fundDownloadedTotal;
+    }
+}
+
 /**
  * Initialize all charts
  */
 export async function init() {
+    // First, hydrate static values from localStorage so the UI feels instant
+    hydrateDashboardFromCache();
+
     try {
         const apexchartsModule = await import('apexcharts');
 
@@ -159,6 +224,9 @@ window.initPageCharts = function (pageNumber) {
 function initMonthlyVouchersChart() {
     const chartElement = document.getElementById('monthlyVouchersChart');
     if (!chartElement || !ApexCharts) return;
+
+    // Show skeleton while setting up this chart
+    toggleChartSkeleton('monthlyVouchersChart', 'monthlyVouchersSkeleton', true);
 
     // Brand colors
     const brandColor = colors.primary;
@@ -443,10 +511,15 @@ function initMonthlyVouchersChart() {
         chart.render();
         updateCustomLegend();
 
+        // Hide skeleton once chart is ready
+        toggleChartSkeleton('monthlyVouchersChart', 'monthlyVouchersSkeleton', false);
+
         // Update Total Income stat card
         const incomeStatElement = document.getElementById('dashboardTotalIncome');
         if (incomeStatElement) {
-            incomeStatElement.textContent = formatCurrency(total);
+            const formatted = formatCurrency(total);
+            incomeStatElement.textContent = formatted;
+            saveDashboardCache({ totalIncome: formatted });
         }
 
         // Year dropdown handling
@@ -699,7 +772,9 @@ function initFundDownloadedSummaryChart() {
         // Update Fund Downloaded Summary stat card
         const fundStatElement = document.getElementById('dashboardFundDownloadedTotal');
         if (fundStatElement) {
-            fundStatElement.textContent = formatCurrency(totalFund);
+            const formatted = formatCurrency(totalFund);
+            fundStatElement.textContent = formatted;
+            saveDashboardCache({ fundDownloadedTotal: formatted });
         }
     } catch (error) {
         console.error('Error creating fund downloaded summary chart:', error);
@@ -1595,7 +1670,9 @@ async function initExpensesOverviewChart() {
         // Update Total Expenses stat card
         const expensesStatElement = document.getElementById('dashboardTotalExpenses');
         if (expensesStatElement) {
-            expensesStatElement.textContent = formatCurrency(totalExpenses);
+            const formatted = formatCurrency(totalExpenses);
+            expensesStatElement.textContent = formatted;
+            saveDashboardCache({ totalExpenses: formatted });
         }
     } catch (error) {
         console.error('Error creating expenses overview chart:', error);
