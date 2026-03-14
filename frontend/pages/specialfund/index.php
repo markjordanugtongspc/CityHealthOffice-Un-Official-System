@@ -22,7 +22,7 @@ requireAuth();
     <?php require_once __DIR__ . '/../../components/sidebar.php'; ?>
 
     <!-- Main Content Container (Expandable and Scrollable) -->
-    <div id="spaContentContainer" class="main-content ml-64 min-h-screen transition-all duration-300 flex-1 flex flex-col">
+    <div id="spaContentContainer" class="main-content ml-0 w-full max-w-full lg:w-auto lg:ml-80! lg:group-[.sidebar-collapsed]/body:!ml-[4.5rem] min-h-screen transition-all duration-300 flex-1 flex flex-col overflow-hidden!">
         <!-- Header -->
             <header class="flex items-center justify-between bg-white border-b border-slate-200 px-4 py-3">
                 <div class="flex items-center space-x-3">
@@ -39,8 +39,8 @@ requireAuth();
                         </svg>
                     </button>
                     <div>
-                        <h1 class="text-xl font-bold text-slate-900">Special Program Fund</h1>
-                        <h3 class="text-sm text-slate-600">Actual vs Budget YTD for <span id="specialFundCurrentYear" class="font-semibold text-slate-900"></span></h3>
+                        <h1 class="text-xl font-bold text-slate-900 text-balance">Special Program Fund</h1>
+                        <h3 class="text-sm text-slate-600 text-balance">Actual vs Budget YTD for <span id="specialFundCurrentYear" class="font-semibold text-slate-900"></span></h3>
                     </div>
                 </div>
 
@@ -96,7 +96,7 @@ requireAuth();
                 <!-- Intro section -->
                 <section class="mb-6">
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6">
-                        <h2 class="text-xl md:text-2xl font-semibold text-slate-900 mb-2">
+                        <h2 class="text-xl md:text-2xl font-semibold text-slate-900 mb-2 text-balance">
                             SPECIAL PROGRAM FUND
                         </h2>
                         <p class="text-sm md:text-base text-slate-600">
@@ -110,7 +110,7 @@ requireAuth();
                 <!-- Filters & Actions -->
                 <section class="mb-4">
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-5">
-                        <div class="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
+                        <div class="flex flex-col md:flex-row gap-4 md:items-center md:justify-between md:flex-wrap">
                             <!-- Search -->
                             <div class="w-full md:flex-1">
                                 <label for="specialFundSearch" class="block text-xs font-medium text-slate-500 mb-1">
@@ -132,7 +132,7 @@ requireAuth();
                             </div>
 
                             <!-- Right controls -->
-                            <div class="flex flex-col sm:flex-row gap-3 md:gap-4 md:items-center">
+                            <div class="flex flex-col sm:flex-row gap-3 md:gap-4 md:items-center sm:flex-wrap">
                                 <div class="flex items-center gap-3">
                                     <label for="specialFundYear" class="text-sm font-medium text-slate-700 whitespace-nowrap">
                                         Year

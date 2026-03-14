@@ -116,15 +116,15 @@ export function init() {
         
         // Update button styles (desktop)
         chartPageButtons.forEach(btn => {
-            btn.classList.remove('bg-[#224796]', 'text-white', 'hover:bg-[#163473]');
-            btn.classList.add('text-slate-700', 'hover:bg-slate-100');
+            btn.classList.remove('bg-linear-to-br', 'from-[#224796]', 'to-[#1e3a8a]', 'text-white', 'shadow-[0_4px_15px_rgba(34,71,150,0.3)]', 'hover:shadow-[0_8px_25px_rgba(34,71,150,0.4)]');
+            btn.classList.add('text-slate-500', 'hover:text-slate-900', 'hover:bg-white/70');
         });
         
         // Update active button (desktop)
         const activeButton = document.querySelector(`.chart-page-btn[data-page="${pageNumber}"]`);
         if (activeButton) {
-            activeButton.classList.remove('text-slate-700', 'hover:bg-slate-100');
-            activeButton.classList.add('bg-[#224796]', 'text-white', 'hover:bg-[#163473]');
+            activeButton.classList.remove('text-slate-500', 'hover:text-slate-900', 'hover:bg-white/70');
+            activeButton.classList.add('bg-linear-to-br', 'from-[#224796]', 'to-[#1e3a8a]', 'text-white', 'shadow-[0_4px_15px_rgba(34,71,150,0.3)]', 'hover:shadow-[0_8px_25px_rgba(34,71,150,0.4)]');
         }
         
         // Update select dropdown (mobile)

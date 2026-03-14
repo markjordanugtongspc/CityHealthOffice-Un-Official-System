@@ -32,7 +32,7 @@ if (!in_array($currentUser['role'], $allowedRoles)) {
     <?php require_once __DIR__ . '/../../components/sidebar.php'; ?>
 
     <!-- Main Content Container (Expandable and Scrollable) -->
-    <div id="spaContentContainer" class="main-content ml-64 min-h-screen transition-all duration-300 flex-1 flex flex-col">
+    <div id="spaContentContainer" class="main-content ml-0 w-full max-w-full lg:w-auto lg:ml-80! lg:group-[.sidebar-collapsed]/body:!ml-[4.5rem] min-h-screen transition-all duration-300 flex-1 flex flex-col overflow-hidden!">
         <!-- Header -->
         <header class="flex items-center justify-between bg-white border-b border-slate-200 px-4 py-3">
             <div class="flex items-center space-x-3">
@@ -49,8 +49,8 @@ if (!in_array($currentUser['role'], $allowedRoles)) {
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-900">User Management</h1>
-                    <h3 class="text-sm text-slate-600">Create and manage system users</h3>
+                    <h1 class="text-xl font-bold text-slate-900 text-balance">User Management</h1>
+                    <h3 class="text-sm text-slate-600 text-balance">Create and manage system users</h3>
                 </div>
             </div>
 
@@ -106,7 +106,7 @@ if (!in_array($currentUser['role'], $allowedRoles)) {
             <!-- Intro section -->
             <section class="mb-6">
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6">
-                    <h2 class="text-xl md:text-2xl font-semibold text-slate-900 mb-2">
+                    <h2 class="text-xl md:text-2xl font-semibold text-slate-900 mb-2 text-balance">
                         User Management
                     </h2>
                     <p class="text-sm md:text-base text-slate-600">
@@ -118,10 +118,10 @@ if (!in_array($currentUser['role'], $allowedRoles)) {
             <!-- Actions -->
             <section class="mb-6">
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6">
-                    <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+                    <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between sm:flex-wrap">
                         <div>
-                            <h3 class="text-lg font-semibold text-slate-900 mb-1">Users</h3>
-                            <p class="text-sm text-slate-600">Manage system users and their access</p>
+                            <h3 class="text-lg font-semibold text-slate-900 mb-1 text-balance">Users</h3>
+                            <p class="text-sm text-slate-600 text-balance">Manage system users and their access</p>
                         </div>
                         <button
                             id="adminAddUserBtn"

@@ -120,36 +120,25 @@ function debounce(func, wait) {
  * Adjust main content margin based on sidebar state
  * Called after sidebar toggle and on page load
  */
+/**
+ * Adjust main content margin based on sidebar state
+ * This is now primarily handled via Tailwind classes in index.php
+ * but we keep this as a secondary check if needed.
+ */
 function adjustContentMargin() {
+    const body = document.body;
     const sidebar = document.getElementById('sidebar');
     const mainContent = getMainContent();
 
     if (!sidebar || !mainContent) return;
 
-    const isCollapsed = sidebar.classList.contains('collapsed');
-    const isMobile = window.innerWidth < 1024;
-
-    // Remove Tailwind margin classes that might conflict
-    mainContent.classList.remove('ml-64', 'ml-18', 'ml-0');
-
-    // Add transition classes if not present
-    if (!mainContent.classList.contains('transition-all')) {
-        mainContent.classList.add('transition-all', 'duration-300');
-    }
-
-    // Adjust margin based on state using inline style for reliable override
-    if (isMobile) {
-        // Mobile: No margin, full width
-        mainContent.style.marginLeft = '0';
-        mainContent.style.width = '100%';
-    } else if (isCollapsed) {
-        // Desktop collapsed: 4.5rem margin
-        mainContent.style.marginLeft = '4.5rem'; // 72px - collapsed width
-        mainContent.style.width = 'calc(100% - 4.5rem)';
-    } else {
-        // Desktop expanded: 16rem margin
-        mainContent.style.marginLeft = '16rem'; // 256px - expanded width
-        mainContent.style.width = 'calc(100% - 16rem)';
+    // We no longer manually set inline styles for margins on desktop
+    // as it is now handled by group-variants on the body.
+    // However, for mobile we might still need some checks.
+    
+    if (window.innerWidth < 1024) {
+        mainContent.style.marginLeft = '';
+        mainContent.style.width = '';
     }
 }
 
@@ -168,48 +157,28 @@ function initSidebarToggle() {
     const sidebarToggleCollapsed = document.getElementById('sidebarToggleCollapsed');
     const sidebarToggleCollapsedWrapper = document.getElementById('sidebarToggleCollapsedWrapper');
     const sidebarToggleHeader = document.getElementById('sidebarToggleHeader'); // Hamburger in header
-    const sidebarCloseMobile = document.getElementById('sidebarCloseMobile'); // Close button in mobile sidebar
 
     if (!sidebar) return;
 
     // Restore saved state on page load (Desktop only - >= 1024px)
     NavigationState.load();
 
+    // Ensure the body has the group/body class for tailwind variants
+    document.body.classList.add('group/body');
+
     // Only apply collapsed state on desktop (>= 1024px)
     if (window.innerWidth >= 1024 && NavigationState.sidebarCollapsed) {
+        document.body.classList.add('sidebar-collapsed');
         sidebar.classList.add('collapsed');
-        if (sidebarToggleCollapsedWrapper) {
-            sidebarToggleCollapsedWrapper.classList.remove('hidden');
-            sidebarToggleCollapsedWrapper.classList.add('flex');
-        }
-        if (sidebarToggleDesktop) {
-            sidebarToggleDesktop.classList.add('hidden');
-        }
-
-        // When collapsed on load, hide dropdown triggers and show all dropdown items as icons
-        document.querySelectorAll('.nav-dropdown-trigger').forEach(trigger => {
-            trigger.style.display = 'none';
-        });
-        document.querySelectorAll('.dropdown-content').forEach(dropdown => {
-            dropdown.classList.add('show');
-            dropdown.style.display = 'flex';
-            dropdown.style.flexDirection = 'column';
-            dropdown.style.gap = '0.25rem';
-            dropdown.style.marginLeft = '0';
-            dropdown.style.marginTop = '0';
-        });
-        // Ensure dropdown items are centered and show only icons
-        document.querySelectorAll('.dropdown-content .nav-subitem').forEach(item => {
-            item.style.marginLeft = 'auto';
-            item.style.marginRight = 'auto';
-            item.style.justifyContent = 'center';
-        });
     } else if (window.innerWidth < 1024) {
         // On mobile, ensure sidebar is not collapsed and starts hidden
+        document.body.classList.remove('sidebar-collapsed');
         sidebar.classList.remove('collapsed');
         sidebar.classList.remove('translate-x-0');
         sidebar.classList.add('-translate-x-full');
+        sidebar.style.visibility = 'hidden';
     }
+
 
     // Initial margin adjustment
     adjustContentMargin();
@@ -224,104 +193,40 @@ function initSidebarToggle() {
         const mobileBackdrop = document.getElementById('mobileBackdrop');
 
         if (isMobile) {
-            // Mobile: Toggle sidebar visibility (Tailwind-only)
+            // Mobile toggle logic remains the same
             const isOpen = sidebar.classList.contains('translate-x-0');
 
             if (isOpen) {
-                // Close sidebar
                 sidebar.classList.remove('translate-x-0');
                 sidebar.classList.add('-translate-x-full');
                 document.body.classList.remove('overflow-hidden');
                 if (mobileBackdrop) {
                     mobileBackdrop.classList.remove('opacity-100', 'visible', 'pointer-events-auto');
                     mobileBackdrop.classList.add('opacity-0', 'invisible', 'pointer-events-none');
-                    mobileBackdrop.setAttribute('aria-hidden', 'true');
                 }
-                sidebar.setAttribute('aria-hidden', 'true');
-                // Update header toggle icon
+                sidebar.style.visibility = 'hidden';
                 updateHeaderToggleIcon(false);
             } else {
-                // Open sidebar
+                sidebar.style.visibility = 'visible';
                 sidebar.classList.remove('-translate-x-full');
                 sidebar.classList.add('translate-x-0');
                 document.body.classList.add('overflow-hidden');
                 if (mobileBackdrop) {
                     mobileBackdrop.classList.remove('opacity-0', 'invisible', 'pointer-events-none');
                     mobileBackdrop.classList.add('opacity-100', 'visible', 'pointer-events-auto');
-                    mobileBackdrop.setAttribute('aria-hidden', 'false');
                 }
-                sidebar.setAttribute('aria-hidden', 'false');
-                // Update header toggle icon
                 updateHeaderToggleIcon(true);
             }
         } else {
-            // Desktop: Toggle collapse/expand
+            // Desktop: Toggle collapse/expand on BOTH sidebar and body
             sidebar.classList.toggle('collapsed');
+            document.body.classList.toggle('sidebar-collapsed');
+            
             const isCollapsed = sidebar.classList.contains('collapsed');
 
             // Save state
             NavigationState.sidebarCollapsed = isCollapsed;
             NavigationState.save();
-
-            // Adjust content margin
-            adjustContentMargin();
-
-            // Toggle button visibility
-            if (isCollapsed) {
-                if (sidebarToggleDesktop) sidebarToggleDesktop.classList.add('hidden');
-                if (sidebarToggleCollapsedWrapper) {
-                    sidebarToggleCollapsedWrapper.classList.remove('hidden');
-                    sidebarToggleCollapsedWrapper.classList.add('flex');
-                }
-
-                // When collapsed, hide dropdown triggers and show all dropdown items as icons
-                document.querySelectorAll('.nav-dropdown-trigger').forEach(trigger => {
-                    trigger.style.display = 'none';
-                });
-                document.querySelectorAll('.dropdown-content').forEach(dropdown => {
-                    dropdown.classList.add('show');
-                    dropdown.style.display = 'flex';
-                    dropdown.style.flexDirection = 'column';
-                    dropdown.style.gap = '0.25rem';
-                    dropdown.style.marginLeft = '0';
-                    dropdown.style.marginTop = '0';
-                });
-                document.querySelectorAll('.dropdown-content .nav-subitem').forEach(item => {
-                    item.style.marginLeft = 'auto';
-                    item.style.marginRight = 'auto';
-                    item.style.justifyContent = 'center';
-                });
-            } else {
-                if (sidebarToggleDesktop) sidebarToggleDesktop.classList.remove('hidden');
-                if (sidebarToggleCollapsedWrapper) {
-                    sidebarToggleCollapsedWrapper.classList.add('hidden');
-                    sidebarToggleCollapsedWrapper.classList.remove('flex');
-                }
-
-                // When expanded, show dropdown triggers and restore normal dropdown behavior
-                document.querySelectorAll('.nav-dropdown-trigger').forEach(trigger => {
-                    trigger.style.display = '';
-                });
-                document.querySelectorAll('.dropdown-content').forEach(dropdown => {
-                    dropdown.style.display = '';
-                    dropdown.style.flexDirection = '';
-                    dropdown.style.gap = '';
-                    dropdown.style.marginLeft = '';
-                    dropdown.style.marginTop = '';
-
-                    const trigger = document.querySelector(`[data-dropdown="${dropdown.id}"]`);
-                    if (trigger && trigger.classList.contains('active')) {
-                        dropdown.classList.add('show');
-                    } else {
-                        dropdown.classList.remove('show');
-                    }
-                });
-                document.querySelectorAll('.dropdown-content .nav-subitem').forEach(item => {
-                    item.style.marginLeft = '';
-                    item.style.marginRight = '';
-                    item.style.justifyContent = '';
-                });
-            }
         }
     }
 

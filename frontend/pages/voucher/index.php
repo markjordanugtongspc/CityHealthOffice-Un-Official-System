@@ -16,7 +16,7 @@ requireAuth();
     <?php require_once __DIR__ . '/../../components/page-loader.php'; ?>
     <?php require_once __DIR__ . '/../../components/sidebar.php'; ?>
 
-    <div id="spaContentContainer" class="main-content ml-64 min-h-screen transition-all duration-300 flex-1 flex flex-col">
+    <div id="spaContentContainer" class="main-content ml-0 w-full max-w-full lg:w-auto lg:ml-80! lg:group-[.sidebar-collapsed]/body:!ml-[4.5rem] min-h-screen transition-all duration-300 flex-1 flex flex-col overflow-hidden!">
         <header class="sticky top-0 z-40 flex items-center justify-between bg-white border-b border-slate-200 px-4 py-3 print:hidden">
             <div class="flex items-center space-x-3">
                 <button id="sidebarToggleHeader" type="button" class="relative z-50 lg:hidden p-2 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer">
@@ -25,8 +25,8 @@ requireAuth();
                     <svg id="headerCloseIcon" class="w-6 h-6 text-slate-700 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-900">Generate Disbursement Voucher</h1>
-                    <h3 class="text-sm text-slate-600">Fill and print DV in one page</h3>
+                    <h1 class="text-xl font-bold text-slate-900 text-balance">Generate Disbursement Voucher</h1>
+                    <h3 class="text-sm text-slate-600 text-balance">Fill and print DV in one page</h3>
                 </div>
             </div>
             <div class="relative">

@@ -25,7 +25,7 @@ requireAuth();
 
     <!-- Main Content Container (Expandable and Scrollable) -->
     <div id="spaContentContainer"
-        class="main-content ml-64 min-h-screen transition-all duration-300 flex-1 flex flex-col print:hidden">
+        class="main-content ml-0 w-full max-w-full lg:w-auto lg:ml-80! lg:group-[.sidebar-collapsed]/body:!ml-[4.5rem] min-h-screen transition-all duration-300 flex-1 flex flex-col print:hidden overflow-hidden!">
         <!-- Header -->
         <header
             class="sticky top-0 z-40 flex items-center justify-between bg-white border-b border-slate-200 px-4 py-3 print:hidden">
@@ -48,8 +48,8 @@ requireAuth();
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-900">Print Reports</h1>
-                    <h3 class="text-sm text-slate-600">Print data and reports for <span id="exportCurrentYear"
+                    <h1 class="text-xl font-bold text-slate-900 text-balance">Print Reports</h1>
+                    <h3 class="text-sm text-slate-600 text-balance">Print data and reports for <span id="exportCurrentYear"
                             class="relative inline-block font-black text-slate-900 cursor-pointer group transition-all duration-300 hover:text-[#224796]">
                             <span
                                 class="absolute bottom-0 left-0 w-0 h-0.5 bg-[#224796] transition-all duration-300 group-hover:w-full"></span>
@@ -121,7 +121,7 @@ requireAuth();
             <!-- Intro section -->
             <section class="mb-6">
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6">
-                    <h2 class="text-xl md:text-2xl font-semibold text-slate-900 mb-2">
+                    <h2 class="text-xl md:text-2xl font-semibold text-slate-900 mb-2 text-balance">
                         Print Reports
                     </h2>
                     <p class="text-sm md:text-base text-slate-600">
@@ -136,11 +136,11 @@ requireAuth();
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
-                            <h3 class="text-lg font-semibold text-slate-900">Report Generator</h3>
-                            <p class="text-sm text-slate-500">Generate, preview and export professional reports</p>
+                            <h3 class="text-lg font-semibold text-slate-900 text-balance">Report Generator</h3>
+                            <p class="text-sm text-slate-500 text-balance">Generate, preview and export professional reports</p>
                         </div>
 
-                        <div class="flex items-center gap-2">
+                        <div class="flex flex-wrap items-center gap-2">
                             <div class="relative group inline-block">
                                 <button id="configBtn" type="button"
                                     class="inline-flex items-center px-4 py-2 border border-slate-300 rounded-lg bg-white text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors shadow-sm cursor-pointer">

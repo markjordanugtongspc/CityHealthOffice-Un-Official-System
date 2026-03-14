@@ -21,7 +21,7 @@ requireAuth();
     <?php require_once __DIR__ . '/../../components/sidebar.php'; ?>
 
     <!-- Main Content Container (Expandable and Scrollable) -->
-    <div id="spaContentContainer" class="main-content ml-64 min-h-screen transition-all duration-300 flex-1 flex flex-col">
+    <div id="spaContentContainer" class="main-content ml-0 w-full max-w-full lg:w-auto lg:ml-80! lg:group-[.sidebar-collapsed]/body:!ml-[4.5rem] min-h-screen transition-all duration-300 flex-1 flex flex-col overflow-hidden!">
         <!-- Header -->
         <header class="flex items-center justify-between bg-white border-b border-slate-200 px-4 py-3">
             <div class="flex items-center space-x-3">
@@ -38,8 +38,8 @@ requireAuth();
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-900">About</h1>
-                    <h3 class="text-sm text-slate-600">Developer information</h3>
+                    <h1 class="text-xl font-bold text-slate-900 text-balance">About</h1>
+                    <h3 class="text-sm text-slate-600 text-balance">Developer information</h3>
                 </div>
             </div>
         </header>

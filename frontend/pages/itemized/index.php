@@ -35,7 +35,7 @@ requireAuth();
 
     <!-- Main Content Container (Expandable and Scrollable) -->
     <div id="spaContentContainer"
-        class="main-content ml-64 min-h-screen transition-all duration-300 flex-1 flex flex-col">
+        class="main-content ml-0 w-full max-w-full lg:w-auto lg:ml-80! lg:group-[.sidebar-collapsed]/body:!ml-[4.5rem] min-h-screen transition-all duration-300 flex-1 flex flex-col overflow-hidden!">
         <!-- Header -->
         <header class="flex items-center justify-between bg-white border-b border-slate-200 px-4 py-3">
             <div class="flex items-center space-x-3">
@@ -57,8 +57,8 @@ requireAuth();
                     </svg>
                 </button>
                 <div>
-                    <h1 class="text-xl font-bold text-slate-900">Itemized Daily Transactions</h1>
-                    <h3 class="text-sm text-slate-600">Manage disbursement vouchers and transaction records</h3>
+                    <h1 class="text-xl font-bold text-slate-900 text-balance">Itemized Daily Transactions</h1>
+                    <h3 class="text-sm text-slate-600 text-balance">Manage disbursement vouchers and transaction records</h3>
                 </div>
             </div>
 
@@ -125,7 +125,7 @@ requireAuth();
             <!-- Intro section -->
             <section class="mb-6">
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6">
-                    <h2 class="text-xl md:text-2xl font-semibold text-slate-900 mb-2">
+                    <h2 class="text-xl md:text-2xl font-semibold text-slate-900 mb-2 text-balance">
                         Daily Transactions Management
                     </h2>
                     <p class="text-sm md:text-base text-slate-600">
@@ -139,7 +139,7 @@ requireAuth();
             <!-- Filters & Actions -->
             <section class="mb-4">
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-5">
-                    <div class="flex flex-col md:flex-row gap-4 md:items-end md:justify-between">
+                    <div class="flex flex-col md:flex-row gap-4 md:items-end md:justify-between md:flex-wrap">
                         <!-- Search -->
                         <div class="w-full md:flex-1">
                             <label for="itemizedSearch" class="block text-xs font-medium text-slate-500 mb-1">
@@ -161,7 +161,7 @@ requireAuth();
                         </div>
 
                         <!-- Category Filters & Actions -->
-                        <div class="flex flex-col sm:flex-row gap-3">
+                        <div class="flex flex-col sm:flex-row gap-3 sm:flex-wrap">
                             <!-- Year -->
                             <div class="w-full sm:w-32">
                                 <label for="itemizedYear"

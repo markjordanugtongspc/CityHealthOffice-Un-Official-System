@@ -22,7 +22,7 @@ requireAuth();
     <?php require_once __DIR__ . '/../../components/sidebar.php'; ?>
 
     <!-- Main Content Container (Expandable and Scrollable) -->
-    <div id="spaContentContainer" class="main-content ml-64 min-h-screen transition-all duration-300 flex-1 flex flex-col">
+    <div id="spaContentContainer" class="main-content ml-0 w-full max-w-full lg:w-auto lg:ml-80! lg:group-[.sidebar-collapsed]/body:!ml-[4.5rem] min-h-screen transition-all duration-300 flex-1 flex flex-col overflow-hidden!">
             <!-- Header -->
             <header class="flex items-center justify-between bg-white border-b border-slate-200 px-4 py-3">
                 <div class="flex items-center space-x-3">
@@ -39,8 +39,8 @@ requireAuth();
                         </svg>
                     </button>
                     <div>
-                        <h1 class="text-xl font-bold text-slate-900">Monthly Expenses Summary</h1>
-                        <h3 class="text-sm text-slate-600">Monthly expenses overview for <span id="monthlyExpensesCurrentYear" class="font-semibold text-slate-900"></span></h3>
+                        <h1 class="text-xl font-bold text-slate-900 text-balance">Monthly Expenses Summary</h1>
+                        <h3 class="text-sm text-slate-600 text-balance">Monthly expenses overview for <span id="monthlyExpensesCurrentYear" class="font-semibold text-slate-900"></span></h3>
                     </div>
                 </div>
 
@@ -113,11 +113,11 @@ requireAuth();
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
                                             </svg>
                                         </div>
-                                        <h2 class="text-xl md:text-2xl lg:text-3xl font-bold text-white tracking-tight">
+                                        <h2 class="text-xl md:text-2xl lg:text-3xl font-bold text-white tracking-tight text-balance">
                                             Monthly Expenses Summary
                                         </h2>
                                     </div>
-                                    <p class="text-white/90 text-sm md:text-base ml-12 md:ml-14">
+                                    <p class="text-white/90 text-sm md:text-base ml-12 md:ml-14 text-balance">
                                         Track and manage your monthly financial expenses with detailed insights
                                     </p>
                                 </div>
@@ -174,7 +174,7 @@ requireAuth();
                             </div>
                         </div>
 
-                        <div class="flex flex-col md:flex-row gap-4 md:items-center md:justify-between">
+                        <div class="flex flex-col md:flex-row gap-4 md:items-center md:justify-between md:flex-wrap">
                             <!-- Search -->
                             <div class="w-full md:flex-1">
                                 <label for="monthlyExpensesSearch" class="block text-xs font-medium text-slate-500 mb-1">
@@ -196,7 +196,7 @@ requireAuth();
                             </div>
 
                             <!-- Right controls -->
-                            <div class="flex flex-col sm:flex-row gap-3 md:gap-4 md:items-center">
+                            <div class="flex flex-col sm:flex-row gap-3 md:gap-4 md:items-center sm:flex-wrap">
                                 <div class="flex items-center gap-3">
                                     <label for="monthlyExpensesYear" class="text-sm font-medium text-slate-700 whitespace-nowrap">
                                         Year

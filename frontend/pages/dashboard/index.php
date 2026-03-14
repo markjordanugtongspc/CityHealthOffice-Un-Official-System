@@ -19,13 +19,13 @@ requireAuth();
 
 </head>
 
-<body class="app-shell min-h-screen flex flex-col bg-slate-100">
+<body class="app-shell min-h-screen flex flex-col bg-[#f8fafc]">
     <?php require_once __DIR__ . '/../../components/page-loader.php'; ?>
     <?php require_once __DIR__ . '/../../components/sidebar.php'; ?>
 
     <!-- Main Content Container (Expandable and Scrollable) -->
     <div id="spaContentContainer"
-        class="main-content ml-64 min-h-screen transition-all duration-300 flex-1 flex flex-col">
+        class="main-content ml-0 w-full max-w-full lg:w-auto lg:ml-80! lg:group-[.sidebar-collapsed]/body:!ml-[4.5rem] min-h-screen transition-all duration-300 flex-1 flex flex-col overflow-hidden!">
         <!-- Header -->
         <header class="flex items-center justify-between bg-white border-b border-slate-200 px-4 py-3">
             <div class="flex items-center space-x-3">
@@ -56,17 +56,19 @@ requireAuth();
             <!-- User Menu -->
             <div class="relative">
                 <button id="userMenuButton"
-                    class="flex items-center space-x-3 p-2 rounded-lg hover:bg-slate-100 transition cursor-pointer">
-                    <div class="w-10 h-10 bg-[#224796] rounded-full flex items-center justify-center">
-                        <span id="userInitial" class="text-white font-semibold text-sm">...</span>
+                    class="flex items-center space-x-3 p-1 rounded-full hover:bg-slate-100/80 border border-slate-200/40 transition-all duration-300 cursor-pointer group hover:shadow-lg hover:shadow-blue-900/5 bg-white/50 backdrop-blur-sm">
+                    <div class="w-11 h-11 bg-linear-to-br from-[#224796] via-[#1e3a8a] to-[#1e40af] rounded-full flex items-center justify-center shadow-[0_4px_12px_rgba(34,71,150,0.3)] group-hover:scale-105 transition-all duration-500 ring-2 ring-white/80">
+                        <span id="userInitial" class="text-white font-black text-sm tracking-widest drop-shadow-md">...</span>
                     </div>
-                    <div class="hidden md:block text-left">
-                        <p id="userUsername" class="text-sm font-medium text-slate-900">...</p>
-                        <p id="userRole" class="text-xs text-slate-500">...</p>
+                    <div class="hidden md:block text-left px-1">
+                        <p id="userUsername" class="text-sm font-black text-slate-800 leading-none mb-1 group-hover:text-[#224796] transition-colors">...</p>
+                        <p id="userRole" class="text-[9px] font-black text-[#224796] uppercase tracking-[0.1em] bg-blue-50/80 px-2 py-0.5 rounded-full border border-blue-100/50">...</p>
                     </div>
-                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                    </svg>
+                    <div class="p-1">
+                        <svg class="w-4 h-4 text-slate-400 group-hover:text-[#224796] transition-all duration-300 group-hover:translate-y-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
+                        </svg>
+                    </div>
                 </button>
 
                 <!-- Dropdown Menu -->
@@ -116,17 +118,26 @@ requireAuth();
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 <!-- Stats Card 1: Total Income -->
                 <div
-                    class="bg-white rounded-xl shadow-sm p-4 md:p-6 border border-slate-200 hover:scale-105 hover:shadow-lg transition-transform duration-300 cursor-pointer">
-                    <div class="flex items-start justify-between">
+                    class="bg-white rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(34,71,150,0.12)] p-7 border border-slate-100 hover:border-blue-200/50 hover:-translate-y-1.5 transition-all duration-500 cursor-pointer group relative overflow-hidden bg-linear-to-br from-white to-slate-50/50">
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-blue-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-1000 blur-3xl"></div>
+                    <div class="flex items-start justify-between relative z-10">
                         <div class="flex-1">
-                            <p class="text-2xl md:text-3xl font-bold text-slate-900 mb-2" id="dashboardTotalIncome">₱0
-                            </p>
-                            <p class="text-sm text-slate-600">Total Income</p>
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-1 h-3 bg-blue-600 rounded-full group-hover:h-5 transition-all duration-500"></div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Income</p>
+                            </div>
+                            <h3 class="text-3xl font-black text-slate-900 tracking-tight group-hover:text-[#224796] transition-colors" id="dashboardTotalIncome">₱0</h3>
+                            <div class="flex items-center mt-3 text-[10px] font-bold text-emerald-600 bg-emerald-50/80 px-2.5 py-1 rounded-full w-fit border border-emerald-100/50">
+                                <svg class="w-2.5 h-2.5 me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M5 10l7-7 7 7M12 3v18" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                                <span>12.5% Inc.</span>
+                            </div>
                         </div>
-                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-[#224796]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-14 h-14 bg-linear-to-br from-blue-600 to-indigo-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-blue-500/30 group-hover:scale-105 transition-all duration-500 border border-white/20">
+                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z">
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
                                 </path>
                             </svg>
                         </div>
@@ -135,36 +146,53 @@ requireAuth();
 
                 <!-- Stats Card 2: Total Expenses -->
                 <div
-                    class="bg-white rounded-xl shadow-sm p-4 md:p-6 border border-slate-200 hover:scale-105 hover:shadow-lg transition-transform duration-300 cursor-pointer">
-                    <div class="flex items-start justify-between">
+                    class="bg-white rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(220,38,38,0.12)] p-7 border border-slate-100 hover:border-rose-200/50 hover:-translate-y-1.5 transition-all duration-500 cursor-pointer group relative overflow-hidden bg-linear-to-br from-white to-slate-50/50">
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-rose-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-1000 blur-3xl"></div>
+                    <div class="flex items-start justify-between relative z-10">
                         <div class="flex-1">
-                            <p class="text-2xl md:text-3xl font-bold text-slate-900 mb-2" id="dashboardTotalExpenses">₱0
-                            </p>
-                            <p class="text-sm text-slate-600">Total Expenses</p>
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-1 h-3 bg-rose-500 rounded-full group-hover:h-5 transition-all duration-500"></div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Total Expenses</p>
+                            </div>
+                            <h3 class="text-3xl font-black text-slate-900 tracking-tight group-hover:text-rose-600 transition-colors" id="dashboardTotalExpenses">₱0</h3>
+                            <div class="flex items-center mt-3 text-[10px] font-bold text-rose-600 bg-rose-50/80 px-2.5 py-1 rounded-full w-fit border border-rose-100/50">
+                                <svg class="w-2.5 h-2.5 me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19 14l-7 7-7-7M12 21V3" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                                <span>4.2% Dec.</span>
+                            </div>
                         </div>
-                        <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-14 h-14 bg-linear-to-br from-rose-500 to-rose-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-rose-500/30 group-hover:scale-105 transition-all duration-500 border border-white/20">
+                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+                                    d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z">
                                 </path>
                             </svg>
                         </div>
                     </div>
                 </div>
-
                 <!-- Stats Card 3: Fund Downloaded Summary -->
                 <a href="#chart-page-6"
-                    class="block bg-white rounded-xl shadow-sm p-4 md:p-6 border border-slate-200 hover:scale-105 hover:shadow-lg transition-transform duration-300 cursor-pointer">
-                    <div class="flex items-start justify-between">
+                    class="bg-white rounded-[2.5rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_20px_50px_rgba(245,158,11,0.12)] p-7 border border-slate-100 hover:border-amber-200/50 hover:-translate-y-1.5 transition-all duration-500 cursor-pointer group relative overflow-hidden block bg-linear-to-br from-white to-slate-50/50">
+                    <div class="absolute top-0 right-0 w-40 h-40 bg-amber-500/5 rounded-full -mr-16 -mt-16 group-hover:scale-110 transition-transform duration-1000 blur-3xl"></div>
+                    <div class="flex items-start justify-between relative z-10">
                         <div class="flex-1">
-                            <p class="text-2xl md:text-3xl font-bold text-slate-900 mb-2"
-                                id="dashboardFundDownloadedTotal">₱0</p>
-                            <p class="text-sm text-slate-600">Fund Downloaded Summary</p>
+                            <div class="flex items-center gap-2 mb-3">
+                                <div class="w-1 h-3 bg-amber-500 rounded-full group-hover:h-5 transition-all duration-500"></div>
+                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fund Downloaded</p>
+                            </div>
+                            <h3 class="text-3xl font-black text-slate-900 tracking-tight group-hover:text-amber-600 transition-colors" id="dashboardFundDownloadedTotal">₱0</h3>
+                            <div class="flex items-center mt-3 text-[10px] font-bold text-amber-600 bg-amber-50/80 px-2.5 py-1 rounded-full w-fit border border-amber-100/50">
+                                <svg class="w-3 h-3 me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                                <span>Updated now</span>
+                            </div>
                         </div>
-                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-6 h-6 text-[#FCF350]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <div class="w-14 h-14 bg-linear-to-br from-amber-400 to-amber-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-amber-500/30 group-hover:scale-105 transition-all duration-500 border border-white/20">
+                            <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
+                                    d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6">
                                 </path>
                             </svg>
                         </div>
@@ -195,68 +223,46 @@ requireAuth();
                             </svg>
                         </div>
                     </div>
-
-                    <!-- Desktop: Button Navigation -->
-                    <div class="hidden md:flex items-center justify-center flex-wrap gap-2">
+                    <!-- Desktop: Pill Navigation -->
+                    <div class="hidden md:flex items-center p-1 bg-slate-100 rounded-2xl border border-slate-200/50 shadow-inner">
                         <button data-page="1"
-                            class="chart-page-btn px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors cursor-pointer bg-[#224796] text-white hover:bg-[#163473] whitespace-nowrap">
-                            Fund Downloaded
+                            class="chart-page-btn px-6 py-2 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all duration-500 cursor-pointer bg-linear-to-br from-[#224796] to-[#1e3a8a] text-white shadow-lg shadow-blue-900/20 whitespace-nowrap active:scale-95">
+                            Revenue
                         </button>
                         <button data-page="2"
-                            class="chart-page-btn px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors cursor-pointer text-slate-700 hover:bg-slate-100 whitespace-nowrap">
-                            Daily Transactions
+                            class="chart-page-btn px-6 py-2 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all duration-500 cursor-pointer text-slate-500 hover:text-slate-900 hover:bg-white whitespace-nowrap active:scale-95">
+                            Daily
                         </button>
                         <button data-page="3"
-                            class="chart-page-btn px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors cursor-pointer text-slate-700 hover:bg-slate-100 whitespace-nowrap">
-                            Monthly/Weekly Transactions
+                            class="chart-page-btn px-6 py-2 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all duration-500 cursor-pointer text-slate-500 hover:text-slate-900 hover:bg-white whitespace-nowrap active:scale-95">
+                            Trends
                         </button>
                         <button data-page="4"
-                            class="chart-page-btn px-3 py-2 text-xs sm:text-sm font-medium rounded-lg transition-colors cursor-pointer text-slate-700 hover:bg-slate-100 whitespace-nowrap">
-                            Quarterly Transactions
+                            class="chart-page-btn px-6 py-2 text-[11px] font-bold uppercase tracking-widest rounded-xl transition-all duration-500 cursor-pointer text-slate-500 hover:text-slate-900 hover:bg-white whitespace-nowrap active:scale-95">
+                            Quarterly
                         </button>
                     </div>
                 </div>
 
                 <!-- Page 1: Vouchers Charts -->
-                <div id="chart-page-1" class="chart-page grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 pb-4">
+                <div id="chart-page-1" class="chart-page grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 pb-10">
                     <!-- Monthly Vouchers Donut Chart -->
-                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6 relative isolate">
-                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-3">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <h5 class="text-lg sm:text-xl font-semibold text-slate-900">Cash In Bank</h5>
-                                <svg data-popover-target="vouchers-info" data-popover-placement="bottom"
-                                    class="w-4 h-4 text-slate-500 hover:text-slate-900 cursor-pointer ms-1"
-                                    aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                                    fill="none" viewBox="0 0 24 24">
-                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                        stroke-width="2"
-                                        d="M9.529 9.988a2.502 2.502 0 1 1 5 .191A2.441 2.441 0 0 1 12 12.582V14m-.01 3.008H12M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                                </svg>
-                                <div data-popover id="vouchers-info" role="tooltip"
-                                    class="absolute z-10 p-3 invisible inline-block text-sm text-slate-600 transition-opacity duration-300 bg-white border border-slate-200 rounded-lg shadow-lg opacity-0 w-72">
-                                    <div>
-                                        <h3 class="font-semibold text-slate-900 mb-2">Cash In Bank - Overview</h3>
-                                        <p class="mb-4">This chart displays the distribution of cash in bank for each
-                                            month of the selected year. Data is still grouped into quarters (Q1-Q4) so
-                                            you can quickly understand seasonal patterns in income and fund inflows.</p>
-                                        <h3 class="font-semibold text-slate-900 mb-2">Quarter Filtering</h3>
-                                        <p class="mb-4">Use the quarter checkboxes below to show or hide months for Q1,
-                                            Q2, Q3, or Q4. Use the Year and Category filters in the footer to switch
-                                            between years and funding sources (MOOE, PHILHEALTH, SPF).</p>
-                                        <a href="#"
-                                            class="flex items-center font-medium text-[#224796] hover:underline cursor-pointer">
-                                            Read more
-                                            <svg class="w-4 h-4 ms-1 rtl:rotate-180" aria-hidden="true"
-                                                xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
-                                                viewBox="0 0 24 24">
-                                                <path stroke="currentColor" stroke-linecap="round"
-                                                    stroke-linejoin="round" stroke-width="2"
-                                                    d="M19 12H5m14 0-4 4m4-4-4-4" />
-                                            </svg>
-                                        </a>
-                                    </div>
-                                    <div data-popper-arrow></div>
-                                </div>
+                    <div class="bg-white border border-slate-100 rounded-[2.5rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] p-8 md:p-10 relative isolate overflow-hidden group/card transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)]">
+                        <div class="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-[#224796] via-blue-500 to-[#FCF350] opacity-90"></div>
+                        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-10">
+                            <div>
+                                <h5 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2 group-hover/card:text-[#224796] transition-colors">
+                                    Cash In Bank
+                                    <svg data-popover-target="vouchers-info" data-popover-placement="bottom"
+                                        class="w-5 h-5 text-slate-500 hover:text-slate-900 cursor-pointer ms-1"
+                                        aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                        fill="none" viewBox="0 0 24 24">
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M9.529 9.988a2.502 2.502 0 1 1 5 .191A2.441 2.441 0 0 1 12 12.582V14m-.01 3.008H12M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                                    </svg>
+                                </h5>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Monthly cash flow distribution</p>
                             </div>
                             <div>
                                 <button type="button" data-tooltip-target="download-tooltip"
@@ -509,31 +515,32 @@ requireAuth();
 
                     <!-- Daily Vouchers Column Chart -->
                     <div
-                        class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group relative isolate">
-                        <div class="flex justify-between pb-4 mb-4 border-b border-slate-200">
+                        class="bg-white rounded-[2.5rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_-15px_rgba(252,243,80,0.12)] transition-all duration-500 p-8 border border-slate-50 group/daily relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-[#FCF350] via-yellow-400 to-amber-500 opacity-90"></div>
+                        <div class="flex justify-between pb-8 mb-8 border-b border-slate-100">
                             <div class="flex items-center">
                                 <div
-                                    class="w-12 h-12 bg-linear-to-br from-[#FCF350] to-[#E5D800] border border-slate-200 flex items-center justify-center rounded-full me-3 shadow-md">
-                                    <svg class="w-7 h-7 text-slate-900" aria-hidden="true"
+                                    class="w-16 h-16 bg-linear-to-br from-[#FCF350] to-[#E5D800] border border-white/50 flex items-center justify-center rounded-[1.25rem] me-4 shadow-[0_10px_25px_rgba(252,243,80,0.3)] group-hover/daily:rotate-3 transition-transform duration-500">
+                                    <svg class="w-9 h-9 text-slate-900 drop-shadow-sm" aria-hidden="true"
                                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
                                         viewBox="0 0 24 24">
-                                        <path stroke="currentColor" stroke-linecap="round" stroke-width="2"
+                                        <path stroke="currentColor" stroke-linecap="round" stroke-width="2.5"
                                             d="M4.5 17H4a1 1 0 0 1-1-1 3 3 0 0 1 3-3h1m0-3.05A2.5 2.5 0 1 1 9 5.5M19.5 17h.5a1 1 0 0 0 1-1 3 3 0 0 0-3-3h-1m0-3.05a2.5 2.5 0 1 0-2-4.45m.5 13.5h-7a1 1 0 0 1-1-1 3 3 0 0 1 3-3h3a3 3 0 0 1 3 3 1 1 0 0 1-1 1Zm-1-9.5a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0Z" />
                                     </svg>
                                 </div>
                                 <div>
-                                    <h5 class="text-xl md:text-2xl font-semibold text-slate-900"
+                                    <h5 class="text-3xl font-black text-slate-900 tracking-tight"
                                         id="dailyTotalVouchers">132</h5>
-                                    <p class="text-sm text-slate-500">Vouchers generated this week</p>
+                                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Generated this week</p>
                                 </div>
                             </div>
                             <div>
                                 <span
-                                    class="inline-flex items-center bg-green-50 border border-green-200 text-green-700 text-xs font-medium px-1.5 py-0.5 rounded cursor-pointer">
-                                    <svg class="w-4 h-4 me-1" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
+                                    class="inline-flex items-center bg-emerald-50 border border-emerald-100 text-emerald-700 text-[11px] font-black px-3 py-1.5 rounded-full shadow-sm">
+                                    <svg class="w-3.5 h-3.5 me-1 animate-bounce" aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
                                         width="24" height="24" fill="none" viewBox="0 0 24 24">
                                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
-                                            stroke-width="2" d="M12 6v13m0-13 4 4m-4-4-4 4" />
+                                            stroke-width="3" d="M12 6v13m0-13 4 4m-4-4-4 4" />
                                     </svg>
                                     <span id="dailyGrowthPercentage">+15.2%</span>
                                 </span>
@@ -614,42 +621,44 @@ requireAuth();
 
                     <!-- Weekly Vouchers Line Chart -->
                     <div
-                        class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-6 border border-slate-200/50 backdrop-blur-sm group overflow-hidden">
-                        <div class="flex items-center justify-between mb-6">
+                        class="bg-white rounded-[2.5rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] hover:shadow-[0_30px_60px_-15px_rgba(34,71,150,0.12)] transition-all duration-500 p-8 border border-slate-50 group/chart relative overflow-hidden">
+                         <div class="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-[#224796] via-indigo-500 to-blue-400 opacity-90"></div>
+                        <div class="flex items-center justify-between mb-8">
                             <div>
-                                <h3 class="text-xl font-bold text-slate-900 mb-1">Weekly Vouchers</h3>
-                                <p class="text-sm text-slate-500">Last 8 weeks trend</p>
+                                <h3 class="text-2xl font-black text-slate-900 mb-1 group-hover/chart:text-[#224796] transition-colors">Weekly Vouchers</h3>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Activity trend analysis</p>
                             </div>
                             <div
-                                class="w-12 h-12 rounded-xl bg-linear-to-br from-[#224796] to-[#163473] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                class="w-14 h-14 rounded-2xl bg-linear-to-br from-[#224796] to-indigo-800 flex items-center justify-center shadow-[0_10px_25px_rgba(34,71,150,0.25)] group-hover/chart:scale-110 group-hover/chart:rotate-3 transition-all duration-500 border border-white/20">
+                                <svg class="w-8 h-8 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"
                                         d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z">
                                     </path>
                                 </svg>
                             </div>
                         </div>
-                        <div id="weeklyVouchersChart" class="chart-container"></div>
+                        <div id="weeklyVouchersChart" class="chart-container min-h-[300px]"></div>
                     </div>
 
                     <!-- Yearly Chart 2016-2026 -->
                     <div
-                        class="bg-linear-to-br from-white via-slate-50 to-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 p-4 md:p-6 border border-slate-200/50 backdrop-blur-sm group">
-                        <div class="flex items-center justify-between mb-6">
+                        class="bg-white border border-slate-50 rounded-[2.5rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] p-8 md:p-10 relative isolate overflow-hidden group/yearly transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(16,185,129,0.15)]">
+                        <div class="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-emerald-500 via-teal-400 to-cyan-500 opacity-90"></div>
+                        <div class="flex items-center justify-between mb-10">
                             <div>
-                                <h3 class="text-xl font-bold text-slate-900 mb-1">Yearly Overview</h3>
-                                <p class="text-sm text-slate-500">Historical data from 2016-2026</p>
+                                <h3 class="text-3xl font-black text-slate-900 tracking-tight group-hover/yearly:text-emerald-600 transition-colors">Yearly Overview</h3>
+                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Historical data archives 2016-2026</p>
                             </div>
                             <div
-                                class="w-12 h-12 rounded-xl bg-linear-to-br from-[#224796] to-[#163473] flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                class="w-16 h-16 rounded-2xl bg-linear-to-br from-emerald-500 to-teal-700 flex items-center justify-center shadow-[0_10px_25px_rgba(16,185,129,0.25)] group-hover/yearly:scale-110 group-hover/yearly:-rotate-3 transition-all duration-500 border border-white/20">
+                                <svg class="w-9 h-9 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2"
                                         d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
                                     </path>
                                 </svg>
                             </div>
                         </div>
-                        <div id="yearlyVouchersChart" class="chart-container"></div>
+                        <div id="yearlyVouchersChart" class="chart-container min-h-[320px]"></div>
                     </div>
                 </div>
 

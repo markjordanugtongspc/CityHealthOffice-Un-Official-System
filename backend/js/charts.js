@@ -7,22 +7,22 @@
 const colors = {
     primary: '#224796',
     secondary: '#FCF350',
-    accent1: '#16A34A',
-    accent2: '#DC2626',
-    accent3: '#E5E7EB',
+    accent1: '#10b981', // Emerald
+    accent2: '#f43f5e', // Rose
+    accent3: '#6366f1', // Indigo
     chartColors: [
-        '#224796',
-        '#FCF350',
-        '#16A34A',
-        '#3B82F6',
-        '#8B5CF6',
-        '#EC4899',
-        '#F59E0B',
-        '#10B981',
-        '#EF4444',
-        '#6366F1',
-        '#14B8A6',
-        '#F97316'
+        '#224796', // Brand Blue
+        '#FCF350', // Brand Gold
+        '#10b981', // Emerald
+        '#6366f1', // Indigo
+        '#f43f5e', // Rose
+        '#06b6d4', // Cyan
+        '#f59e0b', // Amber
+        '#8b5cf6', // Violet
+        '#14b8a6', // Teal
+        '#ef4444', // Red
+        '#3b82f6', // Bright Blue
+        '#ec4899'  // Pink
     ]
 };
 
@@ -256,10 +256,9 @@ function initMonthlyVouchersChart() {
     // Initial data build
     buildData(currentYear, currentCategory);
 
-    // Generate colors for 12 months using brand colors
+    // Generate colors for 12 months using premium palette
     const generateColors = () => {
-        const baseColors = [brandColor, brandSecondaryColor, brandTertiaryColor, '#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#06B6D4', '#84CC16', '#F97316', '#EC4899'];
-        return baseColors.slice(0, 12);
+        return colors.chartColors.slice(0, 12);
     };
 
     const getChartOptions = () => {
@@ -288,16 +287,17 @@ function initMonthlyVouchersChart() {
                                 offsetY: 20,
                                 fontSize: '14px',
                                 fontWeight: 500,
-                                color: '#64748B'
+                                color: '#224796'
                             },
                             total: {
                                 showAlways: true,
                                 show: true,
-                                label: "Total Yearly",
+                                label: "Yearly Revenue",
                                 fontFamily: "inherit",
-                                fontSize: '16px',
-                                fontWeight: 600,
-                                color: '#1E293B',
+                                fontSize: '12px',
+                                fontStyle: 'uppercase',
+                                fontWeight: 900,
+                                color: '#94a3b8',
                                 formatter: function (w) {
                                     const sum = w.globals.seriesTotals.reduce((a, b) => {
                                         return a + b;
@@ -309,9 +309,9 @@ function initMonthlyVouchersChart() {
                                 show: true,
                                 fontFamily: "inherit",
                                 offsetY: -20,
-                                fontSize: '20px',
-                                fontWeight: 700,
-                                color: '#1E293B',
+                                fontSize: '24px',
+                                fontWeight: 900,
+                                color: '#1e293b',
                                 formatter: function (value) {
                                     return formatCurrency(value);
                                 }
