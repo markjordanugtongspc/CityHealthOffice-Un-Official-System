@@ -67,7 +67,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
         <ul class="flex flex-col gap-0">
             <li>
                 <a href="../dashboard/" data-tooltip-target="tooltip-dashboard" data-tooltip-placement="right"
-                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
+                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border-b border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
                     <svg class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:scale-110 lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -81,7 +81,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <!-- Admin (Only for Administrator, CEO, Manager) -->
             <li id="adminNavItem" class="hidden">
                 <a href="../admin/" data-tooltip-target="tooltip-admin" data-tooltip-placement="right"
-                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
+                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border-b border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
                     <svg class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:scale-110 lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -117,18 +117,18 @@ require_once __DIR__ . '/../../config/image_helper.php';
                     class="dropdown-content overflow-hidden transition-all duration-300 max-h-0 opacity-0 mt-1 space-y-1 lg:group-[.sidebar-collapsed]/body:!flex lg:group-[.sidebar-collapsed]/body:!flex-col lg:group-[.sidebar-collapsed]/body:!gap-1 lg:group-[.sidebar-collapsed]/body:![max-height:none] lg:group-[.sidebar-collapsed]/body:!opacity-100 lg:group-[.sidebar-collapsed]/body:!mt-0 lg:group-[.sidebar-collapsed]/body:!ml-0 lg:group-[.sidebar-collapsed]/body:!p-0 lg:group-[.sidebar-collapsed]/body:!overflow-visible">
                     <a href="../budget/" data-tooltip-target="tooltip-budget-ytd" data-tooltip-placement="right"
                         class="nav-item nav-subitem flex items-center gap-3 px-4 py-2 ml-10 rounded-lg text-white/50 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all duration-200 cursor-pointer touch-manipulation group/sub relative lg:group-[.sidebar-collapsed]/body:!flex lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!items-center lg:group-[.sidebar-collapsed]/body:!p-2.5 lg:group-[.sidebar-collapsed]/body:!m-1 lg:group-[.sidebar-collapsed]/body:!w-10 lg:group-[.sidebar-collapsed]/body:!h-10 lg:group-[.sidebar-collapsed]/body:!rounded-lg lg:group-[.sidebar-collapsed]/body:!mx-auto lg:group-[.sidebar-collapsed]/body:!min-w-[2.5rem]">
-                        <svg class="w-4 h-4 shrink-0 transition-transform duration-300 group-hover/sub:scale-110 group-hover/sub:text-[#FCF350] lg:group-[.sidebar-collapsed]/body:!w-5 lg:group-[.sidebar-collapsed]/body:!h-5 lg:group-[.sidebar-collapsed]/body:!m-0 hidden lg:group-[.sidebar-collapsed]/body:!block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 shrink-0 transition-transform duration-300 group-hover/sub:scale-110 group-hover/sub:text-white group-[.nav-item-active]/sub:text-emerald-400 lg:group-[.sidebar-collapsed]/body:!w-5 lg:group-[.sidebar-collapsed]/body:!h-5 lg:group-[.sidebar-collapsed]/body:!m-0 hidden lg:group-[.sidebar-collapsed]/body:!block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
-                        <div class="absolute left-0 w-1.5 h-1.5 rounded-full bg-white/20 group-hover/sub:bg-[#FCF350] transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden"></div>
+                        <div class="absolute left-0 w-1.5 h-1.5 rounded-full bg-white/20 group-hover/sub:bg-white/50 group-[.nav-item-active]/sub:bg-emerald-400 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden"></div>
                         <span class="sidebar-text text-sm font-medium whitespace-nowrap nav-text tracking-wide lg:group-[.sidebar-collapsed]/body:!hidden">Actual vs Budget YTD</span>
                     </a>
                     <a href="../specialfund/" data-tooltip-target="tooltip-budget-special" data-tooltip-placement="right"
                         class="nav-item nav-subitem flex items-center gap-3 px-4 py-2 ml-10 rounded-lg text-white/50 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all duration-200 cursor-pointer touch-manipulation group/sub relative lg:group-[.sidebar-collapsed]/body:!flex lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!items-center lg:group-[.sidebar-collapsed]/body:!p-2.5 lg:group-[.sidebar-collapsed]/body:!m-1 lg:group-[.sidebar-collapsed]/body:!w-10 lg:group-[.sidebar-collapsed]/body:!h-10 lg:group-[.sidebar-collapsed]/body:!rounded-lg lg:group-[.sidebar-collapsed]/body:!mx-auto lg:group-[.sidebar-collapsed]/body:!min-w-[2.5rem]">
-                        <svg class="w-4 h-4 shrink-0 transition-transform duration-300 group-hover/sub:scale-110 group-hover/sub:text-[#FCF350] lg:group-[.sidebar-collapsed]/body:!w-5 lg:group-[.sidebar-collapsed]/body:!h-5 lg:group-[.sidebar-collapsed]/body:!m-0 hidden lg:group-[.sidebar-collapsed]/body:!block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 shrink-0 transition-transform duration-300 group-hover/sub:scale-110 group-hover/sub:text-white group-[.nav-item-active]/sub:text-emerald-400 lg:group-[.sidebar-collapsed]/body:!w-5 lg:group-[.sidebar-collapsed]/body:!h-5 lg:group-[.sidebar-collapsed]/body:!m-0 hidden lg:group-[.sidebar-collapsed]/body:!block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                         </svg>
-                        <div class="absolute left-0 w-1.5 h-1.5 rounded-full bg-white/20 group-hover/sub:bg-[#FCF350] transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden"></div>
+                        <div class="absolute left-0 w-1.5 h-1.5 rounded-full bg-white/20 group-hover/sub:bg-white/50 group-[.nav-item-active]/sub:bg-emerald-400 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden"></div>
                         <span class="sidebar-text text-sm font-medium whitespace-nowrap nav-text tracking-wide lg:group-[.sidebar-collapsed]/body:!hidden">Special Program Fund</span>
                     </a>
                 </div>
@@ -162,26 +162,26 @@ require_once __DIR__ . '/../../config/image_helper.php';
                     class="dropdown-content overflow-hidden transition-all duration-300 max-h-0 opacity-0 mt-1 space-y-1 lg:group-[.sidebar-collapsed]/body:!flex lg:group-[.sidebar-collapsed]/body:!flex-col lg:group-[.sidebar-collapsed]/body:!gap-1 lg:group-[.sidebar-collapsed]/body:![max-height:none] lg:group-[.sidebar-collapsed]/body:!opacity-100 lg:group-[.sidebar-collapsed]/body:!mt-0 lg:group-[.sidebar-collapsed]/body:!ml-0 lg:group-[.sidebar-collapsed]/body:!p-0 lg:group-[.sidebar-collapsed]/body:!overflow-visible">
                     <a href="../monthly-expenses/" data-tooltip-target="tooltip-expenses-monthly" data-tooltip-placement="right"
                         class="nav-item nav-subitem flex items-center gap-3 px-4 py-2 ml-10 rounded-lg text-white/50 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all duration-200 cursor-pointer touch-manipulation group/sub relative lg:group-[.sidebar-collapsed]/body:!flex lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!items-center lg:group-[.sidebar-collapsed]/body:!p-2.5 lg:group-[.sidebar-collapsed]/body:!m-1 lg:group-[.sidebar-collapsed]/body:!w-10 lg:group-[.sidebar-collapsed]/body:!h-10 lg:group-[.sidebar-collapsed]/body:!rounded-lg lg:group-[.sidebar-collapsed]/body:!mx-auto lg:group-[.sidebar-collapsed]/body:!min-w-[2.5rem]">
-                        <svg class="w-4 h-4 shrink-0 transition-transform duration-300 group-hover/sub:scale-110 group-hover/sub:text-[#FCF350] lg:group-[.sidebar-collapsed]/body:!w-5 lg:group-[.sidebar-collapsed]/body:!h-5 lg:group-[.sidebar-collapsed]/body:!m-0 hidden lg:group-[.sidebar-collapsed]/body:!block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 shrink-0 transition-transform duration-300 group-hover/sub:scale-110 group-hover/sub:text-white group-[.nav-item-active]/sub:text-emerald-400 lg:group-[.sidebar-collapsed]/body:!w-5 lg:group-[.sidebar-collapsed]/body:!h-5 lg:group-[.sidebar-collapsed]/body:!m-0 hidden lg:group-[.sidebar-collapsed]/body:!block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 18V9m4 9V5m4 14v-7m4 7v-3"></path>
                         </svg>
-                        <div class="absolute left-0 w-1.5 h-1.5 rounded-full bg-white/20 group-hover/sub:bg-[#FCF350] transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden"></div>
+                        <div class="absolute left-0 w-1.5 h-1.5 rounded-full bg-white/20 group-hover/sub:bg-white/50 group-[.nav-item-active]/sub:bg-emerald-400 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden"></div>
                         <span class="sidebar-text text-sm font-medium whitespace-nowrap nav-text tracking-wide lg:group-[.sidebar-collapsed]/body:!hidden">Monthly Expenses Summary</span>
                     </a>
                     <a href="../itemized/" data-tooltip-target="tooltip-expenses-itemized" data-tooltip-placement="right"
                         class="nav-item nav-subitem flex items-center gap-3 px-4 py-2 ml-10 rounded-lg text-white/50 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all duration-200 cursor-pointer touch-manipulation group/sub relative lg:group-[.sidebar-collapsed]/body:!flex lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!items-center lg:group-[.sidebar-collapsed]/body:!p-2.5 lg:group-[.sidebar-collapsed]/body:!m-1 lg:group-[.sidebar-collapsed]/body:!w-10 lg:group-[.sidebar-collapsed]/body:!h-10 lg:group-[.sidebar-collapsed]/body:!rounded-lg lg:group-[.sidebar-collapsed]/body:!mx-auto lg:group-[.sidebar-collapsed]/body:!min-w-[2.5rem]">
-                        <svg class="w-4 h-4 shrink-0 transition-transform duration-300 group-hover/sub:scale-110 group-hover/sub:text-[#FCF350] lg:group-[.sidebar-collapsed]/body:!w-5 lg:group-[.sidebar-collapsed]/body:!h-5 lg:group-[.sidebar-collapsed]/body:!m-0 hidden lg:group-[.sidebar-collapsed]/body:!block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 shrink-0 transition-transform duration-300 group-hover/sub:scale-110 group-hover/sub:text-white group-[.nav-item-active]/sub:text-emerald-400 lg:group-[.sidebar-collapsed]/body:!w-5 lg:group-[.sidebar-collapsed]/body:!h-5 lg:group-[.sidebar-collapsed]/body:!m-0 hidden lg:group-[.sidebar-collapsed]/body:!block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"></path>
                         </svg>
-                        <div class="absolute left-0 w-1.5 h-1.5 rounded-full bg-white/20 group-hover/sub:bg-[#FCF350] transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden"></div>
+                        <div class="absolute left-0 w-1.5 h-1.5 rounded-full bg-white/20 group-hover/sub:bg-white/50 group-[.nav-item-active]/sub:bg-emerald-400 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden"></div>
                         <span class="sidebar-text text-sm font-medium whitespace-nowrap nav-text tracking-wide lg:group-[.sidebar-collapsed]/body:!hidden">Itemized Daily Transactions</span>
                     </a>
                     <a href="../specialfund/" data-tooltip-target="tooltip-expenses-special" data-tooltip-placement="right"
                         class="nav-item nav-subitem flex items-center gap-3 px-4 py-2 ml-10 rounded-lg text-white/50 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all duration-200 cursor-pointer touch-manipulation group/sub relative lg:group-[.sidebar-collapsed]/body:!flex lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!items-center lg:group-[.sidebar-collapsed]/body:!p-2.5 lg:group-[.sidebar-collapsed]/body:!m-1 lg:group-[.sidebar-collapsed]/body:!w-10 lg:group-[.sidebar-collapsed]/body:!h-10 lg:group-[.sidebar-collapsed]/body:!rounded-lg lg:group-[.sidebar-collapsed]/body:!mx-auto lg:group-[.sidebar-collapsed]/body:!min-w-[2.5rem]">
-                        <svg class="w-4 h-4 shrink-0 transition-transform duration-300 group-hover/sub:scale-110 group-hover/sub:text-[#FCF350] lg:group-[.sidebar-collapsed]/body:!w-5 lg:group-[.sidebar-collapsed]/body:!h-5 lg:group-[.sidebar-collapsed]/body:!m-0 hidden lg:group-[.sidebar-collapsed]/body:!block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 shrink-0 transition-transform duration-300 group-hover/sub:scale-110 group-hover/sub:text-white group-[.nav-item-active]/sub:text-emerald-400 lg:group-[.sidebar-collapsed]/body:!w-5 lg:group-[.sidebar-collapsed]/body:!h-5 lg:group-[.sidebar-collapsed]/body:!m-0 hidden lg:group-[.sidebar-collapsed]/body:!block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                         </svg>
-                        <div class="absolute left-0 w-1.5 h-1.5 rounded-full bg-white/20 group-hover/sub:bg-[#FCF350] transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden"></div>
+                        <div class="absolute left-0 w-1.5 h-1.5 rounded-full bg-white/20 group-hover/sub:bg-white/50 group-[.nav-item-active]/sub:bg-emerald-400 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden"></div>
                         <span class="sidebar-text text-sm font-medium whitespace-nowrap nav-text tracking-wide lg:group-[.sidebar-collapsed]/body:!hidden">Special Program</span>
                     </a>
                 </div>
@@ -190,7 +190,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <!-- Export -->
             <li>
                 <a href="../export/" data-tooltip-target="tooltip-export" data-tooltip-placement="right"
-                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
+                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border-b border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
                     <svg class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:scale-110 lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -225,7 +225,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <!-- About -->
             <li>
                 <a href="../about/" data-tooltip-target="tooltip-about" data-tooltip-placement="right"
-                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
+                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border-b border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
                     <svg class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:scale-110 lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -237,20 +237,20 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <!-- Logout -->
             <li>
                 <a href="../../../" data-tooltip-target="tooltip-logout" data-tooltip-placement="right"
-                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-red-600/20 active:bg-red-600/30 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border border-transparent hover:border-red-600/10 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
-                    <svg class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:scale-110 lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
+                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/90 hover:text-white hover:bg-red-600/10 active:bg-red-600/20 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border border-transparent hover:border-red-600/10 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
+                    <svg class="w-5 h-5 shrink-0 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1">
                         </path>
                     </svg>
-                    <span class="sidebar-text text-sm font-black whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Logout</span>
+                    <span class="sidebar-text text-sm font-medium whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Logout</span>
                 </a>
             </li>
             <!-- Version -->
             <li>
                 <div class="sidebar-version text-xs text-white/50 text-center px-2 py-1.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">
-                    <p>Version 1.0.4</p>
+                    <p>Version 1.0.7</p>
                 </div>
             </li>
         </ul>

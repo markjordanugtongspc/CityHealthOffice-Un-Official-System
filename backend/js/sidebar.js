@@ -476,13 +476,13 @@ function setActiveNavState() {
             isActive = currentPathNormalized.includes(normalizedHref) || currentPath.includes(normalizedHref);
         }
 
-        // Update styling
+        // Update styling: green underline when active; neutral when not
         if (isActive) {
-            item.classList.remove('text-white/80');
-            item.classList.add('bg-white/20', 'text-white');
+            item.classList.remove('text-white/80', 'text-white/70', 'text-white/60', 'text-white/50', 'border-transparent');
+            item.classList.add('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
         } else {
-            item.classList.remove('bg-white/20', 'text-white');
-            item.classList.add('text-white/80');
+            item.classList.remove('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
+            item.classList.add('text-white/80', 'border-transparent');
         }
     });
 }
@@ -496,13 +496,13 @@ function setActiveNavState() {
 function setActiveLink(link) {
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
-        item.classList.remove('bg-white/20', 'text-white');
-        item.classList.add('text-white/80');
+        item.classList.remove('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
+        item.classList.add('text-white/80', 'border-transparent');
     });
 
     if (link) {
-        link.classList.remove('text-white/80');
-        link.classList.add('bg-white/20', 'text-white');
+        link.classList.remove('text-white/80', 'text-white/70', 'text-white/60', 'text-white/50', 'border-transparent');
+        link.classList.add('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
     }
 }
 
