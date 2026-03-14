@@ -92,7 +92,7 @@ requireAuth();
             </header>
 
             <!-- Content Area (Scrollable) -->
-            <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-16">
+            <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-10 md:pb-12 lg:pb-16">
                 <!-- Intro section -->
                 <section class="mb-6">
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-6">

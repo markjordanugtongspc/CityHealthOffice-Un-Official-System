@@ -114,7 +114,7 @@ requireAuth();
         </header>
 
         <!-- Content Area (Scrollable) -->
-        <main class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-24">
+        <main class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-10 md:pb-12 lg:pb-16">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 <!-- Stats Card 1: Total Income -->
                 <div
