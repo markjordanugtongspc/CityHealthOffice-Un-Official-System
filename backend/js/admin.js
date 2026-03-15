@@ -1,5 +1,5 @@
 import Swal from 'sweetalert2';
-import { showAdminCreateUserModal } from './modules/modal.js';
+import { showAdminCreateUserDrawer } from './modules/drawer.js';
 import { createUser, validateUserData } from './modules/user-management.js';
 import {
     sweetalertActionsLeftAlignedClasses,
@@ -179,7 +179,7 @@ async function loadUsers() {
  * Handle add user button click
  */
 function handleAddUserClick() {
-    showAdminCreateUserModal(async (userData) => {
+    showAdminCreateUserDrawer(async (userData) => {
         try {
             // Validate data
             const validation = validateUserData(userData);

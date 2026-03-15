@@ -8,6 +8,7 @@ import {
     sweetalertPrimaryConfirmClasses,
     sweetalertSecondaryCancelClasses,
 } from './modules/modal.js';
+import { showBudgetCreateDrawer } from './modules/drawer.js';
 
 // Budget data model (will be loaded from database)
 let budgetRows = [];
@@ -395,172 +396,9 @@ function calculateRemaining(actual, budget) {
 function handleAddClick() {
     const year = selectedYear || getCurrentYearFromGlobal();
 
-    Swal.fire({
-        title: `Initialize Budget Entry [${year}]`,
-        html: `
-            <div class="text-left space-y-8 p-1 max-h-[75vh] overflow-y-auto custom-scrollbar">
-                <!-- Group 1: Identity -->
-                <div class="space-y-4">
-                    <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
-                        <div class="w-2 h-6 bg-[#224796] rounded-full"></div>
-                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Account Identification</h3>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">G/L Account Code <span class="text-rose-500">*</span></label>
-                            <input type="text" id="swal-glCode" placeholder="e.g. 1011" 
-                                class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] transition-all outline-hidden font-mono">
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Account Title <span class="text-slate-400">(optional)</span></label>
-                            <div class="relative">
-                                <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                                </span>
-                                <input type="text" id="swal-accountTitle" placeholder="Type to search (e.g. Trave...)"
-                                    autocomplete="off" class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] transition-all outline-hidden">
-                                <div id="swal-accountTitle-suggestions" class="absolute z-50 left-0 right-0 mt-1 max-h-40 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg hidden">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Group 2: Financial Caps -->
-                <div class="space-y-4">
-                    <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
-                        <div class="w-2 h-6 bg-emerald-500 rounded-full"></div>
-                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Financial Allocation</h3>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="space-y-1.5 md:col-span-2">
-                            <p class="text-[10px] text-slate-500">Actual is computed from Monthly Expenses</p>
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">Budget Allocation (₱) <span class="text-rose-500">*</span></label>
-                            <div class="relative">
-                                <span class="absolute left-4 top-2.5 text-slate-400 text-sm font-bold">₱</span>
-                                <input type="number" step="0.01" id="swal-budget" placeholder="0.00"
-                                    class="w-full pl-8 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 transition-all outline-hidden text-[#224796]">
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Live Summary Calculation -->
-                <div class="bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 p-6 rounded-2xl space-y-4 shadow-xl border border-white/5">
-                    <div class="flex items-center gap-2">
-                        <div class="w-1.5 h-4 bg-emerald-400 rounded-full animate-pulse"></div>
-                        <h3 class="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Real-time Utilization Summary</h3>
-                    </div>
-                    <div class="grid grid-cols-2 gap-8">
-                        <div class="space-y-1">
-                            <p class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest opacity-80">Remaining Balance</p>
-                            <p id="swal-remaining-amount" class="text-2xl font-black text-white tracking-tight">₱0.00</p>
-                        </div>
-                        <div class="space-y-1">
-                            <p class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest opacity-80">Utilization Efficiency</p>
-                            <p id="swal-remaining-percent" class="text-2xl font-black text-white tracking-tight">0.00%</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `,
-        width: '42rem',
-        showCancelButton: true,
-        confirmButtonText: 'Add Entry',
-        cancelButtonText: 'Dismiss',
-        confirmButtonColor: '#10b981',
-        cancelButtonColor: '#64748b',
-        customClass: {
-            popup: `${sweetalertPopupBaseClasses} max-w-2xl rounded-3xl`,
-            title: 'text-2xl font-black text-slate-900 mt-6 tracking-tight',
-            htmlContainer: sweetalertHtmlLeftAlignedClasses,
-            confirmButton: `inline-flex items-center px-6 py-2.5 bg-emerald-500 text-white rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-emerald-600 hover:shadow-lg transition-all cursor-pointer m-2`,
-            cancelButton: `inline-flex items-center px-6 py-2.5 bg-slate-100 text-slate-600 rounded-xl text-[11px] font-black uppercase tracking-widest hover:bg-slate-200 transition-all cursor-pointer m-2`,
-        },
-        buttonsStyling: false,
-        focusConfirm: false,
-        didOpen: () => {
-            const budgetInput = document.getElementById('swal-budget');
-            const remainingAmountEl = document.getElementById('swal-remaining-amount');
-            const remainingPercentEl = document.getElementById('swal-remaining-percent');
-            const accountTitleInput = document.getElementById('swal-accountTitle');
-            const suggestionsEl = document.getElementById('swal-accountTitle-suggestions');
-            const glCodeInput = document.getElementById('swal-glCode');
-
-            const updateRemaining = () => {
-                const actual = 0;
-                const budget = parseFloat(budgetInput?.value) || 0;
-                const { remainingAmount, remainingPercent } = calculateRemaining(actual, budget);
-                remainingAmountEl.textContent = formatCurrency(remainingAmount);
-                remainingPercentEl.textContent = formatPercent(remainingPercent);
-                remainingAmountEl.className = remainingAmount < 0 ? 'text-2xl font-black text-rose-400 tracking-tight' : 'text-2xl font-black text-white tracking-tight';
-                remainingPercentEl.className = remainingAmount < 0 ? 'text-2xl font-black text-rose-400 tracking-tight' : 'text-2xl font-black text-white tracking-tight';
-            };
-            if (budgetInput) budgetInput.addEventListener('input', updateRemaining);
-
-            const apiBase = getApiBasePath();
-            const showSuggestions = (q) => {
-                if (!suggestionsEl) return;
-                fetch(`${apiBase}/api/account-titles/search.php?q=${encodeURIComponent(q || '')}`)
-                    .then(r => r.json())
-                    .then(res => {
-                        if (!res.success || !res.data) return;
-                        suggestionsEl.innerHTML = res.data.map(item => {
-                            const gl = String(item.gl_code || '');
-                            const title = String(item.account_title || '');
-                            const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                            return `<div class="px-4 py-2.5 hover:bg-slate-100 cursor-pointer text-sm text-slate-700 border-b border-slate-100 last:border-b-0 transition-colors flex items-center gap-2" data-gl="${esc(gl)}" data-title="${esc(title)}"><svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg><span>${gl} - ${esc(title)}</span></div>`;
-                        }).join('');
-                        suggestionsEl.classList.remove('hidden');
-                        suggestionsEl.querySelectorAll('[data-gl]').forEach(el => {
-                            el.addEventListener('click', () => {
-                                glCodeInput.value = el.dataset.gl || '';
-                                accountTitleInput.value = el.dataset.title || '';
-                                suggestionsEl.classList.add('hidden');
-                            });
-                        });
-                    })
-                    .catch(() => { suggestionsEl.classList.add('hidden'); });
-            };
-
-            let debounceTimer;
-            if (accountTitleInput) {
-                accountTitleInput.addEventListener('input', () => {
-                    clearTimeout(debounceTimer);
-                    debounceTimer = setTimeout(() => showSuggestions(accountTitleInput.value.trim()), 150);
-                });
-                accountTitleInput.addEventListener('focus', () => {
-                    if (accountTitleInput.value.trim()) showSuggestions(accountTitleInput.value.trim());
-                    else showSuggestions('');
-                });
-            }
-            document.addEventListener('click', (e) => {
-                if (suggestionsEl && !suggestionsEl.contains(e.target) && e.target !== accountTitleInput) suggestionsEl.classList.add('hidden');
-            });
-        },
-        preConfirm: () => {
-            const glCode = document.getElementById('swal-glCode')?.value?.trim();
-            const accountTitle = document.getElementById('swal-accountTitle')?.value?.trim();
-            const budgetInput = document.getElementById('swal-budget')?.value;
-            const budget = parseCurrencyInput(budgetInput);
-
-            if (!glCode) {
-                Swal.showValidationMessage('G/L Code is required');
-                return false;
-            }
-
-            // Budget is allowed to be 0. We only require it to be non-negative.
-            if (budget < 0) {
-                Swal.showValidationMessage('Budget cannot be negative');
-                return false;
-            }
-
-            return { glCode, accountTitle: accountTitle || glCode, budget };
-        },
-    }).then(async (result) => {
-        if (result.isConfirmed && result.value) {
+    showBudgetCreateDrawer({
+        year,
+        onConfirm: async ({ glCode, accountTitle, budget }) => {
             const apiBase = getApiBasePath();
             try {
                 const res = await fetch(`${apiBase}/api/budget/create.php`, {
@@ -569,10 +407,10 @@ function handleAddClick() {
                     credentials: 'same-origin',
                     body: JSON.stringify({
                         year: selectedYear || getCurrentYearFromGlobal(),
-                        glCode: result.value.glCode,
-                        accountTitle: result.value.accountTitle,
+                        glCode,
+                        accountTitle,
                         actual: 0,
-                        budget: result.value.budget,
+                        budget,
                     }),
                 });
                 const data = await res.json();
@@ -580,11 +418,23 @@ function handleAddClick() {
                 await loadBudgetData();
                 currentPage = 1;
                 renderTable();
-                Swal.fire({ icon: 'success', title: 'Entry added', text: 'Budget entry has been added successfully.', confirmButtonText: 'OK', customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses } });
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Entry added',
+                    text: 'Budget entry has been added successfully.',
+                    confirmButtonText: 'OK',
+                    customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses },
+                });
             } catch (err) {
-                Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'Failed to create entry', confirmButtonText: 'OK', customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses } });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: err.message || 'Failed to create entry',
+                    confirmButtonText: 'OK',
+                    customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses },
+                });
             }
-        }
+        },
     });
 }
 

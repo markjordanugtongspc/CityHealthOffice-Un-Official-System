@@ -239,7 +239,7 @@ requireAuth();
                 <section>
                     <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
                         <div class="w-full overflow-x-auto">
-                            <table id="monthlyExpensesTable" class="min-w-max divide-y divide-slate-200 text-sm">
+                            <table id="monthlyExpensesTable" class="min-w-full divide-y divide-slate-200 text-sm">
                                 <thead class="bg-slate-50">
                                     <tr>
                                         <th scope="col" class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 w-[80px] min-w-[80px]">

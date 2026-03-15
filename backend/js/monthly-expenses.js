@@ -1,4 +1,5 @@
 import Swal from 'sweetalert2';
+import { showMonthlyExpensesDrawer } from './modules/drawer.js';
 import { initInlineEdit } from './modules/inline-edit.js';
 import {
     sweetalertActionsLeftAlignedClasses,
@@ -320,162 +321,10 @@ function renderYearSelector() {
 
 function handleAddClick() {
     const year = selectedYear;
-    
-    Swal.fire({
-        title: `Add Monthly Expense Entry (${year})`,
-        html: `
-            <div class="space-y-4 md:space-y-5 text-left">
-                <!-- Account Title with G/L Code (searchable from backend) -->
-                <div class="grid grid-cols-1 md:grid-cols-[128px_1fr] gap-2 md:gap-3 items-start">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1">Account Title <span class="text-rose-500">*</span></label>
-                    <div class="relative w-full">
-                        <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                        </span>
-                        <input id="swal-accountTitle" type="text" placeholder="Type to search (e.g. Trave...)" autocomplete="off"
-                            class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] transition-colors">
-                        <input id="swal-glCode" type="hidden" value="">
-                        <div id="swal-accountTitle-suggestions" class="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-300 bg-white shadow-lg hidden">
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Monthly Values Grid -->
-                <div class="grid grid-cols-1 md:grid-cols-[128px_1fr] gap-2 md:gap-3 items-start">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1 pt-1 md:pt-2">Monthly Values (₱)</label>
-                    <div class="w-full">
-                        <div class="grid max-h-[320px] grid-cols-2 gap-3 overflow-y-auto pr-1 pb-2 sm:grid-cols-3 md:max-h-[280px] md:grid-cols-4 lg:grid-cols-3">
-                            ${monthNames.map((month, index) => {
-                                const monthKey = monthKeys[index];
-                                return `
-                                    <div class="flex flex-col">
-                                        <label class="mb-1.5 block text-xs font-medium text-slate-600">${month}</label>
-                                        <input
-                                            id="swal-${monthKey}"
-                                            type="number"
-                                            step="0.01"
-                                            min="0"
-                                            placeholder="0.00"
-                                            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] transition-colors"
-                                        />
-                                    </div>
-                                `;
-                            }).join('')}
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Total Summary -->
-                <div class="grid grid-cols-1 md:grid-cols-[128px_1fr] gap-2 md:gap-3 items-start">
-                    <label class="text-sm font-medium text-slate-700 md:mb-1 pt-1 md:pt-2">Total</label>
-                    <div class="w-full rounded-lg border border-slate-200 bg-linear-to-br from-slate-50 to-slate-100 p-4">
-                        <p class="mb-1.5 text-xs font-medium text-slate-500">Total Amount</p>
-                        <p id="swal-total-amount" class="text-lg font-semibold text-slate-900 md:text-xl">₱0.00</p>
-                    </div>
-                </div>
-            </div>
-        `,
-        width: 'auto',
-        padding: '1.5rem',
-        showCancelButton: true,
-        confirmButtonText: 'Add Entry',
-        cancelButtonText: 'Cancel',
-        focusConfirm: false,
-        customClass: {
-            popup: `${sweetalertPopupScrollableBaseClasses} max-w-md md:max-w-2xl`,
-            htmlContainer: sweetalertHtmlScrollableClasses,
-            confirmButton: sweetalertPrimaryConfirmClasses,
-            cancelButton: sweetalertSecondaryCancelClasses,
-            actions: sweetalertActionsLeftAlignedClasses,
-        },
-        didOpen: () => {
-            const apiBase = getApiBasePath();
-            const accountTitleInput = document.getElementById('swal-accountTitle');
-            const glCodeInput = document.getElementById('swal-glCode');
-            const suggestionsContainer = document.getElementById('swal-accountTitle-suggestions');
 
-            const updateTotal = () => {
-                let total = 0;
-                monthKeys.forEach(monthKey => {
-                    const input = document.getElementById(`swal-${monthKey}`);
-                    if (input) total += parseFloat(input.value) || 0;
-                });
-                const totalEl = document.getElementById('swal-total-amount');
-                if (totalEl) totalEl.textContent = formatCurrency(total);
-            };
-
-            const autoFillMonthlyValues = (accountTitle) => {
-                const row = monthlyExpensesRows.find(r => r.accountTitle === accountTitle);
-                if (row?.months) {
-                    monthKeys.forEach(m => {
-                        const inp = document.getElementById(`swal-${m}`);
-                        if (inp && row.months[m] > 0) inp.value = row.months[m];
-                    });
-                    updateTotal();
-                }
-            };
-
-            const showSuggestions = (q) => {
-                if (!suggestionsContainer) return;
-                fetch(`${apiBase}/api/account-titles/search.php?q=${encodeURIComponent(q || '')}`)
-                    .then(r => r.json())
-                    .then(res => {
-                        if (!res.success || !res.data) return;
-                        const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                        suggestionsContainer.innerHTML = res.data.map(item => {
-                            const gl = esc(item.gl_code || '');
-                            const title = esc(item.account_title || '');
-                            return `<div class="px-4 py-2.5 hover:bg-slate-100 cursor-pointer text-sm text-slate-700 border-b border-slate-100 last:border-b-0 flex items-center gap-2" data-gl="${gl}" data-title="${esc(title)}"><svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg><span>${gl} - ${title}</span></div>`;
-                        }).join('');
-                        suggestionsContainer.classList.remove('hidden');
-                        suggestionsContainer.querySelectorAll('[data-gl]').forEach(el => {
-                            el.addEventListener('click', () => {
-                                glCodeInput.value = el.dataset.gl || '';
-                                accountTitleInput.value = el.dataset.title || '';
-                                suggestionsContainer.classList.add('hidden');
-                                autoFillMonthlyValues(accountTitleInput.value);
-                            });
-                        });
-                    })
-                    .catch(() => { suggestionsContainer.classList.add('hidden'); });
-            };
-
-            let debounceTimer;
-            if (accountTitleInput) {
-                accountTitleInput.addEventListener('input', () => {
-                    clearTimeout(debounceTimer);
-                    debounceTimer = setTimeout(() => showSuggestions(accountTitleInput.value.trim()), 150);
-                });
-                accountTitleInput.addEventListener('focus', () => showSuggestions(accountTitleInput.value.trim()));
-            }
-            document.addEventListener('click', (e) => {
-                if (suggestionsContainer && !suggestionsContainer.contains(e.target) && e.target !== accountTitleInput) suggestionsContainer.classList.add('hidden');
-            });
-
-            monthKeys.forEach(m => {
-                const inp = document.getElementById(`swal-${m}`);
-                if (inp) inp.addEventListener('input', updateTotal);
-            });
-        },
-        preConfirm: () => {
-            const glCode = document.getElementById('swal-glCode')?.value?.trim();
-            const accountTitle = document.getElementById('swal-accountTitle')?.value?.trim();
-            const months = {};
-            monthKeys.forEach(m => {
-                const inp = document.getElementById(`swal-${m}`);
-                months[m] = parseFloat(inp?.value) || 0;
-            });
-            const total = Object.values(months).reduce((s, v) => s + v, 0);
-
-            if (!glCode || !accountTitle) {
-                Swal.showValidationMessage('Please select an Account Title from the suggestions');
-                return false;
-            }
-
-            return { glCode, accountTitle, months, total };
-        },
-    }).then(async (result) => {
-        if (result.isConfirmed && result.value) {
+    showMonthlyExpensesDrawer({
+        year,
+        onConfirm: async ({ glCode, accountTitle, months }) => {
             const apiBase = getApiBasePath();
             try {
                 const res = await fetch(`${apiBase}/api/monthly-expenses/create.php`, {
@@ -484,9 +333,9 @@ function handleAddClick() {
                     credentials: 'same-origin',
                     body: JSON.stringify({
                         year: selectedYear || getCurrentYearFromGlobal(),
-                        glCode: result.value.glCode,
-                        accountTitle: result.value.accountTitle,
-                        months: result.value.months,
+                        glCode,
+                        accountTitle,
+                        months,
                     }),
                 });
                 const data = await res.json();
@@ -495,11 +344,23 @@ function handleAddClick() {
                 currentPage = 1;
                 renderTable();
                 renderAccountTitleFilters();
-                Swal.fire({ icon: 'success', title: 'Entry added', text: 'Monthly expense entry has been added successfully.', confirmButtonText: 'OK', customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses } });
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Entry added',
+                    text: 'Monthly expense entry has been added successfully.',
+                    confirmButtonText: 'OK',
+                    customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses },
+                });
             } catch (err) {
-                Swal.fire({ icon: 'error', title: 'Error', text: err.message || 'Failed to create entry', confirmButtonText: 'OK', customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses } });
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: err.message || 'Failed to create entry',
+                    confirmButtonText: 'OK',
+                    customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses },
+                });
             }
-        }
+        },
     });
 }
 
