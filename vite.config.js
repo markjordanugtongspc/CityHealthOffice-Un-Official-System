@@ -29,10 +29,13 @@ export default defineConfig({
         outDir: 'dist',
         emptyOutDir: true,
         manifest: true, // Required for PHP to map files in production
-        cssCodeSplit: false, // Extract all CSS into a single file for faster loading
+        // Keep all CSS in a single style.css so PHP helpers can preload once
+        cssCodeSplit: false,
         rollupOptions: {
-            // Your main entry point
-            input: './backend/js/main.js',
+            // Single explicit entry point; other modules are imported from main.js
+            input: [
+                './backend/js/main.js',
+            ],
             output: {
                 // Optimize chunk splitting
                 manualChunks: undefined, // Single bundle for faster initial load

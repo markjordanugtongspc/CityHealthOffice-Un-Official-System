@@ -48,17 +48,31 @@ function vite($entry, $preloadOnly = false)
             $manifest = json_decode(file_get_contents($manifestPath), true);
             $entryKey = ltrim($entry, './');
 
-            if (isset($manifest[$entryKey])) {
-                // Calculate base path dynamically based on current request
-                $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
-                // Remove 'frontend/pages/...' or 'frontend/components' from path
-                $basePath = preg_replace('#/frontend/(pages|components)/.*$#', '', $scriptDir);
-                $basePath = rtrim($basePath, '/') . '/';
-                // Ensure basePath starts with /
-                if (!str_starts_with($basePath, '/')) {
-                    $basePath = '/' . $basePath;
-                }
+            // Calculate base path dynamically based on current request
+            $scriptDir = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME']));
+            // Remove 'frontend/pages/...' or 'frontend/components' from path
+            $basePath = preg_replace('#/frontend/(pages|components)/.*$#', '', $scriptDir);
+            $basePath = rtrim($basePath, '/') . '/';
+            // Ensure basePath starts with /
+            if (!str_starts_with($basePath, '/')) {
+                $basePath = '/' . $basePath;
+            }
 
+            // Global style.css when cssCodeSplit: false
+            static $globalCssLoaded = false;
+            if (!$globalCssLoaded && isset($manifest['style.css'])) {
+                $cssFile = $manifest['style.css']['file'] ?? null;
+                if ($cssFile) {
+                    $href = htmlspecialchars($basePath . 'dist/' . $cssFile);
+                    if ($preloadOnly) {
+                        echo '<link rel="preload" href="' . $href . '" as="style">';
+                    }
+                    echo '<link rel="stylesheet" href="' . $href . '">';
+                    $globalCssLoaded = true;
+                }
+            }
+
+            if (isset($manifest[$entryKey])) {
                 $file = $manifest[$entryKey]['file'];
 
                 if ($preloadOnly) {

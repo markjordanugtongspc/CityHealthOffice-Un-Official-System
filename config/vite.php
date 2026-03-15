@@ -93,12 +93,25 @@ class Vite
             }
         }
 
+        $html = '';
+
+        // Global style.css entry when cssCodeSplit: false
+        static $globalCssLoaded = false;
+        if (!$globalCssLoaded && isset(self::$manifest['style.css'])) {
+            $cssFile = self::$manifest['style.css']['file'] ?? null;
+            if ($cssFile) {
+                $href = htmlspecialchars($basePath . 'dist/' . $cssFile);
+                $html .= '<link rel="preload" href="' . $href . '" as="style">';
+                $html .= '<link rel="stylesheet" href="' . $href . '">';
+                $globalCssLoaded = true;
+            }
+        }
+
         if (!isset(self::$manifest[$entry])) {
-            return "<!-- Vite entry $entry not found in manifest -->";
+            return $html . "<!-- Vite entry $entry not found in manifest -->";
         }
 
         $item = self::$manifest[$entry];
-        $html = '';
 
         // Load CSS
         if (isset($item['css'])) {
