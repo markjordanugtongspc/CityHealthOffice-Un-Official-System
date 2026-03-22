@@ -207,10 +207,10 @@ require_once __DIR__ . '/../../config/image_helper.php';
     <div
         class="sidebar-footer-section border-t border-white/10 pt-3 mt-auto shrink-0 px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
         <ul class="space-y-1">
-            <!-- Settings -->
+            <!-- Settings (same nav-item / border-b pattern as main links so setActiveNavState matches) -->
             <li>
-                <a href="#" data-tooltip-target="tooltip-settings" data-tooltip-placement="right"
-                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
+                <a href="../settings/" data-tooltip-target="tooltip-settings" data-tooltip-placement="right"
+                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border-b border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
                     <svg class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:scale-110 lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -219,19 +219,19 @@ require_once __DIR__ . '/../../config/image_helper.php';
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                     </svg>
-                    <span class="sidebar-text text-sm font-semibold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Settings</span>
+                    <span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Settings</span>
                 </a>
             </li>
             <!-- About -->
             <li>
                 <a href="../about/" data-tooltip-target="tooltip-about" data-tooltip-placement="right"
-                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/60 hover:text-white hover:bg-white/10 active:bg-white/20 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border-b border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
+                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border-b border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
                     <svg class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:scale-110 lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
                         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 13V7m0 10h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path>
                     </svg>
-                    <span class="sidebar-text text-sm font-semibold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">About</span>
+                    <span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">About</span>
                 </a>
             </li>
             <!-- Logout -->
@@ -250,7 +250,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <!-- Version -->
             <li>
                 <div class="sidebar-version text-xs text-white/50 text-center px-2 py-1.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">
-                    <p>Version 1.0.11</p>
+                    <p>Version 1.0.17</p>
                 </div>
             </li>
         </ul>

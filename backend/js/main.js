@@ -158,6 +158,7 @@ import { init as initVoucher } from './modules/voucher.js';
 import { init as initScrollToTop } from './modules/scroll-to-top.js';
 import { init as initAI } from './modules/ai.js';
 import { init as initAbout } from './about.js';
+import { init as initSettings } from './settings.js';
 import { init as initAdmin } from './admin.js';
 import { initSidebar } from './sidebar.js';
 import { initAuthCheck } from './modules/auth-check.js';
@@ -303,6 +304,9 @@ export async function init() {
 
     // Initialize about page if about elements exist
     initAbout();
+
+    // Settings page (local data actions)
+    initSettings();
 
     // Initialize admin page if admin elements exist
     initAdmin();

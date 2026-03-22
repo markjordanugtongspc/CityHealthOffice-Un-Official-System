@@ -1,25 +1,59 @@
+import path from 'node:path';
 import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
+
+/**
+ * Full page reload when PHP (or other non-Vite) files change.
+ * handleHotUpdate() only runs for files Vite tracks as modules; PHP often is not, so we also hook the dev watcher.
+ * JS/CSS still use native HMR from @vite/client — this does not break production (plugins are dev-only).
+ */
+function phpAndTemplateFullReload() {
+    const trigger = (server) => {
+        server.ws.send({ type: 'full-reload', path: '*' });
+    };
+    const isTracked = (file) =>
+        file.endsWith('.php') ||
+        file.endsWith('.html') ||
+        file.endsWith('.htm');
+
+    return {
+        name: 'php-template-full-reload',
+        configureServer(server) {
+            const root = server.config.root;
+            // Ensure repo PHP is watched (Windows + nested folders)
+            server.watcher.add(path.join(root, '**/*.php'));
+            const onFs = (file) => {
+                if (typeof file === 'string' && isTracked(file)) {
+                    trigger(server);
+                }
+            };
+            server.watcher.on('change', onFs);
+            server.watcher.on('add', onFs);
+            server.watcher.on('unlink', onFs);
+        },
+        handleHotUpdate({ file, server }) {
+            if (isTracked(file)) {
+                trigger(server);
+                return [];
+            }
+        },
+    };
+}
 
 export default defineConfig({
     plugins: [
         tailwindcss(),
-        {
-            name: 'php-refresh',
-            handleHotUpdate({ file, server }) {
-                // Reload page when PHP files change
-                if (file.endsWith('.php')) {
-                    server.ws.send({ type: 'full-reload', path: '*' });
-                }
-            },
-        },
+        phpAndTemplateFullReload(),
     ],
     server: {
-        host: true, // Allows access via localhost and LAN IP automatically
-        port: 5173, // Force port to stay constant
+        host: true, // `npm run dev` / `--host`: LAN + localhost
+        port: 5173,
         strictPort: true,
-        cors: true, // Allow your PHP server to fetch assets from Vite
-        // No hard-coded origin so it works on any machine/network
+        cors: true,
+        watch: {
+            // Do not ignore PHP at project root (some setups ignore non-JS by default patterns)
+            ignored: ['**/node_modules/**', '**/dist/**'],
+        },
     },
     css: {
         devSourcemap: true, // Enable source maps in dev for debugging

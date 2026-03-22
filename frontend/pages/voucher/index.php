@@ -40,7 +40,7 @@ requireAuth();
                 </button>
                 <div id="userDropdown" class="hidden absolute right-0 mt-2 w-48 rounded-lg bg-white shadow-lg border border-slate-100 py-2 z-50">
                     <a id="profileBtn" href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition">Profile</a>
-                    <a id="settingsBtn" href="#" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition">Settings</a>
+                    <a id="settingsBtn" href="../settings/" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition rounded-lg">Settings</a>
                     <hr class="my-1 border-slate-100">
                     <a id="changeUserBtn" href="../../../index.php" class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition">Change User</a>
                 </div>

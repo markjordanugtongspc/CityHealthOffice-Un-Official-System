@@ -76,6 +76,18 @@ export function applyUserToDom(user) {
     if (userRole) {
         userRole.textContent = role;
     }
+
+    const su = document.getElementById('settingsProfileUsername');
+    const sr = document.getElementById('settingsProfileRole');
+    const sf = document.getElementById('settingsProfileFullName');
+    const se = document.getElementById('settingsProfileEmail');
+    if (su && 'value' in su) su.value = username;
+    else if (su) su.textContent = username;
+    if (sr && 'value' in sr) sr.value = role;
+    else if (sr) sr.textContent = role;
+    if (sf && 'value' in sf) sf.value = fullName;
+    else if (sf) sf.textContent = fullName;
+    if (se && 'value' in se && user.email) se.value = user.email;
 }
 
 /**

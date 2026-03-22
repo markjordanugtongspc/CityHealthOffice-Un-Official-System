@@ -472,16 +472,24 @@ function setActiveNavState() {
             isActive = currentPathNormalized.includes('specialfund');
         } else if (normalizedHref.includes('export')) {
             isActive = currentPathNormalized.includes('export');
+        } else if (normalizedHref.includes('settings')) {
+            isActive = currentPathNormalized.includes('/settings') || currentPathNormalized.endsWith('settings');
         } else {
             isActive = currentPathNormalized.includes(normalizedHref) || currentPath.includes(normalizedHref);
         }
 
-        // Update styling: green underline when active; neutral when not
+        // Same active treatment for all .nav-item[href] (main nav + footer Settings/About)
         if (isActive) {
-            item.classList.remove('text-white/80', 'text-white/70', 'text-white/60', 'text-white/50', 'border-transparent');
+            item.classList.remove(
+                'text-white/80', 'text-white/70', 'text-white/60', 'text-white/50',
+                'border-transparent'
+            );
             item.classList.add('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
         } else {
-            item.classList.remove('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
+            item.classList.remove(
+                'text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active',
+                'text-white/60', 'text-white/70', 'text-white/50'
+            );
             item.classList.add('text-white/80', 'border-transparent');
         }
     });
@@ -496,12 +504,17 @@ function setActiveNavState() {
 function setActiveLink(link) {
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
-        item.classList.remove('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
+        item.classList.remove(
+            'text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active',
+            'text-white/60', 'text-white/70', 'text-white/50'
+        );
         item.classList.add('text-white/80', 'border-transparent');
     });
 
     if (link) {
-        link.classList.remove('text-white/80', 'text-white/70', 'text-white/60', 'text-white/50', 'border-transparent');
+        link.classList.remove(
+            'text-white/80', 'text-white/70', 'text-white/60', 'text-white/50', 'border-transparent'
+        );
         link.classList.add('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
     }
 }

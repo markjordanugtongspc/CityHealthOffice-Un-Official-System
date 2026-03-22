@@ -2,6 +2,10 @@
 // ----------------------------------------------------------------------
 // VITE CONFIGURATION
 // ----------------------------------------------------------------------
+// DEV: run `npm run dev` (optional `-- --host`). If 127.0.0.1:VITE_PORT responds, this file emits @vite/client + entry → HMR for JS/CSS; PHP/HTML edits trigger full reload via vite.config.js.
+// PROD: stop the dev server, run `npm run build`, then this file serves hashed assets from dist/.vite/manifest.json (see vite.config.js build.*).
+// Mirror logic lives in config/vite.php (class Vite) if you use that API elsewhere.
+// ----------------------------------------------------------------------
 require_once __DIR__ . '/env.php';
 
 // Browser loads HMR from the same host as the PHP app (localhost or LAN); `npm run dev -- --host` binds 0.0.0.0

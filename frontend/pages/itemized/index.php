@@ -91,8 +91,8 @@ requireAuth();
                             <span>Profile</span>
                         </div>
                     </a>
-                    <a id="settingsBtn" href="#"
-                        class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition">
+                    <a id="settingsBtn" href="../settings/"
+                        class="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 cursor-pointer transition rounded-lg">
                         <div class="flex items-center space-x-2">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

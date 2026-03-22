@@ -5,6 +5,32 @@
 
 import { loadUserInfo } from './modules/user-info.js';
 
+const SETTINGS_DROPDOWN_ACTIVE = [
+    'bg-[#224796]/10',
+    'text-[#224796]',
+    'font-semibold',
+    'ring-1',
+    'ring-inset',
+    'ring-[#224796]/25',
+    'rounded-lg',
+];
+
+/**
+ * Highlight Settings in the header user menu when on the settings page.
+ */
+export function syncUserDropdownSettingsActive() {
+    const link = document.getElementById('settingsBtn');
+    if (!link) return;
+    const path = (window.location.pathname || '').replace(/\/index\.php$/i, '');
+    const onSettings = /\/settings\/?$/i.test(path) || path.includes('/settings/');
+    SETTINGS_DROPDOWN_ACTIVE.forEach((c) => link.classList.remove(c));
+    link.removeAttribute('aria-current');
+    if (onSettings) {
+        SETTINGS_DROPDOWN_ACTIVE.forEach((c) => link.classList.add(c));
+        link.setAttribute('aria-current', 'page');
+    }
+}
+
 /**
  * Initialize dashboard functionality
  */
@@ -68,7 +94,6 @@ export function init() {
 
     // Handle menu item clicks
     const profileBtn = document.getElementById('profileBtn');
-    const settingsBtn = document.getElementById('settingsBtn');
     const changeUserBtn = document.getElementById('changeUserBtn');
 
     if (profileBtn) {
@@ -79,20 +104,14 @@ export function init() {
         });
     }
 
-    if (settingsBtn) {
-        settingsBtn.addEventListener('click', () => {
-            // TODO: Navigate to settings page
-            console.log('Settings clicked');
-            userDropdown.classList.add('hidden');
-        });
-    }
-
     if (changeUserBtn) {
         changeUserBtn.addEventListener('click', (e) => {
             // Allow default href navigation, just close dropdown
             userDropdown.classList.add('hidden');
         });
     }
+
+    syncUserDropdownSettingsActive();
 
     // Chart pagination functionality
     const chartPageButtons = document.querySelectorAll('.chart-page-btn');

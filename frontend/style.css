@@ -247,3 +247,13 @@ body.page-voucher {
         display: none !important;
     }
 }
+
+/* Settings: respect reduced-motion preference toggle */
+html.cho-reduce-motion *,
+html.cho-reduce-motion *::before,
+html.cho-reduce-motion *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+}

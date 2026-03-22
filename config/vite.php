@@ -2,7 +2,7 @@
 
 /**
  * Vite Asset Helper (class API).
- * The app uses `vite()` in config/vite_helper.php — keep behavior in sync when editing this file.
+ * Dev/prod behavior matches vite_helper.php::vite() — keep manifest paths, VITE_PORT, and loopback dev check in sync.
  */
 
 require_once __DIR__ . '/env.php';
@@ -113,11 +113,12 @@ class Vite
             }
         }
 
-        if (!isset(self::$manifest[$entry])) {
-            return $html . "<!-- Vite entry $entry not found in manifest -->";
+        $entryKey = ltrim($entry, './');
+        if (!isset(self::$manifest[$entryKey])) {
+            return $html . "<!-- Vite entry $entryKey not found in manifest -->";
         }
 
-        $item = self::$manifest[$entry];
+        $item = self::$manifest[$entryKey];
 
         // Load CSS
         if (isset($item['css'])) {
