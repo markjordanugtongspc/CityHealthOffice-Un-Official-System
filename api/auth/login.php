@@ -82,6 +82,7 @@ try {
             'username' => $user['username'],
             'full_name' => $user['full_name'],
             'role' => $user['role'],
+            'email' => $user['email'] ?? null,
         ]
     ]);
 

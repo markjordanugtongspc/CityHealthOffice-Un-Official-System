@@ -250,7 +250,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <!-- Version -->
             <li>
                 <div class="sidebar-version text-xs text-white/50 text-center px-2 py-1.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">
-                    <p>Version 1.0.7</p>
+                    <p>Version 1.0.11</p>
                 </div>
             </li>
         </ul>

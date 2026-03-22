@@ -329,63 +329,161 @@ function initMonthlyVouchersChart() {
         return colors.chartColors.slice(0, 12);
     };
 
+    /** Full donut label config (Apex `responsive` uses window width, not card width — we sync from `[data-cash-chart-wrap]` instead). */
+    const buildDonutLabels = (tier) => {
+        const totalFormatter = function (w) {
+            const sum = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
+            return formatCurrency(sum);
+        };
+        const valueFormatter = (value) => formatCurrency(value);
+        if (tier === 'compact') {
+            return {
+                show: true,
+                name: {
+                    show: true,
+                    fontFamily: 'inherit',
+                    offsetY: 12,
+                    fontSize: '10px',
+                    fontWeight: 600,
+                    color: '#224796'
+                },
+                total: {
+                    showAlways: true,
+                    show: true,
+                    label: 'Yearly Revenue',
+                    fontFamily: 'inherit',
+                    fontSize: '8px',
+                    fontStyle: 'uppercase',
+                    fontWeight: 900,
+                    color: '#94a3b8',
+                    formatter: totalFormatter
+                },
+                value: {
+                    show: true,
+                    fontFamily: 'inherit',
+                    offsetY: -10,
+                    fontSize: '15px',
+                    fontWeight: 800,
+                    color: '#1e293b',
+                    formatter: valueFormatter
+                }
+            };
+        }
+        if (tier === 'medium') {
+            return {
+                show: true,
+                name: {
+                    show: true,
+                    fontFamily: 'inherit',
+                    offsetY: 16,
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    color: '#224796'
+                },
+                total: {
+                    showAlways: true,
+                    show: true,
+                    label: 'Yearly Revenue',
+                    fontFamily: 'inherit',
+                    fontSize: '10px',
+                    fontStyle: 'uppercase',
+                    fontWeight: 900,
+                    color: '#94a3b8',
+                    formatter: totalFormatter
+                },
+                value: {
+                    show: true,
+                    fontFamily: 'inherit',
+                    offsetY: -15,
+                    fontSize: '19px',
+                    fontWeight: 900,
+                    color: '#1e293b',
+                    formatter: valueFormatter
+                }
+            };
+        }
+        return {
+            show: true,
+            name: {
+                show: true,
+                fontFamily: 'inherit',
+                offsetY: 20,
+                fontSize: '14px',
+                fontWeight: 500,
+                color: '#224796'
+            },
+            total: {
+                showAlways: true,
+                show: true,
+                label: 'Yearly Revenue',
+                fontFamily: 'inherit',
+                fontSize: '12px',
+                fontStyle: 'uppercase',
+                fontWeight: 900,
+                color: '#94a3b8',
+                formatter: totalFormatter
+            },
+            value: {
+                show: true,
+                fontFamily: 'inherit',
+                offsetY: -20,
+                fontSize: '24px',
+                fontWeight: 900,
+                color: '#1e293b',
+                formatter: valueFormatter
+            }
+        };
+    };
+
+    /**
+     * Size donut to the wrapper width. Tall charts in narrow grid columns caused the pie to extend past the cell and get clipped.
+     */
+    const getWrapChartLayout = (cw) => {
+        const w = Math.max(cw, 80);
+        const capHeight = Math.round(Math.min(w * 1.12 + 44, w + 120));
+        const pick = (height, size, tier) => ({
+            height: Math.min(Math.max(120, height), capHeight),
+            size,
+            tier
+        });
+        if (w < 300) return pick(198, '58%', 'compact');
+        if (w < 360) return pick(220, '61%', 'compact');
+        if (w < 440) return pick(248, '65%', 'medium');
+        if (w < 520) return pick(278, '69%', 'medium');
+        if (w < 640) return pick(310, '72%', 'medium');
+        if (w < 768) return pick(340, '75%', 'medium');
+        if (w < 900) return pick(368, '77%', 'full');
+        if (w < 1024) return pick(392, '79%', 'full');
+        if (w < 1280) return pick(418, '81%', 'full');
+        return { height: Math.min(430, capHeight), size: '82%', tier: 'full' };
+    };
+
     const getChartOptions = () => {
+        let wrapW = document.querySelector('[data-cash-chart-wrap]')?.getBoundingClientRect().width ?? 0;
+        if (wrapW < 80) {
+            wrapW = Math.min(Math.max(window.innerWidth - 64, 280), 1200);
+        }
+        const initialLayout = getWrapChartLayout(wrapW);
+
         return {
             series: series,
             colors: generateColors(),
             chart: {
-                height: 320,
-                width: "100%",
-                type: "donut",
-                fontFamily: "inherit",
+                height: initialLayout.height,
+                width: '100%',
+                type: 'donut',
+                fontFamily: 'inherit',
                 toolbar: { show: false }
             },
             stroke: {
-                colors: ["transparent"],
-                lineCap: ""
+                colors: ['transparent'],
+                lineCap: ''
             },
             plotOptions: {
                 pie: {
                     donut: {
-                        labels: {
-                            show: true,
-                            name: {
-                                show: true,
-                                fontFamily: "inherit",
-                                offsetY: 20,
-                                fontSize: '14px',
-                                fontWeight: 500,
-                                color: '#224796'
-                            },
-                            total: {
-                                showAlways: true,
-                                show: true,
-                                label: "Yearly Revenue",
-                                fontFamily: "inherit",
-                                fontSize: '12px',
-                                fontStyle: 'uppercase',
-                                fontWeight: 900,
-                                color: '#94a3b8',
-                                formatter: function (w) {
-                                    const sum = w.globals.seriesTotals.reduce((a, b) => {
-                                        return a + b;
-                                    }, 0);
-                                    return formatCurrency(sum);
-                                }
-                            },
-                            value: {
-                                show: true,
-                                fontFamily: "inherit",
-                                offsetY: -20,
-                                fontSize: '24px',
-                                fontWeight: 900,
-                                color: '#1e293b',
-                                formatter: function (value) {
-                                    return formatCurrency(value);
-                                }
-                            }
-                        },
-                        size: "80%"
+                        labels: buildDonutLabels(initialLayout.tier),
+                        size: initialLayout.size
                     }
                 }
             },
@@ -403,50 +501,18 @@ function initMonthlyVouchersChart() {
             },
             tooltip: {
                 style: {
-                    fontFamily: "inherit",
+                    fontFamily: 'inherit',
                     fontSize: '13px'
                 },
                 y: {
                     formatter: function (value, opts) {
                         const monthLabel = labels[opts.seriesIndex] || '';
-                        // Format: "Nov 2026: ₱332"
                         return monthLabel + ' ' + currentYear + ': ' + formatCurrency(value);
                     }
                 },
                 theme: 'dark',
                 fillSeriesColor: true
-            },
-            responsive: [{
-                breakpoint: 1024,
-                options: {
-                    chart: { height: 300 },
-                    plotOptions: {
-                        pie: {
-                            donut: { size: '75%' }
-                        }
-                    }
-                }
-            }, {
-                breakpoint: 768,
-                options: {
-                    chart: { height: 280 },
-                    plotOptions: {
-                        pie: {
-                            donut: { size: '70%' }
-                        }
-                    }
-                }
-            }, {
-                breakpoint: 640,
-                options: {
-                    chart: { height: 250 },
-                    plotOptions: {
-                        pie: {
-                            donut: { size: '65%' }
-                        }
-                    }
-                }
-            }]
+            }
         };
     };
 
@@ -480,15 +546,15 @@ function initMonthlyVouchersChart() {
                 // Standard item template
                 const createItem = (alignRight = false) => {
                     const item = document.createElement('div');
-                    item.className = `flex ${alignRight ? 'flex-row-reverse text-right' : 'flex-row'} items-center text-[10px] sm:text-[11px] text-slate-600 transition-all hover:scale-105 duration-200 py-1 rounded-lg hover:bg-slate-50 w-full`;
+                    item.className = `flex ${alignRight ? 'flex-row-reverse text-right' : 'flex-row'} items-start sm:items-center gap-0.5 sm:gap-0 text-[10px] sm:text-[11px] text-slate-600 transition-colors duration-200 py-1.5 sm:py-1 rounded-lg hover:bg-slate-50 w-full min-w-0`;
                     item.innerHTML = `
-                        <span class="w-2 h-2 rounded-full ${alignRight ? 'ml-2' : 'mr-2'} shrink-0 shadow-xs" style="background-color: ${color}"></span>
-                        <div class="flex flex-col flex-1 overflow-hidden">
-                            <div class="flex items-center ${alignRight ? 'justify-end' : ''} gap-1 leading-tight">
-                                <span class="font-bold text-slate-700">${label}</span>
-                                <span class="text-[8px] font-bold text-slate-400 bg-slate-100 px-1 rounded">(${percentage}%)</span>
+                        <span class="w-2 h-2 rounded-full ${alignRight ? 'ml-1.5 sm:ml-2' : 'mr-1.5 sm:mr-2'} shrink-0 mt-0.5 sm:mt-0 shadow-xs" style="background-color: ${color}"></span>
+                        <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
+                            <div class="flex flex-wrap items-center ${alignRight ? 'justify-end' : ''} gap-x-1 gap-y-0.5 leading-tight">
+                                <span class="font-bold text-slate-700 shrink-0">${label}</span>
+                                <span class="text-[8px] font-bold text-slate-400 bg-slate-100 px-1 rounded tabular-nums">(${percentage}%)</span>
                             </div>
-                            <span class="font-extrabold text-[#224796] truncate">${formatCurrency(val)}</span>
+                            <span class="font-extrabold text-[#224796] truncate text-[10px] sm:text-[11px]">${formatCurrency(val)}</span>
                         </div>
                     `;
                     return item;
@@ -510,6 +576,55 @@ function initMonthlyVouchersChart() {
         chartInstances.monthly = chart;
         chart.render();
         updateCustomLegend();
+
+        const applyCashLayoutFromWrapper = () => {
+            const wrap = document.querySelector('[data-cash-chart-wrap]');
+            if (!wrap) return;
+            const cw = wrap.getBoundingClientRect().width;
+            if (cw < 40) return;
+            const { height, size, tier } = getWrapChartLayout(cw);
+            try {
+                chart.updateOptions(
+                    {
+                        chart: { height },
+                        plotOptions: {
+                            pie: {
+                                donut: {
+                                    size,
+                                    labels: buildDonutLabels(tier)
+                                }
+                            }
+                        }
+                    },
+                    false,
+                    true,
+                    false
+                );
+            } catch {
+                /* ignore */
+            }
+        };
+
+        requestAnimationFrame(() => {
+            requestAnimationFrame(applyCashLayoutFromWrapper);
+        });
+
+        const cashChartWrap = document.querySelector('[data-cash-chart-wrap]');
+        if (cashChartWrap && typeof ResizeObserver !== 'undefined') {
+            let resizeDebounce;
+            const ro = new ResizeObserver(() => {
+                window.clearTimeout(resizeDebounce);
+                resizeDebounce = window.setTimeout(() => {
+                    applyCashLayoutFromWrapper();
+                    try {
+                        chart.resize();
+                    } catch {
+                        /* ignore */
+                    }
+                }, 80);
+            });
+            ro.observe(cashChartWrap);
+        }
 
         // Hide skeleton once chart is ready
         toggleChartSkeleton('monthlyVouchersChart', 'monthlyVouchersSkeleton', false);

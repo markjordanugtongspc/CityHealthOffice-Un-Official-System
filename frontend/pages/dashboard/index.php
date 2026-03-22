@@ -245,13 +245,13 @@ requireAuth();
                 </div>
 
                 <!-- Page 1: Vouchers Charts -->
-                <div id="chart-page-1" class="chart-page grid grid-cols-1 lg:grid-cols-2 gap-8 md:gap-10 pb-10">
+                <div id="chart-page-1" class="chart-page grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-10 pb-10 min-w-0">
                     <!-- Monthly Vouchers Donut Chart -->
-                    <div class="bg-white border border-slate-100 rounded-[2.5rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] p-8 md:p-10 relative isolate overflow-hidden group/card transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)]">
+                    <div class="bg-white border border-slate-100 rounded-2xl sm:rounded-3xl md:rounded-[2.5rem] shadow-[0_20px_50px_-20px_rgba(0,0,0,0.1)] p-4 sm:p-6 md:p-8 lg:p-10 relative isolate overflow-visible group/card transition-all duration-500 hover:shadow-[0_30px_60px_-15px_rgba(0,0,0,0.15)] min-w-0">
                         <div class="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-[#224796] via-blue-500 to-[#FCF350] opacity-90"></div>
-                        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-10">
-                            <div>
-                                <h5 class="text-3xl font-black text-slate-900 tracking-tight flex items-center gap-2 group-hover/card:text-[#224796] transition-colors">
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between mb-6 sm:mb-8 md:mb-10 min-w-0">
+                            <div class="min-w-0 pr-2">
+                                <h5 class="text-xl sm:text-2xl md:text-3xl font-black text-slate-900 tracking-tight flex flex-wrap items-center gap-x-2 gap-y-1 group-hover/card:text-[#224796] transition-colors">
                                     Cash In Bank
                                     <svg data-popover-target="vouchers-info" data-popover-placement="bottom"
                                         class="w-5 h-5 text-slate-500 hover:text-slate-900 cursor-pointer ms-1"
@@ -262,9 +262,9 @@ requireAuth();
                                             d="M9.529 9.988a2.502 2.502 0 1 1 5 .191A2.441 2.441 0 0 1 12 12.582V14m-.01 3.008H12M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                                     </svg>
                                 </h5>
-                                <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-1">Monthly cash flow distribution</p>
+                                <p class="text-[9px] sm:text-[10px] font-black text-slate-400 uppercase tracking-[0.15em] sm:tracking-[0.2em] mt-1 max-w-prose">Monthly cash flow distribution</p>
                             </div>
-                            <div>
+                            <div class="shrink-0 self-start sm:self-auto">
                                 <button type="button" data-tooltip-target="download-tooltip"
                                     data-tooltip-placement="bottom"
                                     class="inline-flex items-center justify-center text-slate-500 hover:text-slate-900 bg-transparent box-border border border-transparent hover:bg-slate-100 focus:ring-4 focus:ring-slate-200 font-medium leading-5 rounded-lg text-sm w-9 h-9 focus:outline-none cursor-pointer transition-colors">
@@ -284,89 +284,81 @@ requireAuth();
                             </div>
                         </div>
 
-                        <div>
-                            <div class="flex flex-wrap gap-4" id="voucher-quarters">
-                                <div class="flex items-center">
+                        <div class="mb-4 sm:mb-6 min-w-0">
+                            <div class="grid grid-cols-2 min-[400px]:grid-cols-4 gap-x-3 gap-y-2.5 sm:flex sm:flex-wrap sm:gap-x-4 sm:gap-y-2" id="voucher-quarters">
+                                <div class="flex items-center min-w-0">
                                     <input id="q1" type="checkbox" value="Q1"
-                                        class="w-4 h-4 border border-slate-300 rounded bg-slate-50 focus:ring-2 focus:ring-[#224796] cursor-pointer"
+                                        class="w-4 h-4 shrink-0 border border-slate-300 rounded bg-slate-50 focus:ring-2 focus:ring-[#224796] cursor-pointer"
                                         checked>
                                     <label for="q1"
-                                        class="select-none ms-2 text-sm font-medium text-slate-900 cursor-pointer">Q1
-                                        (Jan-Mar)</label>
+                                        class="select-none ms-2 text-xs sm:text-sm font-medium text-slate-900 cursor-pointer leading-snug">Q1 (Jan-Mar)</label>
                                 </div>
-                                <div class="flex items-center">
+                                <div class="flex items-center min-w-0">
                                     <input id="q2" type="checkbox" value="Q2"
-                                        class="w-4 h-4 border border-slate-300 rounded bg-slate-50 focus:ring-2 focus:ring-[#224796] cursor-pointer"
+                                        class="w-4 h-4 shrink-0 border border-slate-300 rounded bg-slate-50 focus:ring-2 focus:ring-[#224796] cursor-pointer"
                                         checked>
                                     <label for="q2"
-                                        class="select-none ms-2 text-sm font-medium text-slate-900 cursor-pointer">Q2
-                                        (Apr-Jun)</label>
+                                        class="select-none ms-2 text-xs sm:text-sm font-medium text-slate-900 cursor-pointer leading-snug">Q2 (Apr-Jun)</label>
                                 </div>
-                                <div class="flex items-center">
+                                <div class="flex items-center min-w-0">
                                     <input id="q3" type="checkbox" value="Q3"
-                                        class="w-4 h-4 border border-slate-300 rounded bg-slate-50 focus:ring-2 focus:ring-[#224796] cursor-pointer"
+                                        class="w-4 h-4 shrink-0 border border-slate-300 rounded bg-slate-50 focus:ring-2 focus:ring-[#224796] cursor-pointer"
                                         checked>
                                     <label for="q3"
-                                        class="select-none ms-2 text-sm font-medium text-slate-900 cursor-pointer">Q3
-                                        (Jul-Sep)</label>
+                                        class="select-none ms-2 text-xs sm:text-sm font-medium text-slate-900 cursor-pointer leading-snug">Q3 (Jul-Sep)</label>
                                 </div>
-                                <div class="flex items-center">
+                                <div class="flex items-center min-w-0">
                                     <input id="q4" type="checkbox" value="Q4"
-                                        class="w-4 h-4 border border-slate-300 rounded bg-slate-50 focus:ring-2 focus:ring-[#224796] cursor-pointer"
+                                        class="w-4 h-4 shrink-0 border border-slate-300 rounded bg-slate-50 focus:ring-2 focus:ring-[#224796] cursor-pointer"
                                         checked>
                                     <label for="q4"
-                                        class="select-none ms-2 text-sm font-medium text-slate-900 cursor-pointer">Q4
-                                        (Oct-Dec)</label>
+                                        class="select-none ms-2 text-xs sm:text-sm font-medium text-slate-900 cursor-pointer leading-snug">Q4 (Oct-Dec)</label>
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Chart and Legend Flanking Container -->
-                        <div class="flex flex-col lg:flex-row items-center justify-between gap-4 py-4 sm:py-6 relative">
-                            <!-- Desktop Left Legend (Months 1-6) -->
-                            <div id="monthlyVouchersLegendLeft" class="hidden lg:flex flex-col gap-2 w-1/4"></div>
+                        <!-- Chart: no overflow clip; xl center track is wider (minmax) so donut is not squeezed -->
+                        <div class="grid w-full min-w-0 gap-5 sm:gap-6 justify-items-center overflow-visible xl:grid-cols-[minmax(0,0.9fr)_minmax(14rem,1.45fr)_minmax(0,0.9fr)] xl:items-center xl:justify-items-stretch xl:gap-4 2xl:gap-6 py-3 sm:py-4 md:py-6 relative">
+                            <div id="monthlyVouchersLegendLeft" class="hidden xl:flex flex-col gap-2 min-w-0 min-h-0 xl:col-start-1 xl:row-start-1 xl:max-w-[13rem] xl:justify-self-end xl:w-full"></div>
 
-                            <!-- Center Chart Area with skeleton -->
-                            <div class="w-full lg:w-2/4">
-                                <!-- Skeleton loader for Cash In Bank donut -->
+                            <div
+                                class="w-full min-w-0 min-h-0 flex flex-col items-center justify-center overflow-visible max-w-[min(94vw,18rem)] min-[360px]:max-w-[min(92vw,19rem)] sm:max-w-[21rem] md:max-w-[24rem] lg:max-w-[27rem] xl:col-start-2 xl:row-start-1 xl:mx-auto xl:w-full xl:max-w-none 2xl:max-w-[36rem] 2xl:mx-auto"
+                                data-cash-chart-wrap>
                                 <div id="monthlyVouchersSkeleton"
                                      role="status"
-                                     class="space-y-4 animate-pulse">
-                                    <div class="h-3 bg-neutral-quaternary rounded-full w-40 mx-auto mb-2"></div>
-                                    <div class="h-3 bg-neutral-quaternary rounded-full w-24 mx-auto mb-4"></div>
-                                    <div class="flex items-center justify-center">
-                                        <div class="w-40 h-40 md:w-52 md:h-52 rounded-full border-[10px] border-neutral-quaternary/80"></div>
+                                     class="space-y-3 sm:space-y-4 animate-pulse w-full flex flex-col items-center">
+                                    <div class="h-3 bg-neutral-quaternary rounded-full w-28 sm:w-40 mx-auto mb-2"></div>
+                                    <div class="h-3 bg-neutral-quaternary rounded-full w-20 sm:w-24 mx-auto mb-3 sm:mb-4"></div>
+                                    <div class="flex items-center justify-center px-1 w-full">
+                                        <div class="aspect-square w-[min(100%,13.5rem)] max-h-52 sm:w-48 sm:h-48 sm:max-h-none md:w-56 md:h-56 lg:w-60 lg:h-60 rounded-full border-[6px] sm:border-[10px] border-neutral-quaternary/80"></div>
                                     </div>
-                                    <div class="flex flex-wrap justify-center gap-3 pt-3">
-                                        <span class="h-2 w-16 bg-neutral-quaternary rounded-full"></span>
+                                    <div class="flex flex-wrap justify-center gap-2 sm:gap-3 pt-2 sm:pt-3">
+                                        <span class="h-2 w-14 sm:w-16 bg-neutral-quaternary rounded-full"></span>
                                         <span class="h-2 w-20 bg-neutral-quaternary rounded-full"></span>
-                                        <span class="h-2 w-14 bg-neutral-quaternary rounded-full"></span>
-                                        <span class="h-2 w-24 bg-neutral-quaternary rounded-full"></span>
+                                        <span class="h-2 w-12 sm:w-14 bg-neutral-quaternary rounded-full"></span>
+                                        <span class="h-2 w-20 sm:w-24 bg-neutral-quaternary rounded-full"></span>
                                     </div>
                                     <span class="sr-only">Loading chart...</span>
                                 </div>
 
-                                <!-- Actual chart rendered by ApexCharts -->
-                                <div class="hidden" id="monthlyVouchersChart"></div>
+                                <div class="hidden w-full min-w-0 max-w-full overflow-visible flex justify-center [&_.apexcharts-canvas]:mx-auto [&_.apexcharts-svg]:overflow-visible" id="monthlyVouchersChart"></div>
                             </div>
 
-                            <!-- Desktop Right Legend (Months 7-12) -->
                             <div id="monthlyVouchersLegendRight"
-                                class="hidden lg:flex flex-col gap-2 w-1/4 items-end text-right"></div>
+                                class="hidden xl:flex flex-col gap-2 min-w-0 items-end text-right xl:col-start-3 xl:row-start-1 xl:max-w-[13rem] xl:justify-self-start xl:w-full"></div>
 
-                            <!-- Mobile Legend (Combined Grid below chart) -->
                             <div id="monthlyVouchersLegendMobile"
-                                class="grid lg:hidden grid-cols-2 gap-4 w-full px-2 mt-4"></div>
+                                class="grid xl:hidden grid-cols-1 min-[380px]:grid-cols-2 gap-x-3 gap-y-2 sm:gap-4 w-full min-w-0 col-span-full"></div>
                         </div>
 
                         <!-- Footer with Year and Category Dropdowns -->
                         <div
-                            class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pt-4 border-t border-slate-200">
+                            class="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between pt-4 border-t border-slate-200 min-w-0">
                             <!-- Year Dropdown (Left Side) -->
-                            <div class="relative inline-flex w-fit">
+                            <div class="relative inline-flex w-full min-w-0 sm:w-auto sm:max-w-[50%]">
                                 <button id="cashYearButton" data-dropdown-toggle="cashYearDropdown"
                                     data-dropdown-placement="top-start"
-                                    class="text-sm font-medium text-slate-600 hover:text-slate-900 text-center inline-flex items-center cursor-pointer transition-colors"
+                                    class="w-full sm:w-auto justify-start sm:justify-center text-sm font-medium text-slate-600 hover:text-slate-900 text-center inline-flex items-center cursor-pointer transition-colors"
                                     type="button">
                                     2026 (This Year)
                                     <svg class="w-4 h-4 ms-1.5 rotate-180" aria-hidden="true"
@@ -411,12 +403,12 @@ requireAuth();
                             </div>
 
                             <!-- Category Dropdowns (Right Side) -->
-                            <div class="flex items-center gap-2 flex-wrap">
+                            <div class="flex items-stretch sm:items-center gap-2 flex-wrap w-full sm:w-auto justify-stretch sm:justify-end min-w-0">
                                 <!-- Main Category Dropdown -->
-                                <div class="relative inline-flex w-fit">
+                                <div class="relative inline-flex w-full min-w-0 sm:w-fit">
                                     <button id="cashCategoryButton" data-dropdown-toggle="cashCategoryDropdown"
                                         data-dropdown-placement="top-end"
-                                        class="text-sm font-medium text-[#224796] hover:text-[#163473] text-center inline-flex items-center cursor-pointer transition-colors bg-[#224796]/5 border border-[#224796]/10 hover:bg-[#224796]/10 focus:ring-4 focus:ring-slate-200 rounded-lg px-3 py-2 focus:outline-none"
+                                        class="w-full sm:w-auto justify-center text-sm font-medium text-[#224796] hover:text-[#163473] text-center inline-flex items-center cursor-pointer transition-colors bg-[#224796]/5 border border-[#224796]/10 hover:bg-[#224796]/10 focus:ring-4 focus:ring-slate-200 rounded-lg px-3 py-2 focus:outline-none"
                                         type="button">
                                         All Categories
                                         <svg class="w-4 h-4 ms-1.5 rotate-180" aria-hidden="true"
@@ -438,9 +430,9 @@ requireAuth();
 
                                             <!-- PHM Nested Parent -->
                                             <li>
-                                                <button id="phmNestedButton" data-dropdown-toggle="phmNestedDropdown"
+                                                <button type="button" id="phmNestedButton" data-dropdown-toggle="phmNestedDropdown"
                                                     data-dropdown-placement="left-start"
-                                                    class="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-100 rounded text-left group">
+                                                    class="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-100 rounded text-left group cursor-pointer">
                                                     <span>PHM (PhilHealth)</span>
                                                     <svg class="w-3 h-3 text-slate-400 group-hover:text-slate-900"
                                                         aria-hidden="true" xmlns="http://www.w3.org/2000/svg"
@@ -464,9 +456,9 @@ requireAuth();
 
                                             <!-- PHIC Nested Parent -->
                                             <li>
-                                                <button id="phicNestedButton" data-dropdown-toggle="phicNestedDropdown"
+                                                <button type="button" id="phicNestedButton" data-dropdown-toggle="phicNestedDropdown"
                                                     data-dropdown-placement="left-start"
-                                                    class="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-100 rounded text-left group">
+                                                    class="flex items-center justify-between w-full px-3 py-2 hover:bg-slate-100 rounded text-left group cursor-pointer">
                                                     <span>PHIC (Claims)</span>
                                                     <svg class="w-3 h-3 text-slate-400 group-hover:text-slate-900"
                                                         aria-hidden="true" xmlns="http://www.w3.org/2000/svg"

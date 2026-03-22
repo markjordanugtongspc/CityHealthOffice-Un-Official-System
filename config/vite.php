@@ -1,13 +1,19 @@
 <?php
 
 /**
- * Vite Asset Helper
- * This API provides a way to include Vite assets in any PHP file.
+ * Vite Asset Helper (class API).
+ * The app uses `vite()` in config/vite_helper.php — keep behavior in sync when editing this file.
  */
+
+require_once __DIR__ . '/env.php';
 
 class Vite
 {
-    private static $vite_port = 5173;
+    private static function vitePort(): int
+    {
+        $p = (int) env('VITE_PORT', '5173');
+        return ($p >= 1 && $p <= 65535) ? $p : 5173;
+    }
     private static $manifest = null;
 
     /**
@@ -15,10 +21,10 @@ class Vite
      */
     private static function getViteHost()
     {
-        $host = $_SERVER['HTTP_HOST'];
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
         // Remove port if exists
         $host = explode(':', $host)[0];
-        return "http://$host:" . self::$vite_port;
+        return 'http://' . $host . ':' . self::vitePort();
     }
 
     /**
@@ -59,7 +65,7 @@ class Vite
 
         // PHP check: Always check against localhost internally
         // This bypasses firewall issues when the server checks itself
-        $internal_check = "http://127.0.0.1:" . self::$vite_port;
+        $internal_check = 'http://127.0.0.1:' . self::vitePort();
 
         $ctx = stream_context_create([
             'http' => [

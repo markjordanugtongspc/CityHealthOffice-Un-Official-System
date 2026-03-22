@@ -87,7 +87,7 @@ export async function showLoginSuccess() {
     // Show modal with timer and progress bar
     const swalPromise = Swal.fire({
         title: '<span style="color:#224796;font-weight:600;">Login Successful</span>',
-        html: '<div style="margin-top: 1rem;"><p style="margin-bottom: 0.5rem;">You have successfully logged in.</p><p id="loading-status" style="font-size: 0.875rem; color: #64748b;">Preparing dashboard...</p></div>',
+        html: '<div style="margin-top: 1rem;"><p style="margin-bottom: 0.5rem;">You have successfully logged in.</p><p style="font-size: 0.8125rem; color: #64748b; margin-bottom: 0.35rem;">Profile saved on this device for faster next visits.</p><p id="loading-status" style="font-size: 0.875rem; color: #64748b;">Preparing dashboard...</p></div>',
         icon: 'success',
         background: 'linear-gradient(135deg, #f4f8fb 60%, #dbeafe 100%)',
         color: '#223557',

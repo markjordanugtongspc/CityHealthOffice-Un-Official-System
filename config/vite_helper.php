@@ -2,11 +2,17 @@
 // ----------------------------------------------------------------------
 // VITE CONFIGURATION
 // ----------------------------------------------------------------------
-// Automatically detect the host IP (works for localhost and LAN)
+require_once __DIR__ . '/env.php';
+
+// Browser loads HMR from the same host as the PHP app (localhost or LAN); `npm run dev -- --host` binds 0.0.0.0
 $requestHost = $_SERVER['HTTP_HOST'] ?? 'localhost';
 $cleanHost = explode(':', $requestHost)[0];
-define('VITE_HOST', "http://$cleanHost:5173");
-// VITE_BUILD_DIR will be calculated dynamically based on current request
+$vitePort = (int) env('VITE_PORT', '5173');
+if ($vitePort < 1 || $vitePort > 65535) {
+    $vitePort = 5173;
+}
+define('VITE_PORT', $vitePort);
+define('VITE_HOST', 'http://' . $cleanHost . ':' . VITE_PORT);
 
 /**
  * Vite Asset Loader
@@ -15,14 +21,8 @@ define('VITE_HOST', "http://$cleanHost:5173");
  */
 function vite($entry, $preloadOnly = false)
 {
-    // Extract the Hostname and Port from VITE_HOST to check connection
-    $parsedUrl = parse_url(VITE_HOST);
-    $host = $parsedUrl['host'] ?? 'localhost';
-    $port = $parsedUrl['port'] ?? 5173;
-
-    // Check if Vite Dev Server is running
-    // We suppress errors with @ to avoid warnings if server is off
-    $handle = @fsockopen($host, $port, $errno, $errstr, 0.1);
+    // Check dev server on loopback — reliable when the site is opened via LAN IP or hostname
+    $handle = @fsockopen('127.0.0.1', VITE_PORT, $errno, $errstr, 0.15);
     $isDev = $handle !== false;
     if ($handle) {
         fclose($handle);

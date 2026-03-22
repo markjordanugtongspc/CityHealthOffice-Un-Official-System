@@ -4,6 +4,7 @@
  */
 
 import { showLoginSuccess, showIncorrectCredentials, showError } from './modules/popups.js';
+import { persistLoginSnapshot } from './modules/db-manager.js';
 
 /**
  * Get API base path dynamically
@@ -311,6 +312,9 @@ async function handleLogin(e) {
         const data = await response.json();
 
         if (data.success) {
+            if (data.user) {
+                persistLoginSnapshot(data.user);
+            }
             // Save credentials if "Remember me" is checked
             if (rememberMe) {
                 saveCredentials(username, password);
