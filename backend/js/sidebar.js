@@ -6,10 +6,10 @@
  * 
  * Features:
  * - Collapsible sidebar with smooth animations
- * - Dropdown menu functionality with state persistence
+ * - Dropdown menu functionality with state persistence (localStorage & user preference cookies)
  * - Normal page navigation (standard href links)
  * - Responsive design for mobile and desktop
- * - Tooltip support for collapsed state
+ * - Tooltip & multi-level dropdown support for collapsed state
  * - Active link highlighting
  * 
  * @module sidebar
@@ -21,78 +21,72 @@
 
 /**
  * Navigation State Manager
- * Handles persistence of sidebar and dropdown states using localStorage
- * 
- * To update navigation items in the future:
- * 1. Modify the HTML in frontend/components/sidebar.php
- * 2. Update the active link detection logic in setActiveNavState()
- * 3. Add new dropdown handlers in initDropdowns() if needed
+ * Handles persistence of sidebar and dropdown states using localStorage and cookies
  */
 const NavigationState = {
     sidebarCollapsed: false,
-    openDropdowns: [],
+    openDropdowns: ['budget-dropdown'],
 
-    /**
-     * Save current navigation state to localStorage
-     * Called automatically on state changes
-     */
+    // START: saveNavigationState - Saves current sidebar and dropdown states to localStorage and cookie preferences
     save() {
         try {
-            localStorage.setItem('navState', JSON.stringify({
+            const stateData = {
                 sidebar: this.sidebarCollapsed,
                 dropdowns: this.openDropdowns
-            }));
+            };
+            localStorage.setItem('navState', JSON.stringify(stateData));
+            document.cookie = `cho_nav_state=${encodeURIComponent(JSON.stringify(stateData))}; path=/; max-age=31536000; SameSite=Lax`;
         } catch (error) {
             console.warn('Failed to save navigation state:', error);
         }
     },
+    // END: saveNavigationState
 
-    /**
-     * Load saved navigation state from localStorage
-     * Called on page initialization
-     */
+    // START: loadNavigationState - Loads saved sidebar and dropdown preferences from localStorage or initializes defaults
     load() {
         try {
             const saved = localStorage.getItem('navState');
             if (saved) {
                 const state = JSON.parse(saved);
                 this.sidebarCollapsed = state.sidebar || false;
-                this.openDropdowns = state.dropdowns || [];
+                this.openDropdowns = Array.isArray(state.dropdowns) ? state.dropdowns : ['budget-dropdown'];
+            } else {
+                // Check cookie fallback
+                const match = document.cookie.match(/(?:^|; )cho_nav_state=([^;]*)/);
+                if (match && match[1]) {
+                    const state = JSON.parse(decodeURIComponent(match[1]));
+                    this.sidebarCollapsed = state.sidebar || false;
+                    this.openDropdowns = Array.isArray(state.dropdowns) ? state.dropdowns : ['budget-dropdown'];
+                } else {
+                    // Default state: sidebar expanded, Annual Budget Summary dropdown open
+                    this.sidebarCollapsed = false;
+                    this.openDropdowns = ['budget-dropdown'];
+                    this.save();
+                }
             }
         } catch (error) {
             console.warn('Failed to load navigation state:', error);
-            // Reset to defaults on error
             this.sidebarCollapsed = false;
-            this.openDropdowns = [];
+            this.openDropdowns = ['budget-dropdown'];
         }
     }
+    // END: loadNavigationState
 };
 
 // ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
 
-/**
- * Get main content element for margin adjustments
- * Supports multiple content container patterns
- * 
- * @returns {HTMLElement|null} Main content element
- */
+// START: getMainContent - Retrieves the main content container element for layout adjustments
 function getMainContent() {
     return document.getElementById('spaContentContainer') ||
         document.querySelector('.main-content') ||
         document.querySelector('main') ||
         document.querySelector('.ml-64');
 }
+// END: getMainContent
 
-/**
- * Debounce function for performance optimization
- * Prevents excessive function calls during rapid events
- * 
- * @param {Function} func - Function to debounce
- * @param {number} wait - Wait time in milliseconds
- * @returns {Function} Debounced function
- */
+// START: debounce - Debounces function execution to optimize rapid window resize events
 function debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -104,31 +98,19 @@ function debounce(func, wait) {
         timeout = setTimeout(later, wait);
     };
 }
-
-// ============================================================================
-// NAVIGATION SYSTEM (Normal Page Navigation)
-// ============================================================================
-
-// Note: SPA navigation has been removed. All links now use standard href navigation.
-// This ensures proper page loads and data initialization.
+// END: debounce
 
 // ============================================================================
 // SIDEBAR TOGGLE FUNCTIONALITY
 // ============================================================================
 
-/**
- * Adjust main content margin based on sidebar state
- * Called after sidebar toggle and on page load
- */
-/**
- * Adjust main content margin based on sidebar state
- * This is now primarily handled via Tailwind classes in index.php
- * but we keep this as a secondary check if needed.
- */
+// START: notifyChartLayoutSettled - Dispatches resize event so responsive charts and layouts recalibrate
 function notifyChartLayoutSettled() {
     window.dispatchEvent(new Event('resize'));
-
 }
+// END: notifyChartLayoutSettled
+
+// START: adjustContentMargin - Handles responsive layout adjustments based on sidebar state
 function adjustContentMargin() {
     const body = document.body;
     const sidebar = document.getElementById('sidebar');
@@ -136,31 +118,20 @@ function adjustContentMargin() {
 
     if (!sidebar || !mainContent) return;
 
-    // We no longer manually set inline styles for margins on desktop
-    // as it is now handled by group-variants on the body.
-    // However, for mobile we might still need some checks.
-    
     if (window.innerWidth < 1024) {
         mainContent.style.marginLeft = '';
         mainContent.style.width = '';
     }
 }
+// END: adjustContentMargin
 
-/**
- * Initialize sidebar toggle functionality
- * Handles collapse/expand with state persistence
- * 
- * To modify toggle behavior:
- * 1. Update the collapsed width in adjustContentMargin() (currently 4.5rem)
- * 2. Update expanded width in adjustContentMargin() (currently 16rem)
- * 3. Modify CSS classes in sidebar.php if needed
- */
+// START: initSidebarToggle - Initializes sidebar toggle handlers and desktop/mobile responsiveness
 function initSidebarToggle() {
     const sidebar = document.getElementById('sidebar');
     const sidebarToggleDesktop = document.getElementById('sidebarToggleDesktop');
     const sidebarToggleCollapsed = document.getElementById('sidebarToggleCollapsed');
-    const sidebarToggleCollapsedWrapper = document.getElementById('sidebarToggleCollapsedWrapper');
-    const sidebarToggleHeader = document.getElementById('sidebarToggleHeader'); // Hamburger in header
+    const sidebarToggleHeader = document.getElementById('sidebarToggleHeader');
+    const sidebarCloseMobile = document.getElementById('sidebarCloseMobile');
 
     if (!sidebar) return;
 
@@ -187,22 +158,16 @@ function initSidebarToggle() {
         sidebar.setAttribute('aria-hidden', 'true');
     }
 
-
     // Initial margin adjustment
     adjustContentMargin();
     requestAnimationFrame(() => notifyChartLayoutSettled());
 
-    /**
-     * Unified toggle sidebar function for both mobile and desktop
-     * Mobile (< 1024px): Toggles sidebar visibility (slide in/out)
-     * Desktop (>= 1024px): Toggles collapse/expand state
-     */
+    // START: toggleSidebar - Toggles sidebar collapse on desktop or slide-over drawer on mobile
     function toggleSidebar() {
         const isMobile = window.innerWidth < 1024;
         const mobileBackdrop = document.getElementById('mobileBackdrop');
 
         if (isMobile) {
-            // Mobile toggle logic remains the same
             const isOpen = sidebar.classList.contains('translate-x-0');
 
             if (isOpen) {
@@ -239,11 +204,9 @@ function initSidebarToggle() {
             window.setTimeout(notifyChartLayoutSettled, 350);
         }
     }
+    // END: toggleSidebar
 
-    /**
-     * Update header toggle icon (hamburger/close)
-     * @param {boolean} isOpen - Whether sidebar is open
-     */
+    // START: updateHeaderToggleIcon - Updates mobile header hamburger/close toggle icon based on state
     function updateHeaderToggleIcon(isOpen) {
         const headerToggle = document.getElementById('sidebarToggleHeader');
         if (!headerToggle) return;
@@ -259,6 +222,7 @@ function initSidebarToggle() {
             if (closeIcon) closeIcon.classList.add('hidden');
         }
     }
+    // END: updateHeaderToggleIcon
 
     // Desktop toggle buttons
     if (sidebarToggleDesktop) {
@@ -316,7 +280,6 @@ function initSidebarToggle() {
                 sidebarToggleHeader && !sidebarToggleHeader.contains(e.target) &&
                 mobileBackdrop && !mobileBackdrop.contains(e.target);
 
-            // Close if clicking outside, on nav link, or on close button
             if (isOutside || isNavLink || isCloseButton) {
                 if (sidebar.classList.contains('translate-x-0')) {
                     toggleSidebar();
@@ -327,11 +290,8 @@ function initSidebarToggle() {
 
     // Handle window resize (combines both mobile and desktop adjustments)
     const handleResize = debounce(() => {
-        // Adjust content margin for desktop
         adjustContentMargin();
 
-
-        // Close mobile sidebar if switching to desktop
         if (window.innerWidth >= 1024) {
             sidebar.classList.remove('translate-x-0');
             sidebar.removeAttribute('aria-hidden');
@@ -342,33 +302,23 @@ function initSidebarToggle() {
                 mobileBackdrop.classList.add('opacity-0', 'invisible', 'pointer-events-none');
                 mobileBackdrop.setAttribute('aria-hidden', 'true');
             }
-            // Reset header toggle icon
             updateHeaderToggleIcon(false);
         }
     }, 150);
 
     window.addEventListener('resize', handleResize);
 }
+// END: initSidebarToggle
 
 // ============================================================================
 // DROPDOWN FUNCTIONALITY
 // ============================================================================
 
-/**
- * Initialize dropdown menu functionality
- * Handles open/close with state persistence
- * 
- * To add new dropdowns:
- * 1. Add dropdown button with class "nav-dropdown-trigger" and data-dropdown="your-dropdown-id"
- * 2. Add dropdown content div with id="your-dropdown-id" and class "dropdown-content"
- * 3. The system will automatically handle it
- */
+// START: initDropdowns - Initializes dropdown accordion for expanded sidebar
 function initDropdowns() {
     const dropdownTriggers = document.querySelectorAll('.nav-dropdown-trigger');
 
-    /**
-     * Save current dropdown states to localStorage
-     */
+    // START: saveDropdownStates - Persists current active dropdown ids into NavigationState and storage
     function saveDropdownStates() {
         const openDropdowns = [];
         document.querySelectorAll('.nav-dropdown-trigger.active').forEach(trigger => {
@@ -380,11 +330,9 @@ function initDropdowns() {
         NavigationState.openDropdowns = openDropdowns;
         NavigationState.save();
     }
+    // END: saveDropdownStates
 
-    /**
-     * Toggle dropdown open/close state
-     * @param {HTMLElement} trigger - Dropdown trigger button
-     */
+    // START: toggleDropdown - Toggles inline accordion dropdown open/close state in expanded sidebar
     function toggleDropdown(trigger) {
         const dropdownId = trigger.getAttribute('data-dropdown');
         const dropdown = document.getElementById(dropdownId);
@@ -405,69 +353,28 @@ function initDropdowns() {
 
         saveDropdownStates();
     }
+    // END: toggleDropdown
 
-    const setPinnedDropdownTooltip = (trigger, visible) => {
-        const tooltipId = trigger.getAttribute('data-tooltip-target');
-        const tooltip = tooltipId ? document.getElementById(tooltipId) : null;
-        if (!tooltip) return;
-
-        tooltip.dataset.sidebarPinned = visible ? 'true' : 'false';
-        trigger.setAttribute('aria-expanded', visible ? 'true' : 'false');
-
-        if (!visible) {
-            tooltip.classList.remove('visible', 'opacity-100');
-            tooltip.classList.add('invisible', 'opacity-0');
-            return;
-        }
-
-        const rect = trigger.getBoundingClientRect();
-        tooltip.style.position = 'fixed';
-        tooltip.style.left = `${Math.round(rect.right + 8)}px`;
-        tooltip.style.top = `${Math.round(rect.top + (rect.height / 2))}px`;
-        tooltip.style.transform = 'translateY(-50%)';
-        tooltip.style.zIndex = '9999';
-        tooltip.classList.remove('invisible', 'opacity-0');
-        tooltip.classList.add('visible', 'opacity-100');
-    };
-    // Add click handlers to all dropdown triggers
+    // Add click handlers to all dropdown triggers (expanded mode accordion)
     dropdownTriggers.forEach(trigger => {
         trigger.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-
             const sidebar = document.getElementById('sidebar');
             const isCollapsed = sidebar && (sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-collapsed'));
 
             if (isCollapsed) {
-                const tooltipId = trigger.getAttribute('data-tooltip-target');
-                const tooltip = tooltipId ? document.getElementById(tooltipId) : null;
-                const wasPinned = tooltip?.dataset.sidebarPinned === 'true';
-
-                dropdownTriggers.forEach((otherTrigger) => {
-                    if (otherTrigger !== trigger) setPinnedDropdownTooltip(otherTrigger, false);
-                });
-                setPinnedDropdownTooltip(trigger, !wasPinned);
+                // When collapsed, initTooltips handles the pin/unpin action
                 return;
             }
 
-            // Expanded sidebar: normal accordion dropdown
+            e.preventDefault();
+            e.stopPropagation();
             toggleDropdown(trigger);
-        });
-    });
-
-    // Close a pinned collapsed menu only when the user clicks outside its trigger and tooltip.
-    document.addEventListener('click', (e) => {
-        dropdownTriggers.forEach((trigger) => {
-            const tooltipId = trigger.getAttribute('data-tooltip-target');
-            const tooltip = tooltipId ? document.getElementById(tooltipId) : null;
-            if (trigger.contains(e.target) || tooltip?.contains(e.target)) return;
-            setPinnedDropdownTooltip(trigger, false);
         });
     });
 
     // Auto-open dropdown if child link is active
     const currentPage = window.location.pathname;
-    document.querySelectorAll('.nav-subitem').forEach(link => {
+    document.querySelectorAll('.nav-subitem, .nav-subitem-link').forEach(link => {
         const href = link.getAttribute('href');
         if (href && currentPage.includes(href.replace(/^\.\.\//, '').replace(/^\.\//, ''))) {
             const dropdown = link.closest('.dropdown-content');
@@ -476,7 +383,7 @@ function initDropdowns() {
                 if (trigger) {
                     trigger.classList.add('active');
                     dropdown.classList.add('show');
-            trigger.setAttribute('aria-expanded', 'true');
+                    trigger.setAttribute('aria-expanded', 'true');
                 }
             }
         }
@@ -490,27 +397,31 @@ function initDropdowns() {
             if (dropdown && trigger) {
                 trigger.classList.add('active');
                 dropdown.classList.add('show');
-            trigger.setAttribute('aria-expanded', 'true');
+                trigger.setAttribute('aria-expanded', 'true');
+            }
+        });
+    } else {
+        dropdownTriggers.forEach(trigger => {
+            const dropdownId = trigger.getAttribute('data-dropdown');
+            const dropdown = document.getElementById(dropdownId);
+            if (dropdown && !NavigationState.openDropdowns.includes(dropdownId)) {
+                trigger.classList.remove('active');
+                dropdown.classList.remove('show');
+                trigger.setAttribute('aria-expanded', 'false');
             }
         });
     }
 }
+// END: initDropdowns
 
 // ============================================================================
 // NAVIGATION LINK HANDLING
 // ============================================================================
 
-/**
- * Set active link styling based on current page
- * Updates visual state of navigation items
- * 
- * To update active link detection:
- * 1. Modify the path matching logic in setActiveNavState()
- * 2. Add new page patterns as needed
- */
+// START: setActiveNavState - Matches active URL to highlight current navigation item and parent dropdown
 function setActiveNavState() {
     const currentPath = window.location.pathname;
-    const navItems = document.querySelectorAll('.nav-item[href]');
+    const navItems = document.querySelectorAll('.nav-item[href], .nav-subitem-link[href]');
 
     navItems.forEach(item => {
         const href = item.getAttribute('href');
@@ -529,6 +440,10 @@ function setActiveNavState() {
             isActive = currentPathNormalized.includes('budget');
         } else if (normalizedHref.includes('specialfund')) {
             isActive = currentPathNormalized.includes('specialfund');
+        } else if (normalizedHref.includes('monthly-expenses')) {
+            isActive = currentPathNormalized.includes('monthly-expenses');
+        } else if (normalizedHref.includes('itemized')) {
+            isActive = currentPathNormalized.includes('itemized');
         } else if (normalizedHref.includes('export')) {
             isActive = currentPathNormalized.includes('export');
         } else if (normalizedHref.includes('settings')) {
@@ -563,13 +478,9 @@ function setActiveNavState() {
         }
     });
 }
+// END: setActiveNavState
 
-/**
- * Set active link styling for a specific link
- * Used during navigation
- * 
- * @param {HTMLElement} link - Navigation link element
- */
+// START: setActiveLink - Applies active styling to a specific link element
 function setActiveLink(link) {
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach(item => {
@@ -587,28 +498,18 @@ function setActiveLink(link) {
         link.classList.add('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
     }
 }
+// END: setActiveLink
 
-/**
- * Initialize navigation links
- * Uses normal page navigation (no SPA)
- * 
- * To modify navigation behavior:
- * 1. Links use standard href navigation
- * 2. Active link styling is set on page load
- */
+// START: initNavigationLinks - Initializes navigation link state on page load
 function initNavigationLinks() {
-    // Set active link on page load
     setActiveNavState();
 }
+// END: initNavigationLinks
 
 // ============================================================================
-// TOOLTIP FUNCTIONALITY
+// TOOLTIP & FLYOUT FUNCTIONALITY
 // ============================================================================
 
-/**
- * Initialize tooltips for collapsed sidebar state
- * Shows tooltips on hover when sidebar is collapsed
- */
 // START: initTooltips - Handles tooltip display and interactive flyout menus for collapsed sidebar
 function initTooltips() {
     const sidebar = document.getElementById('sidebar');
@@ -631,10 +532,10 @@ function initTooltips() {
             const isCollapsed = sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-collapsed');
             if (!isCollapsed) return;
 
-            // Close other interactive tooltips if opening a different one
+            // Close other unpinned interactive tooltips
             if (isInteractive) {
-                document.querySelectorAll('.sidebar-multidropdown-tooltip.visible').forEach(other => {
-                    if (other !== tooltip) {
+                document.querySelectorAll('.sidebar-multidropdown-tooltip').forEach(other => {
+                    if (other !== tooltip && other.dataset.sidebarPinned !== 'true') {
                         other.classList.remove('visible', 'opacity-100');
                         other.classList.add('invisible', 'opacity-0');
                     }
@@ -647,18 +548,24 @@ function initTooltips() {
             tooltip.style.top = `${Math.round(rect.top + (rect.height / 2))}px`;
             tooltip.style.transform = 'translateY(-50%)';
             tooltip.style.zIndex = '9999';
-            tooltip.classList.remove('invisible', 'opacity-0');
+            tooltip.classList.remove('invisible', 'opacity-0', 'hidden');
             tooltip.classList.add('visible', 'opacity-100');
         };
 
         const hideTooltip = (immediate = false) => {
+            // NEVER hide if pinned!
             if (tooltip.dataset.sidebarPinned === 'true') return;
+
             if (isInteractive && !immediate) {
-                // Give user a brief grace window to cross the cursor gap into the menu
+                // Keep the interactive tooltip alive while the pointer crosses from
+                // the rail into the menu, including its child selections.
                 hideTimeout = setTimeout(() => {
-                    tooltip.classList.remove('visible', 'opacity-100');
-                    tooltip.classList.add('invisible', 'opacity-0');
-                }, 220);
+                    const pointerStillInside = element.matches(':hover') || tooltip.matches(':hover');
+                    if (tooltip.dataset.sidebarPinned !== 'true' && !pointerStillInside) {
+                        tooltip.classList.remove('visible', 'opacity-100');
+                        tooltip.classList.add('invisible', 'opacity-0');
+                    }
+                }, 350);
             } else {
                 tooltip.classList.remove('visible', 'opacity-100');
                 tooltip.classList.add('invisible', 'opacity-0');
@@ -669,29 +576,75 @@ function initTooltips() {
         element.addEventListener('mouseleave', () => hideTooltip(false));
         element.addEventListener('focus', showTooltip);
         element.addEventListener('blur', () => hideTooltip(true));
-        element.addEventListener('click', () => {
-            if (!isInteractive) return;
-            tooltip.dataset.sidebarPinned = tooltip.dataset.sidebarPinned === 'true' ? 'false' : 'true';
-            element.setAttribute('aria-expanded', tooltip.dataset.sidebarPinned === 'true' ? 'true' : 'false');
-            if (tooltip.dataset.sidebarPinned === 'true') showTooltip();
-        });
 
-        // For interactive multi-dropdown tooltips, also keep open when mouse enters tooltip itself
         if (isInteractive) {
-            tooltip.addEventListener('click', (event) => {
-                tooltip.dataset.sidebarPinned = 'true';
-                event.stopPropagation();
+            // Single unified click handler to toggle PIN on collapsed multi-dropdown
+            element.addEventListener('click', (e) => {
+                const isCollapsed = sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-collapsed');
+                if (!isCollapsed) return;
+
+                e.preventDefault();
+                e.stopPropagation();
+
+                const isCurrentlyPinned = tooltip.dataset.sidebarPinned === 'true';
+
+                // Unpin all other tooltips first
+                document.querySelectorAll('.sidebar-multidropdown-tooltip').forEach(other => {
+                    if (other !== tooltip) {
+                        other.dataset.sidebarPinned = 'false';
+                        other.classList.remove('visible', 'opacity-100');
+                        other.classList.add('invisible', 'opacity-0');
+                        const otherTarget = document.querySelector(`[data-tooltip-target="${other.id}"]`);
+                        if (otherTarget) otherTarget.setAttribute('aria-expanded', 'false');
+                    }
+                });
+
+                if (isCurrentlyPinned) {
+                    // Unpin and close
+                    tooltip.dataset.sidebarPinned = 'false';
+                    element.setAttribute('aria-expanded', 'false');
+                    hideTooltip(true);
+                } else {
+                    // Pin and open
+                    tooltip.dataset.sidebarPinned = 'true';
+                    element.setAttribute('aria-expanded', 'true');
+                    showTooltip();
+                }
             });
+
+            // Keep tooltip open and clear hide timers when mouse enters the tooltip
             tooltip.addEventListener('mouseenter', () => {
                 if (hideTimeout) {
                     clearTimeout(hideTimeout);
                     hideTimeout = null;
                 }
             });
+
             tooltip.addEventListener('mouseleave', () => {
                 hideTooltip(false);
             });
+
+            // Clicking anywhere inside tooltip also ensures it stays pinned
+            tooltip.addEventListener('click', (e) => {
+                tooltip.dataset.sidebarPinned = 'true';
+                element.setAttribute('aria-expanded', 'true');
+                // Allow links to navigate normally
+            });
         }
+    });
+
+    // Close pinned tooltips when clicking outside
+    document.addEventListener('click', (e) => {
+        document.querySelectorAll('.sidebar-multidropdown-tooltip').forEach((tooltip) => {
+            const trigger = document.querySelector(`[data-tooltip-target="${tooltip.id}"]`);
+            if ((trigger && trigger.contains(e.target)) || tooltip.contains(e.target)) {
+                return;
+            }
+            tooltip.dataset.sidebarPinned = 'false';
+            if (trigger) trigger.setAttribute('aria-expanded', 'false');
+            tooltip.classList.remove('visible', 'opacity-100');
+            tooltip.classList.add('invisible', 'opacity-0');
+        });
     });
 }
 // END: initTooltips
@@ -700,11 +653,7 @@ function initTooltips() {
 // MAIN INITIALIZATION
 // ============================================================================
 
-/**
- * Re-initialize sidebar features
- * Called on page load to set up all functionality
- */
-// START: reinitializeSidebarFeatures
+// START: reinitializeSidebarFeatures - Re-runs sidebar initializers after dynamic content updates
 function reinitializeSidebarFeatures() {
     initDropdowns();
     initTooltips();
@@ -714,10 +663,7 @@ function reinitializeSidebarFeatures() {
 }
 // END: reinitializeSidebarFeatures
 
-/**
- * Check user role and show/hide admin link
- */
-// START: checkAdminAccess
+// START: checkAdminAccess - Verifies user role and conditionally displays administrative navigation items
 async function checkAdminAccess() {
     try {
         const path = window.location.pathname || '/';
@@ -758,7 +704,7 @@ async function checkAdminAccess() {
 }
 // END: checkAdminAccess
 
-// START: initSidebar
+// START: initSidebar - Main initializer that bootstraps all sidebar functionality and state restoration
 export function initSidebar() {
     // Load saved state
     NavigationState.load();
