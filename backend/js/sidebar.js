@@ -410,17 +410,22 @@ function initDropdowns() {
         const tooltipId = trigger.getAttribute('data-tooltip-target');
         const tooltip = tooltipId ? document.getElementById(tooltipId) : null;
         if (!tooltip) return;
+
+        tooltip.dataset.sidebarPinned = visible ? 'true' : 'false';
+        trigger.setAttribute('aria-expanded', visible ? 'true' : 'false');
+
         if (!visible) {
             tooltip.classList.remove('visible', 'opacity-100');
             tooltip.classList.add('invisible', 'opacity-0');
             return;
         }
+
         const rect = trigger.getBoundingClientRect();
         tooltip.style.position = 'fixed';
         tooltip.style.left = `${Math.round(rect.right + 8)}px`;
         tooltip.style.top = `${Math.round(rect.top + (rect.height / 2))}px`;
         tooltip.style.transform = 'translateY(-50%)';
-        tooltip.style.zIndex = '200';
+        tooltip.style.zIndex = '9999';
         tooltip.classList.remove('invisible', 'opacity-0');
         tooltip.classList.add('visible', 'opacity-100');
     };
@@ -434,21 +439,14 @@ function initDropdowns() {
             const isCollapsed = sidebar && (sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-collapsed'));
 
             if (isCollapsed) {
-                // When collapsed: Click to toggle pin open the flyout submenu so user can easily interact with links on the right
-                const parentLi = trigger.closest('li');
-                const wasOpen = parentLi && parentLi.classList.contains('flyout-open');
+                const tooltipId = trigger.getAttribute('data-tooltip-target');
+                const tooltip = tooltipId ? document.getElementById(tooltipId) : null;
+                const wasPinned = tooltip?.dataset.sidebarPinned === 'true';
 
-                // Close any other open flyouts first.
-                document.querySelectorAll('#sidebar > nav > ul > li.flyout-open').forEach((li) => {
-                    li.classList.remove('flyout-open');
-                    const openTrigger = li.querySelector(':scope > .nav-dropdown-trigger');
-                    if (openTrigger) setPinnedDropdownTooltip(openTrigger, false);
+                dropdownTriggers.forEach((otherTrigger) => {
+                    if (otherTrigger !== trigger) setPinnedDropdownTooltip(otherTrigger, false);
                 });
-
-                if (parentLi && !wasOpen) {
-                    parentLi.classList.add('flyout-open');
-                    setPinnedDropdownTooltip(trigger, true);
-                }
+                setPinnedDropdownTooltip(trigger, !wasPinned);
                 return;
             }
 
@@ -457,15 +455,14 @@ function initDropdowns() {
         });
     });
 
-    // Close pinned flyout when clicking outside
+    // Close a pinned collapsed menu only when the user clicks outside its trigger and tooltip.
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('#sidebar > nav > ul > li.flyout-open')) {
-            document.querySelectorAll('#sidebar > nav > ul > li.flyout-open').forEach((li) => {
-                li.classList.remove('flyout-open');
-                const openTrigger = li.querySelector(':scope > .nav-dropdown-trigger');
-                if (openTrigger) setPinnedDropdownTooltip(openTrigger, false);
-            });
-        }
+        dropdownTriggers.forEach((trigger) => {
+            const tooltipId = trigger.getAttribute('data-tooltip-target');
+            const tooltip = tooltipId ? document.getElementById(tooltipId) : null;
+            if (trigger.contains(e.target) || tooltip?.contains(e.target)) return;
+            setPinnedDropdownTooltip(trigger, false);
+        });
     });
 
     // Auto-open dropdown if child link is active
@@ -602,10 +599,6 @@ function setActiveLink(link) {
 function initNavigationLinks() {
     // Set active link on page load
     setActiveNavState();
-
-    // Allow normal navigation - no preventDefault
-    // Links will use standard href navigation
-    // No click handlers needed - browser handles navigation naturally
 }
 
 // ============================================================================
@@ -615,9 +608,8 @@ function initNavigationLinks() {
 /**
  * Initialize tooltips for collapsed sidebar state
  * Shows tooltips on hover when sidebar is collapsed
- * 
- * Tooltips are automatically shown/hidden based on sidebar state
  */
+// START: initTooltips - Handles tooltip display and interactive flyout menus for collapsed sidebar
 function initTooltips() {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
@@ -628,74 +620,107 @@ function initTooltips() {
         if (!tooltip || element.dataset.sidebarTooltipReady === 'true') return;
 
         element.dataset.sidebarTooltipReady = 'true';
+        const isInteractive = tooltip.classList.contains('sidebar-multidropdown-tooltip');
+        let hideTimeout = null;
+
         const showTooltip = () => {
+            if (hideTimeout) {
+                clearTimeout(hideTimeout);
+                hideTimeout = null;
+            }
             const isCollapsed = sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-collapsed');
             if (!isCollapsed) return;
+
+            // Close other interactive tooltips if opening a different one
+            if (isInteractive) {
+                document.querySelectorAll('.sidebar-multidropdown-tooltip.visible').forEach(other => {
+                    if (other !== tooltip) {
+                        other.classList.remove('visible', 'opacity-100');
+                        other.classList.add('invisible', 'opacity-0');
+                    }
+                });
+            }
+
             const rect = element.getBoundingClientRect();
             tooltip.style.position = 'fixed';
             tooltip.style.left = `${Math.round(rect.right + 8)}px`;
             tooltip.style.top = `${Math.round(rect.top + (rect.height / 2))}px`;
             tooltip.style.transform = 'translateY(-50%)';
-            tooltip.style.zIndex = '200';
+            tooltip.style.zIndex = '9999';
             tooltip.classList.remove('invisible', 'opacity-0');
             tooltip.classList.add('visible', 'opacity-100');
         };
-        const hideTooltip = () => {
-            tooltip.classList.remove('visible', 'opacity-100');
-            tooltip.classList.add('invisible', 'opacity-0');
+
+        const hideTooltip = (immediate = false) => {
+            if (tooltip.dataset.sidebarPinned === 'true') return;
+            if (isInteractive && !immediate) {
+                // Give user a brief grace window to cross the cursor gap into the menu
+                hideTimeout = setTimeout(() => {
+                    tooltip.classList.remove('visible', 'opacity-100');
+                    tooltip.classList.add('invisible', 'opacity-0');
+                }, 220);
+            } else {
+                tooltip.classList.remove('visible', 'opacity-100');
+                tooltip.classList.add('invisible', 'opacity-0');
+            }
         };
 
         element.addEventListener('mouseenter', showTooltip);
-        element.addEventListener('mouseleave', hideTooltip);
+        element.addEventListener('mouseleave', () => hideTooltip(false));
         element.addEventListener('focus', showTooltip);
-        element.addEventListener('blur', hideTooltip);
+        element.addEventListener('blur', () => hideTooltip(true));
+        element.addEventListener('click', () => {
+            if (!isInteractive) return;
+            tooltip.dataset.sidebarPinned = tooltip.dataset.sidebarPinned === 'true' ? 'false' : 'true';
+            element.setAttribute('aria-expanded', tooltip.dataset.sidebarPinned === 'true' ? 'true' : 'false');
+            if (tooltip.dataset.sidebarPinned === 'true') showTooltip();
+        });
+
+        // For interactive multi-dropdown tooltips, also keep open when mouse enters tooltip itself
+        if (isInteractive) {
+            tooltip.addEventListener('click', (event) => {
+                tooltip.dataset.sidebarPinned = 'true';
+                event.stopPropagation();
+            });
+            tooltip.addEventListener('mouseenter', () => {
+                if (hideTimeout) {
+                    clearTimeout(hideTimeout);
+                    hideTimeout = null;
+                }
+            });
+            tooltip.addEventListener('mouseleave', () => {
+                hideTooltip(false);
+            });
+        }
     });
 }
+// END: initTooltips
+
 // ============================================================================
 // MAIN INITIALIZATION
 // ============================================================================
 
 /**
- * Initialize all sidebar functionality
- * Main entry point for sidebar module
- * 
- * Call this function in your main.js or page initialization
- * 
- * To extend functionality:
- * 1. Add new init functions above
- * 2. Call them in this function
- * 3. Update comments as needed
- */
-/**
  * Re-initialize sidebar features
  * Called on page load to set up all functionality
  */
+// START: reinitializeSidebarFeatures
 function reinitializeSidebarFeatures() {
-    // Re-initialize dropdowns
     initDropdowns();
-
-    // Re-initialize tooltips
     initTooltips();
-
-    // Re-initialize navigation links
     initNavigationLinks();
-
-    // Set active navigation state
     setActiveNavState();
-
-    // Adjust content margin
     adjustContentMargin();
 }
+// END: reinitializeSidebarFeatures
 
 /**
  * Check user role and show/hide admin link
  */
+// START: checkAdminAccess
 async function checkAdminAccess() {
     try {
-        // Get the base path from the current URL
         const path = window.location.pathname || '/';
-
-        // Extract base path before /frontend/ or /index.php
         let apiBase = '';
 
         if (path.includes('/frontend/')) {
@@ -731,7 +756,9 @@ async function checkAdminAccess() {
         console.error('Error checking admin access:', error);
     }
 }
+// END: checkAdminAccess
 
+// START: initSidebar
 export function initSidebar() {
     // Load saved state
     NavigationState.load();
@@ -749,6 +776,7 @@ export function initSidebar() {
     // Initial content margin adjustment
     adjustContentMargin();
 }
+// END: initSidebar
 
 // Export utility functions for use in other modules
 export {
@@ -759,5 +787,6 @@ export {
     initDropdowns,
     initNavigationLinks,
     initTooltips,
-    setActiveNavState
+    setActiveNavState,
+    reinitializeSidebarFeatures
 };

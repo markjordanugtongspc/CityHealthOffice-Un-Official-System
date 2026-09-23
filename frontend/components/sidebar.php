@@ -113,7 +113,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <li>
                 <button type="button" data-tooltip-target="tooltip-budget-summary" data-tooltip-placement="right"
                     class="nav-item nav-dropdown-trigger flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-0! lg:group-[.sidebar-collapsed]/body:!w-10! lg:group-[.sidebar-collapsed]/body:!h-10! lg:group-[.sidebar-collapsed]/body:!mx-auto!"
-                    data-dropdown="budget-dropdown">
+                    data-dropdown="budget-dropdown" aria-expanded="false">
                     <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/annual.svg')); ?>" alt="" aria-hidden="true"
                         class="w-4.5 h-4.5 shrink-0 transition-all duration-300 group-hover:hidden group-active:hidden group-[.nav-item-active]:hidden lg:group-[.sidebar-collapsed]/body:!m-0">
                     <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/annual1.svg')); ?>" alt="" aria-hidden="true"
@@ -153,7 +153,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <li>
                 <button type="button" data-tooltip-target="tooltip-expenses" data-tooltip-placement="right"
                     class="nav-item nav-dropdown-trigger flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-0! lg:group-[.sidebar-collapsed]/body:!w-10! lg:group-[.sidebar-collapsed]/body:!h-10! lg:group-[.sidebar-collapsed]/body:!mx-auto!"
-                    data-dropdown="expenses-dropdown">
+                    data-dropdown="expenses-dropdown" aria-expanded="false">
                     <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/cost.svg')); ?>" alt="" aria-hidden="true"
                         class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:hidden group-active:hidden group-[.nav-item-active]:hidden lg:group-[.sidebar-collapsed]/body:!m-0">
                     <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/cost1.svg')); ?>" alt="" aria-hidden="true"
@@ -273,8 +273,21 @@ require_once __DIR__ . '/../../config/image_helper.php';
     <div class="tooltip-arrow" data-popper-arrow></div>
 </div>
 
-<div id="tooltip-budget-summary" role="tooltip" class="absolute z-[100] invisible inline-block px-3 py-2 text-xs font-bold text-white transition-opacity duration-300 bg-slate-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700 lg:group-[:not(.sidebar-collapsed)]/body:!hidden tracking-widest uppercase border border-white/20 backdrop-blur-md">
-    Annual Budget Summary
+<!-- Multi-dropdown tooltip for Annual Budget Summary -->
+<div id="tooltip-budget-summary" role="tooltip" class="sidebar-multidropdown-tooltip absolute z-[9999] invisible inline-block p-2 text-xs font-bold text-white transition-opacity duration-300 bg-slate-900/95 rounded-xl shadow-2xl opacity-0 tooltip dark:bg-gray-800 lg:group-[:not(.sidebar-collapsed)]/body:!hidden border border-white/20 backdrop-blur-xl min-w-[210px] pointer-events-auto">
+    <div class="px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-white/50 border-b border-white/10 mb-1">
+        Annual Budget Summary
+    </div>
+    <div class="flex flex-col gap-1">
+        <a href="../budget/" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all text-xs font-semibold cursor-pointer group/link">
+            <span class="w-2 h-2 rounded-full border border-white/50 bg-transparent group-hover/link:border-emerald-400 group-hover/link:bg-emerald-400 transition-colors"></span>
+            <span>Actual vs Budget YTD</span>
+        </a>
+        <a href="../specialfund/" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all text-xs font-semibold cursor-pointer group/link">
+            <span class="w-2 h-2 rounded-full border border-white/50 bg-transparent group-hover/link:border-emerald-400 group-hover/link:bg-emerald-400 transition-colors"></span>
+            <span>Special Program Fund</span>
+        </a>
+    </div>
     <div class="tooltip-arrow" data-popper-arrow></div>
 </div>
 
@@ -288,8 +301,25 @@ require_once __DIR__ . '/../../config/image_helper.php';
     <div class="tooltip-arrow" data-popper-arrow></div>
 </div>
 
-<div id="tooltip-expenses" role="tooltip" class="absolute z-[100] invisible inline-block px-3 py-2 text-xs font-bold text-white transition-opacity duration-300 bg-slate-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700 lg:group-[:not(.sidebar-collapsed)]/body:!hidden tracking-widest uppercase border border-white/20 backdrop-blur-md">
-    Expenses
+<!-- Multi-dropdown tooltip for Expenses -->
+<div id="tooltip-expenses" role="tooltip" class="sidebar-multidropdown-tooltip absolute z-[9999] invisible inline-block p-2 text-xs font-bold text-white transition-opacity duration-300 bg-slate-900/95 rounded-xl shadow-2xl opacity-0 tooltip dark:bg-gray-800 lg:group-[:not(.sidebar-collapsed)]/body:!hidden border border-white/20 backdrop-blur-xl min-w-[230px] pointer-events-auto">
+    <div class="px-3 py-1.5 text-[11px] font-black uppercase tracking-wider text-white/50 border-b border-white/10 mb-1">
+        Expenses
+    </div>
+    <div class="flex flex-col gap-1">
+        <a href="../monthly-expenses/" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all text-xs font-semibold cursor-pointer group/link">
+            <span class="w-2 h-2 rounded-full border border-white/50 bg-transparent group-hover/link:border-emerald-400 group-hover/link:bg-emerald-400 transition-colors"></span>
+            <span>Monthly Expenses Summary</span>
+        </a>
+        <a href="../itemized/" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all text-xs font-semibold cursor-pointer group/link">
+            <span class="w-2 h-2 rounded-full border border-white/50 bg-transparent group-hover/link:border-emerald-400 group-hover/link:bg-emerald-400 transition-colors"></span>
+            <span>Itemized Daily Transactions</span>
+        </a>
+        <a href="../specialfund/" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-white/80 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all text-xs font-semibold cursor-pointer group/link">
+            <span class="w-2 h-2 rounded-full border border-white/50 bg-transparent group-hover/link:border-emerald-400 group-hover/link:bg-emerald-400 transition-colors"></span>
+            <span>Special Program</span>
+        </a>
+    </div>
     <div class="tooltip-arrow" data-popper-arrow></div>
 </div>
 

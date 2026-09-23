@@ -257,6 +257,10 @@ body.sidebar-collapsed #sidebar > nav > ul > li > .dropdown-content {
 }
 
 body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.25rem !important;
+    opacity: 1 !important;
     padding-left: 1.75rem !important;
 }
 
@@ -264,44 +268,11 @@ body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content:
     content: '';
     position: absolute;
     left: 0.9rem;
-    top: 1rem;
-    bottom: 1rem;
-    width: 1px;
-    background: rgba(148, 163, 184, 0.45);
-}
-
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem {
-    position: relative;
-}
-
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem::before {
-    content: '';
-    position: absolute;
-    left: -0.95rem;
-    top: 50%;
-    width: 0.45rem;
-    height: 0.45rem;
-    transform: translateY(-50%);
-    border: 2px solid #94a3b8;
+    top: 2.25rem;
+    bottom: 0.75rem;
+    width: 2px;
+    background: rgba(255, 255, 255, 0.25);
     border-radius: 9999px;
-    background: #0f172a;
-    z-index: 1;
-}
-
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem::after {
-    content: '';
-    position: absolute;
-    left: -0.95rem;
-    top: 50%;
-    width: 0.75rem;
-    height: 1px;
-    background: rgba(148, 163, 184, 0.45);
-}
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 0.25rem !important;
-    opacity: 1 !important;
 }
 
 body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem {
@@ -312,6 +283,90 @@ body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content 
     margin: 0 !important;
     justify-content: flex-start !important;
     padding: 0.5rem 0.75rem !important;
+    position: relative;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+}
+
+/* Horizontal branch line in collapsed flyout */
+body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem::after {
+    content: '';
+    position: absolute;
+    left: -0.85rem;
+    top: 50%;
+    width: 0.65rem;
+    height: 2px;
+    transform: translateY(-50%);
+    background: rgba(255, 255, 255, 0.25);
+    transition: background-color 0.2s ease;
+}
+
+/* Outline circle bullet in collapsed flyout */
+body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem::before {
+    content: '';
+    position: absolute;
+    left: -0.45rem;
+    top: 50%;
+    width: 0.5rem;
+    height: 0.5rem;
+    transform: translateY(-50%);
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    border-radius: 9999px;
+    background: #0f172a;
+    z-index: 2;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Hover/active states in collapsed flyout */
+body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem:hover,
+body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem.nav-item-active {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem:hover::after,
+body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem.nav-item-active::after {
+    background: #34d399;
+}
+
+body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem:hover::before,
+body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem.nav-item-active::before {
+    border-color: #34d399;
+    background: #34d399;
+    box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
+    transform: translateY(-50%) scale(1.15);
+}
+
+/* Collapsed parent dropdowns become interactive multi-dropdown flyouts. */
+body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .dropdown-flyout-title {
+    display: block !important;
+    padding: 0.35rem 0.5rem 0.55rem !important;
+    margin-left: -0.75rem !important;
+    color: rgba(255, 255, 255, 0.95) !important;
+    font-size: 0.8rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.04em !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+}
+
+body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem > span {
+    display: block !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-size: 0.8rem !important;
+    line-height: 1.2 !important;
+    white-space: nowrap !important;
+}
+
+body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem:hover > span,
+body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem.nav-item-active > span {
+    color: #fff !important;
+}
+
+body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem > svg {
+    display: none !important;
 }
 /* Deterministic collapsed icon states: never leave an empty slot in the rail. */
 body.sidebar-collapsed #sidebar > nav .nav-item > svg:first-of-type,
