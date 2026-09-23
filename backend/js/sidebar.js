@@ -1,19 +1,21 @@
 /**
  * Advanced Sidebar Navigation Module
  * 
- * Handles sidebar collapse/expand, dropdowns, and state persistence
+ * Handles sidebar collapse/expand, Flowbite dropdowns, and state persistence
  * Uses advanced JavaScript patterns for maintainability and performance
  * 
  * Features:
  * - Collapsible sidebar with smooth animations
- * - Dropdown menu functionality with state persistence (localStorage & user preference cookies)
+ * - Native Flowbite hover and click dropdowns for collapsed state
+ * - Dropdown menu functionality with state persistence
  * - Normal page navigation (standard href links)
  * - Responsive design for mobile and desktop
- * - Tooltip & multi-level dropdown support for collapsed state
  * - Active link highlighting
  * 
  * @module sidebar
  */
+
+import { initDropdowns as initFlowbiteDropdowns } from 'flowbite';
 
 // ============================================================================
 // STATE MANAGEMENT
@@ -25,7 +27,7 @@
  */
 const NavigationState = {
     sidebarCollapsed: false,
-    openDropdowns: ['budget-dropdown'],
+    openDropdowns: ['budget-dropdown', 'expenses-dropdown'],
 
     // START: saveNavigationState - Saves current sidebar and dropdown states to localStorage and cookie preferences
     save() {
@@ -49,25 +51,25 @@ const NavigationState = {
             if (saved) {
                 const state = JSON.parse(saved);
                 this.sidebarCollapsed = state.sidebar || false;
-                this.openDropdowns = Array.isArray(state.dropdowns) ? state.dropdowns : ['budget-dropdown'];
+                this.openDropdowns = Array.isArray(state.dropdowns) ? state.dropdowns : ['budget-dropdown', 'expenses-dropdown'];
             } else {
                 // Check cookie fallback
                 const match = document.cookie.match(/(?:^|; )cho_nav_state=([^;]*)/);
                 if (match && match[1]) {
                     const state = JSON.parse(decodeURIComponent(match[1]));
                     this.sidebarCollapsed = state.sidebar || false;
-                    this.openDropdowns = Array.isArray(state.dropdowns) ? state.dropdowns : ['budget-dropdown'];
+                    this.openDropdowns = Array.isArray(state.dropdowns) ? state.dropdowns : ['budget-dropdown', 'expenses-dropdown'];
                 } else {
-                    // Default state: sidebar expanded, Annual Budget Summary dropdown open
+                    // Default state: sidebar expanded, Annual Budget Summary and Expenses dropdowns open
                     this.sidebarCollapsed = false;
-                    this.openDropdowns = ['budget-dropdown'];
+                    this.openDropdowns = ['budget-dropdown', 'expenses-dropdown'];
                     this.save();
                 }
             }
         } catch (error) {
             console.warn('Failed to load navigation state:', error);
             this.sidebarCollapsed = false;
-            this.openDropdowns = ['budget-dropdown'];
+            this.openDropdowns = ['budget-dropdown', 'expenses-dropdown'];
         }
     }
     // END: loadNavigationState
@@ -112,7 +114,6 @@ function notifyChartLayoutSettled() {
 
 // START: adjustContentMargin - Handles responsive layout adjustments based on sidebar state
 function adjustContentMargin() {
-    const body = document.body;
     const sidebar = document.getElementById('sidebar');
     const mainContent = getMainContent();
 
@@ -201,6 +202,12 @@ function initSidebarToggle() {
             // Save state
             NavigationState.sidebarCollapsed = isCollapsed;
             NavigationState.save();
+            
+            // Re-initialize Flowbite dropdowns on state change
+            if (typeof initFlowbiteDropdowns === 'function') {
+                initFlowbiteDropdowns();
+            }
+
             window.setTimeout(notifyChartLayoutSettled, 350);
         }
     }
@@ -314,9 +321,14 @@ function initSidebarToggle() {
 // DROPDOWN FUNCTIONALITY
 // ============================================================================
 
-// START: initDropdowns - Initializes dropdown accordion for expanded sidebar
+// START: initDropdowns - Initializes dropdown accordion for expanded sidebar & Flowbite for collapsed
 function initDropdowns() {
     const dropdownTriggers = document.querySelectorAll('.nav-dropdown-trigger');
+
+    // Initialize Flowbite dropdowns for collapsed flyouts
+    if (typeof initFlowbiteDropdowns === 'function') {
+        initFlowbiteDropdowns();
+    }
 
     // START: saveDropdownStates - Persists current active dropdown ids into NavigationState and storage
     function saveDropdownStates() {
@@ -362,7 +374,7 @@ function initDropdowns() {
             const isCollapsed = sidebar && (sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-collapsed'));
 
             if (isCollapsed) {
-                // When collapsed, initTooltips handles the pin/unpin action
+                // When collapsed, Flowbite handles dropdown popovers on right
                 return;
             }
 
@@ -430,7 +442,6 @@ function setActiveNavState() {
 
         // Normalize href
         const normalizedHref = href.replace(/^\.\//, '').replace(/^\.\.\//, '').replace(/\/$/, '').replace(/\/index\.php$/, '');
-        const currentPathNormalized = currentPath.replace(/\/$/, '').replace(/\/index\.php$/, '');
 
         // Check if current path matches
         let isActive = false;
@@ -449,35 +460,58 @@ function setActiveNavState() {
             isActive = currentPathNormalized.includes('export');
         } else if (normalizedHref.includes('settings')) {
             isActive = currentPathNormalized.includes('/settings') || currentPathNormalized.endsWith('settings');
+        } else if (normalizedHref.includes('admin')) {
+            isActive = currentPathNormalized.includes('admin');
         } else {
             isActive = currentPathNormalized.includes(normalizedHref) || currentPath.includes(normalizedHref);
         }
 
-        // Same active treatment for all .nav-item[href] (main nav + footer Settings/About)
+        // Apply active class styling
         if (isActive) {
             item.classList.remove(
                 'text-white/80', 'text-white/70', 'text-white/60', 'text-white/50',
                 'border-transparent'
             );
-            item.classList.add('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
+            item.classList.add('text-white', 'font-extrabold', 'nav-item-active');
+
+            if (!item.classList.contains('nav-subitem') && !item.classList.contains('nav-subitem-link') && !item.classList.contains('nav-dropdown-trigger')) {
+                item.classList.add('border-b-2', '!border-emerald-400');
+            } else if (item.classList.contains('nav-subitem-link')) {
+                item.classList.add('bg-white/10');
+            }
 
         } else {
             item.classList.remove(
                 'text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active',
-                'text-white/60', 'text-white/70', 'text-white/50'
+                'bg-white/10', 'text-white/60', 'text-white/70', 'text-white/50'
             );
             item.classList.add('text-white/80', 'border-transparent');
         }
     });
 
-    // Special Program is shared by both dropdowns, but its canonical selection is Annual Budget Summary.
-    // Keep the duplicate Expenses entry inactive.
-    if (currentPathNormalized.includes('specialfund')) {
-        document.querySelectorAll("#expenses-dropdown a[href*='specialfund'], #tooltip-expenses a[href*='specialfund']").forEach((link) => {
-            link.classList.remove('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
-            link.classList.add('text-white/80', 'border-transparent');
-        });
-    }
+    // Handle parent dropdown triggers without giving them rectangular active borders
+    document.querySelectorAll('.dropdown-content, #flowbite-dropdown-budget, #flowbite-dropdown-expenses').forEach(dropdown => {
+        const hasActiveChild = dropdown.querySelector('.nav-item-active, .font-extrabold');
+        let trigger = null;
+        if (dropdown.id.includes('budget')) {
+            trigger = document.getElementById('dropdownBudgetSummaryButton');
+        } else if (dropdown.id.includes('expenses')) {
+            trigger = document.getElementById('dropdownExpensesButton');
+        } else if (dropdown.id) {
+            trigger = document.querySelector(`[data-dropdown="${dropdown.id}"]`);
+        }
+
+        if (trigger) {
+            trigger.classList.remove('border-b-2', '!border-emerald-400', 'bg-white/10', 'border');
+            if (hasActiveChild) {
+                trigger.classList.remove('text-white/70', 'text-white/60', 'text-white/50', 'border-transparent');
+                trigger.classList.add('text-white', 'font-bold', 'nav-item-active');
+            } else if (!trigger.classList.contains('active')) {
+                trigger.classList.remove('font-extrabold', 'font-bold', 'nav-item-active');
+                trigger.classList.add('text-white/70', 'border-transparent');
+            }
+        }
+    });
 }
 // END: setActiveNavState
 
@@ -496,7 +530,10 @@ function setActiveLink(link) {
         link.classList.remove(
             'text-white/80', 'text-white/70', 'text-white/60', 'text-white/50', 'border-transparent'
         );
-        link.classList.add('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
+        link.classList.add('text-white', 'font-extrabold', 'nav-item-active');
+        if (!link.classList.contains('nav-subitem') && !link.classList.contains('nav-subitem-link')) {
+            link.classList.add('border-b-2', '!border-emerald-400');
+        }
     }
 }
 // END: setActiveLink
@@ -508,156 +545,12 @@ function initNavigationLinks() {
 // END: initNavigationLinks
 
 // ============================================================================
-// TOOLTIP & FLYOUT FUNCTIONALITY
-// ============================================================================
-
-// START: initTooltips - Handles tooltip display and interactive flyout menus for collapsed sidebar
-function initTooltips() {
-    const sidebar = document.getElementById('sidebar');
-    if (!sidebar) return;
-
-    document.querySelectorAll('[data-tooltip-target]').forEach((element) => {
-        const targetId = element.getAttribute('data-tooltip-target');
-        const tooltip = targetId ? document.getElementById(targetId) : null;
-        if (!tooltip || element.dataset.sidebarTooltipReady === 'true') return;
-
-        element.dataset.sidebarTooltipReady = 'true';
-        const isInteractive = tooltip.classList.contains('sidebar-multidropdown-tooltip');
-        let hideTimeout = null;
-
-        const showTooltip = () => {
-            if (hideTimeout) {
-                clearTimeout(hideTimeout);
-                hideTimeout = null;
-            }
-            const isCollapsed = sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-collapsed');
-            if (!isCollapsed) return;
-
-            // Close other unpinned interactive tooltips
-            if (isInteractive) {
-                document.querySelectorAll('.sidebar-multidropdown-tooltip').forEach(other => {
-                    if (other !== tooltip && other.dataset.sidebarPinned !== 'true') {
-                        other.classList.remove('visible', 'opacity-100');
-                        other.classList.add('invisible', 'opacity-0');
-                    }
-                });
-            }
-
-            const rect = element.getBoundingClientRect();
-            tooltip.style.position = 'fixed';
-            tooltip.style.left = `${Math.round(rect.right + 8)}px`;
-            tooltip.style.top = `${Math.round(rect.top + (rect.height / 2))}px`;
-            tooltip.style.transform = 'translateY(-50%)';
-            tooltip.style.zIndex = '9999';
-            tooltip.classList.remove('invisible', 'opacity-0', 'hidden');
-            tooltip.classList.add('visible', 'opacity-100');
-        };
-
-        const hideTooltip = (immediate = false) => {
-            // NEVER hide if pinned!
-            if (tooltip.dataset.sidebarPinned === 'true') return;
-
-            if (isInteractive && !immediate) {
-                // Keep the interactive tooltip alive while the pointer crosses from
-                // the rail into the menu, including its child selections.
-                hideTimeout = setTimeout(() => {
-                    const pointerStillInside = element.matches(':hover') || tooltip.matches(':hover');
-                    if (tooltip.dataset.sidebarPinned !== 'true' && !pointerStillInside) {
-                        tooltip.classList.remove('visible', 'opacity-100');
-                        tooltip.classList.add('invisible', 'opacity-0');
-                    }
-                }, 350);
-            } else {
-                tooltip.classList.remove('visible', 'opacity-100');
-                tooltip.classList.add('invisible', 'opacity-0');
-            }
-        };
-
-        element.addEventListener('mouseenter', showTooltip);
-        element.addEventListener('mouseleave', () => hideTooltip(false));
-        element.addEventListener('focus', showTooltip);
-        element.addEventListener('blur', () => hideTooltip(true));
-
-        if (isInteractive) {
-            // Single unified click handler to toggle PIN on collapsed multi-dropdown
-            element.addEventListener('click', (e) => {
-                const isCollapsed = sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-collapsed');
-                if (!isCollapsed) return;
-
-                e.preventDefault();
-                e.stopPropagation();
-
-                const isCurrentlyPinned = tooltip.dataset.sidebarPinned === 'true';
-
-                // Unpin all other tooltips first
-                document.querySelectorAll('.sidebar-multidropdown-tooltip').forEach(other => {
-                    if (other !== tooltip) {
-                        other.dataset.sidebarPinned = 'false';
-                        other.classList.remove('visible', 'opacity-100');
-                        other.classList.add('invisible', 'opacity-0');
-                        const otherTarget = document.querySelector(`[data-tooltip-target="${other.id}"]`);
-                        if (otherTarget) otherTarget.setAttribute('aria-expanded', 'false');
-                    }
-                });
-
-                if (isCurrentlyPinned) {
-                    // Unpin and close
-                    tooltip.dataset.sidebarPinned = 'false';
-                    element.setAttribute('aria-expanded', 'false');
-                    hideTooltip(true);
-                } else {
-                    // Pin and open
-                    tooltip.dataset.sidebarPinned = 'true';
-                    element.setAttribute('aria-expanded', 'true');
-                    showTooltip();
-                }
-            });
-
-            // Keep tooltip open and clear hide timers when mouse enters the tooltip
-            tooltip.addEventListener('mouseenter', () => {
-                if (hideTimeout) {
-                    clearTimeout(hideTimeout);
-                    hideTimeout = null;
-                }
-            });
-
-            tooltip.addEventListener('mouseleave', () => {
-                hideTooltip(false);
-            });
-
-            // Clicking anywhere inside tooltip also ensures it stays pinned
-            tooltip.addEventListener('click', (e) => {
-                tooltip.dataset.sidebarPinned = 'true';
-                element.setAttribute('aria-expanded', 'true');
-                // Allow links to navigate normally
-            });
-        }
-    });
-
-    // Close pinned tooltips when clicking outside
-    document.addEventListener('click', (e) => {
-        document.querySelectorAll('.sidebar-multidropdown-tooltip').forEach((tooltip) => {
-            const trigger = document.querySelector(`[data-tooltip-target="${tooltip.id}"]`);
-            if ((trigger && trigger.contains(e.target)) || tooltip.contains(e.target)) {
-                return;
-            }
-            tooltip.dataset.sidebarPinned = 'false';
-            if (trigger) trigger.setAttribute('aria-expanded', 'false');
-            tooltip.classList.remove('visible', 'opacity-100');
-            tooltip.classList.add('invisible', 'opacity-0');
-        });
-    });
-}
-// END: initTooltips
-
-// ============================================================================
 // MAIN INITIALIZATION
 // ============================================================================
 
 // START: reinitializeSidebarFeatures - Re-runs sidebar initializers after dynamic content updates
 function reinitializeSidebarFeatures() {
     initDropdowns();
-    initTooltips();
     initNavigationLinks();
     setActiveNavState();
     adjustContentMargin();
@@ -689,12 +582,29 @@ async function checkAdminAccess() {
             if (data.success && data.user) {
                 const allowedRoles = ['Administrator', 'CEO', 'Manager'];
                 const adminNavItem = document.getElementById('adminNavItem');
+                const adminSectionHeader = document.getElementById('adminSectionHeader');
+                const adminSeparator = document.getElementById('adminSeparator');
+                const isAllowed = allowedRoles.includes(data.user.role);
 
                 if (adminNavItem) {
-                    if (allowedRoles.includes(data.user.role)) {
+                    if (isAllowed) {
                         adminNavItem.classList.remove('hidden');
                     } else {
                         adminNavItem.classList.add('hidden');
+                    }
+                }
+                if (adminSectionHeader) {
+                    if (isAllowed) {
+                        adminSectionHeader.classList.remove('hidden');
+                    } else {
+                        adminSectionHeader.classList.add('hidden');
+                    }
+                }
+                if (adminSeparator) {
+                    if (isAllowed) {
+                        adminSeparator.classList.remove('hidden');
+                    } else {
+                        adminSeparator.classList.add('hidden');
                     }
                 }
             }
@@ -714,7 +624,6 @@ export function initSidebar() {
     initSidebarToggle();
     initDropdowns();
     initNavigationLinks();
-    initTooltips();
     setActiveNavState();
 
     // Check admin access and show/hide admin link
@@ -733,7 +642,6 @@ export {
     adjustContentMargin,
     initDropdowns,
     initNavigationLinks,
-    initTooltips,
     setActiveNavState,
     reinitializeSidebarFeatures
 };

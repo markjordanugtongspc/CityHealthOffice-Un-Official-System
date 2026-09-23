@@ -185,31 +185,34 @@ body.sidebar-collapsed #sidebarToggleDesktop:active .toggle-collapsed-active {
     display: block;
 }
 
-/* Collapsed rail: keep every navigation icon centered in one fixed, non-scrolling column. */
+/* Collapsed rail: keep every navigation icon centered in one fixed column with balanced, breathing spacing */
 body.sidebar-collapsed #sidebar > nav {
-    overflow-y: hidden;
+    overflow-y: auto;
     overflow-x: visible;
-    padding-top: 0.5rem !important;
-    padding-bottom: 0.5rem !important;
+    padding-top: 1.25rem !important;
+    padding-bottom: 1.25rem !important;
 }
 
 body.sidebar-collapsed #sidebar > nav > ul {
-    height: 100%;
-    justify-content: space-evenly !important;
-    padding-top: 0.35rem;
-    padding-bottom: 0.35rem;
+    height: auto !important;
+    justify-content: flex-start !important;
+    gap: 1.25rem !important;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
 }
 
 body.sidebar-collapsed #sidebar > nav .nav-item {
-    min-height: 3rem !important;
-    height: 3rem !important;
-    padding-top: 0.5rem !important;
-    padding-bottom: 0.5rem !important;
+    min-height: 3.25rem !important;
+    height: 3.25rem !important;
+    width: 3.25rem !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
     padding-left: 0 !important;
     padding-right: 0 !important;
     margin-left: auto !important;
     margin-right: auto !important;
     justify-content: center !important;
+    border-radius: 1rem !important;
 }
 
 body.sidebar-collapsed #sidebar > nav .nav-separator {
@@ -223,136 +226,35 @@ body.sidebar-collapsed #sidebar > nav .nav-separator > div {
 
 body.sidebar-collapsed #sidebar > nav .nav-item > svg,
 body.sidebar-collapsed #sidebar > nav .nav-item > img {
-    width: 1.5rem !important;
-    height: 1.5rem !important;
-}
-body.sidebar-collapsed #sidebar > nav .nav-item > svg,
-body.sidebar-collapsed #sidebar > nav .nav-item > img {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
     flex: 0 0 auto;
     margin-left: auto !important;
     margin-right: auto !important;
 }
 
-
-/* Collapsed dropdowns stay closed until their parent is clicked, then open as a flyout. */
-body.sidebar-collapsed #sidebar > nav > ul > li:has(> .nav-dropdown-trigger) {
-    position: relative;
-}
-
-body.sidebar-collapsed #sidebar > nav > ul > li > .dropdown-content {
-    display: none !important;
-    position: absolute !important;
-    left: calc(100% + 0.5rem) !important;
-    top: 0 !important;
-    z-index: 120 !important;
-    width: 15rem !important;
-    max-height: none !important;
-    margin: 0 !important;
-    padding: 0.5rem !important;
-    overflow: visible !important;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    border-radius: 0.75rem;
-    background: rgba(15, 23, 42, 0.98);
-    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
-}
-
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 0.25rem !important;
-    opacity: 1 !important;
-    padding-left: 1.75rem !important;
-}
-
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content::before {
-    content: '';
-    position: absolute;
-    left: 0.9rem;
-    top: 2.25rem;
-    bottom: 0.75rem;
-    width: 2px;
-    background: rgba(255, 255, 255, 0.25);
-    border-radius: 9999px;
-}
-
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem {
-    display: flex !important;
-    width: 100% !important;
-    min-width: 0 !important;
-    height: 2.5rem !important;
-    margin: 0 !important;
-    justify-content: flex-start !important;
-    padding: 0.5rem 0.75rem !important;
-    position: relative;
-    border-radius: 0.5rem;
-    transition: all 0.2s ease;
-}
-
-/* Horizontal branch line in collapsed flyout */
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem::after {
-    content: '';
-    position: absolute;
-    left: -0.85rem;
-    top: 50%;
-    width: 0.65rem;
-    height: 2px;
-    transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.25);
-    transition: background-color 0.2s ease;
-}
-
-/* Outline circle bullet in collapsed flyout */
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem::before {
-    content: '';
-    position: absolute;
-    left: -0.45rem;
-    top: 50%;
-    width: 0.5rem;
-    height: 0.5rem;
-    transform: translateY(-50%);
-    border: 2px solid rgba(255, 255, 255, 0.45);
-    border-radius: 9999px;
-    background: #0f172a;
-    z-index: 2;
-    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Hover/active states in collapsed flyout */
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem:hover,
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem.nav-item-active {
-    background: rgba(255, 255, 255, 0.08);
-}
-
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem:hover::after,
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem.nav-item-active::after {
-    background: #34d399;
-}
-
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem:hover::before,
-body.sidebar-collapsed #sidebar > nav > ul > li.flyout-open > .dropdown-content .nav-subitem.nav-item-active::before {
-    border-color: #34d399;
-    background: #34d399;
-    box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
-    transform: translateY(-50%) scale(1.15);
-}
-
-/* Deterministic collapsed icon states: never leave an empty slot in the rail. */
-body.sidebar-collapsed #sidebar > nav .nav-item > svg:first-of-type,
-body.sidebar-collapsed #sidebar > nav .nav-item > img:first-of-type {
+/* Deterministic collapsed icon states: outline on default, solid filled on hover/active */
+body.sidebar-collapsed #sidebar > nav .nav-item > svg:only-of-type,
+body.sidebar-collapsed #sidebar > nav .nav-item > img:only-of-type {
     display: block !important;
 }
 
-body.sidebar-collapsed #sidebar > nav .nav-item > svg:nth-of-type(2),
-body.sidebar-collapsed #sidebar > nav .nav-item > img:nth-of-type(2) {
+body.sidebar-collapsed #sidebar > nav .nav-item:not(:hover):not(:active):not(.nav-item-active) > svg:first-of-type:not(:only-of-type),
+body.sidebar-collapsed #sidebar > nav .nav-item:not(:hover):not(:active):not(.nav-item-active) > img:first-of-type:not(:only-of-type) {
+    display: block !important;
+}
+
+body.sidebar-collapsed #sidebar > nav .nav-item:not(:hover):not(:active):not(.nav-item-active) > svg:nth-of-type(2),
+body.sidebar-collapsed #sidebar > nav .nav-item:not(:hover):not(:active):not(.nav-item-active) > img:nth-of-type(2) {
     display: none !important;
 }
 
-body.sidebar-collapsed #sidebar > nav .nav-item:hover > svg:first-of-type,
-body.sidebar-collapsed #sidebar > nav .nav-item:hover > img:first-of-type,
-body.sidebar-collapsed #sidebar > nav .nav-item:active > svg:first-of-type,
-body.sidebar-collapsed #sidebar > nav .nav-item:active > img:first-of-type,
-body.sidebar-collapsed #sidebar > nav .nav-item.nav-item-active > svg:first-of-type,
-body.sidebar-collapsed #sidebar > nav .nav-item.nav-item-active > img:first-of-type {
+body.sidebar-collapsed #sidebar > nav .nav-item:hover > svg:first-of-type:not(:only-of-type),
+body.sidebar-collapsed #sidebar > nav .nav-item:hover > img:first-of-type:not(:only-of-type),
+body.sidebar-collapsed #sidebar > nav .nav-item:active > svg:first-of-type:not(:only-of-type),
+body.sidebar-collapsed #sidebar > nav .nav-item:active > img:first-of-type:not(:only-of-type),
+body.sidebar-collapsed #sidebar > nav .nav-item.nav-item-active > svg:first-of-type:not(:only-of-type),
+body.sidebar-collapsed #sidebar > nav .nav-item.nav-item-active > img:first-of-type:not(:only-of-type) {
     display: none !important;
 }
 
@@ -365,13 +267,13 @@ body.sidebar-collapsed #sidebar > nav .nav-item.nav-item-active > img:nth-of-typ
     display: block !important;
 }
 
-/* Expanded dropdown tree connectors - Seamless tree-branch lines with outline circle bullets */
+/* Expanded dropdown tree connectors - Seamless tree-branch lines with curved connector */
 body:not(.sidebar-collapsed) #sidebar .dropdown-content {
     position: relative;
     padding-left: 0;
 }
 
-/* Continuous vertical trunk line aligned precisely with the center of the parent button icon (left: 1.55rem / 24.8px) */
+/* Continuous vertical trunk line */
 body:not(.sidebar-collapsed) #sidebar .dropdown-content::before {
     content: '';
     position: absolute;
@@ -379,7 +281,7 @@ body:not(.sidebar-collapsed) #sidebar .dropdown-content::before {
     top: -0.25rem;
     bottom: 1.15rem;
     width: 2px;
-    background: rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.2);
     border-radius: 9999px;
     z-index: 1;
 }
@@ -390,18 +292,19 @@ body:not(.sidebar-collapsed) #sidebar .dropdown-content .nav-subitem {
     padding-left: 2rem !important;
 }
 
-/* Seamless horizontal branch line connecting directly from the vertical trunk */
+/* Seamless curved branch line connecting directly from the vertical trunk */
 body:not(.sidebar-collapsed) #sidebar .dropdown-content .nav-subitem::after {
     content: '';
     position: absolute;
     left: 0;
-    top: 50%;
+    top: 0;
     width: 1.25rem;
-    height: 2px;
-    transform: translateY(-50%);
-    background: rgba(255, 255, 255, 0.25);
+    height: 50%;
+    border-left: 2px solid rgba(255, 255, 255, 0.2);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+    border-bottom-left-radius: 8px;
     z-index: 2;
-    transition: background-color 0.2s ease;
+    transition: border-color 0.2s ease;
 }
 
 /* Outline circle bullet at the end of the branch line */
@@ -410,10 +313,10 @@ body:not(.sidebar-collapsed) #sidebar .dropdown-content .nav-subitem::before {
     position: absolute;
     left: 0.95rem;
     top: 50%;
-    width: 0.55rem;
-    height: 0.55rem;
+    width: 0.5rem;
+    height: 0.5rem;
     transform: translateY(-50%);
-    border: 2px solid rgba(255, 255, 255, 0.45);
+    border: 2px solid rgba(255, 255, 255, 0.4);
     border-radius: 9999px;
     background: #0f172a;
     z-index: 3;
@@ -423,7 +326,7 @@ body:not(.sidebar-collapsed) #sidebar .dropdown-content .nav-subitem::before {
 /* Hover & Active states: Branch highlights and circle fills with vivid emerald */
 body:not(.sidebar-collapsed) #sidebar .dropdown-content .nav-subitem:hover::after,
 body:not(.sidebar-collapsed) #sidebar .dropdown-content .nav-subitem.nav-item-active::after {
-    background: #34d399;
+    border-color: #34d399;
 }
 
 body:not(.sidebar-collapsed) #sidebar .dropdown-content .nav-subitem:hover::before,
@@ -432,6 +335,28 @@ body:not(.sidebar-collapsed) #sidebar .dropdown-content .nav-subitem.nav-item-ac
     background: #34d399;
     box-shadow: 0 0 8px rgba(52, 211, 153, 0.5);
     transform: translateY(-50%) scale(1.15);
+}
+
+/* Sub-item active text: underline indicator strictly on text, starting from label with rounded right end */
+body #sidebar .dropdown-content .nav-subitem.nav-item-active .nav-text,
+body #flowbite-dropdown-budget .nav-subitem-link.nav-item-active span:not(.w-1\.5),
+body #flowbite-dropdown-expenses .nav-subitem-link.nav-item-active span:not(.w-1\.5) {
+    position: relative;
+    display: inline-block;
+}
+
+body #sidebar .dropdown-content .nav-subitem.nav-item-active .nav-text::after,
+body #flowbite-dropdown-budget .nav-subitem-link.nav-item-active span:not(.w-1\.5)::after,
+body #flowbite-dropdown-expenses .nav-subitem-link.nav-item-active span:not(.w-1\.5)::after {
+    content: '';
+    position: absolute;
+    bottom: -3px;
+    left: 0;
+    width: 100%;
+    height: 2.5px;
+    background: #34d399;
+    border-radius: 0 9999px 9999px 0;
+    box-shadow: 0 0 6px rgba(52, 211, 153, 0.4);
 }
 /* Dropdown animations */
 .dropdown-content {
@@ -842,7 +767,42 @@ h6,
 }
 
 /* END: System typography */
-/* Tooltip dropdown active state: keep the branch dot and underline limited to the selected label. */
-.sidebar-multidropdown-tooltip .nav-subitem-link { position: relative; }
-.sidebar-multidropdown-tooltip .nav-subitem-link.nav-item-active > span:first-child { border-color: #34d399 !important; background: #34d399 !important; box-shadow: 0 0 8px rgba(52, 211, 153, 0.5); }
-.sidebar-multidropdown-tooltip .nav-subitem-link.nav-item-active > span:last-child { color: #fff !important; text-decoration-line: underline; text-decoration-color: #34d399; text-decoration-thickness: 2px; text-underline-offset: 0.3rem; }
+/* Collapsed Flowbite Dropdown Menu & Tree Branch Styling */
+#flowbite-dropdown-budget,
+#flowbite-dropdown-expenses {
+    background: rgba(15, 23, 42, 0.98) !important;
+    border: 1px solid rgba(255, 255, 255, 0.18) !important;
+    border-radius: 1rem !important;
+    box-shadow: 0 20px 45px -10px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+    backdrop-filter: blur(20px) !important;
+}
+
+#flowbite-dropdown-budget .nav-subitem-link,
+#flowbite-dropdown-expenses .nav-subitem-link { 
+    position: relative; 
+    transition: all 0.2s ease;
+}
+
+#flowbite-dropdown-budget .nav-subitem-link:hover,
+#flowbite-dropdown-budget .nav-subitem-link.nav-item-active,
+#flowbite-dropdown-expenses .nav-subitem-link:hover,
+#flowbite-dropdown-expenses .nav-subitem-link.nav-item-active { 
+    background-color: rgba(255, 255, 255, 0.12) !important; 
+    color: #ffffff !important; 
+}
+
+#flowbite-dropdown-budget .nav-subitem-link:hover .rounded-bl-lg,
+#flowbite-dropdown-budget .nav-subitem-link.nav-item-active .rounded-bl-lg,
+#flowbite-dropdown-expenses .nav-subitem-link:hover .rounded-bl-lg,
+#flowbite-dropdown-expenses .nav-subitem-link.nav-item-active .rounded-bl-lg { 
+    border-color: #34d399 !important; 
+}
+
+#flowbite-dropdown-budget .nav-subitem-link:hover span:first-of-type,
+#flowbite-dropdown-budget .nav-subitem-link.nav-item-active span:first-of-type,
+#flowbite-dropdown-expenses .nav-subitem-link:hover span:first-of-type,
+#flowbite-dropdown-expenses .nav-subitem-link.nav-item-active span:first-of-type { 
+    background-color: #34d399 !important; 
+    box-shadow: 0 0 8px rgba(52, 211, 153, 0.7) !important; 
+    transform: scale(1.2) !important; 
+}

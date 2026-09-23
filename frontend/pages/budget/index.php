@@ -19,7 +19,7 @@ requireAuth();
     <div id="spaContentContainer" class="main-content ml-0 w-full max-w-full lg:w-auto lg:ml-80! lg:group-[.sidebar-collapsed]/body:!ml-[4.5rem] min-h-screen transition-all duration-300 flex-1 flex flex-col overflow-hidden!">
         <main class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 md:p-6 lg:p-8">
             <section class="mb-6">
-                <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-start gap-3">
                         <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/actualBudgets.svg')); ?>" alt="" aria-hidden="true" class="mt-0.5 h-10 w-10 shrink-0 object-contain">
                         <div>
@@ -27,23 +27,26 @@ requireAuth();
                             <p class="mt-1 max-w-3xl text-sm text-slate-600">Review approved allocations, actual spending, and remaining balances for <span id="budgetCurrentYearInline" class="font-semibold text-slate-900"></span>.</p>
                         </div>
                     </div>
-                    <div class="flex shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
-                        <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Year</span>
-                        <select id="budgetYear" class="cursor-pointer border-0 bg-transparent py-0 pl-1 pr-7 text-sm font-bold text-slate-900 focus:ring-0"></select>
+                    <div class="flex flex-wrap items-center gap-3">
+                        <div class="flex shrink-0 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 py-2 shadow-sm">
+                            <span class="text-xs font-semibold uppercase tracking-wide text-slate-500">Year</span>
+                            <select id="budgetYear" class="cursor-pointer border-0 bg-transparent py-0 pl-1 pr-7 text-sm font-bold text-slate-900 focus:ring-0"></select>
+                        </div>
+                        <button id="budgetCalculateBtn" type="button" class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-orange-500 bg-transparent px-3.5 py-2 text-sm font-semibold text-orange-500 hover:bg-orange-500 hover:text-white active:bg-orange-600 active:text-white focus:ring-4 focus:ring-orange-200 shadow-sm transition-all duration-200">
+                            <svg class="mr-1.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 2H20C20.5523 2 21 2.44772 21 3V21C21 21.5523 20.5523 22 20 22H4C3.44772 22 3 21.5523 3 21V3C3 2.44772 3.44772 2 4 2ZM5 4V20H19V4H5ZM7 6H17V10H7V6ZM7 12H9V14H7V12ZM7 16H9V18H7V16ZM11 12H13V14H11V12ZM11 16H13V18H11V16ZM15 12H17V18H15V12Z"></path></svg>Calculate
+                        </button>
+                        <button id="budgetAddBtn" type="button" class="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg bg-emerald-500 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 active:bg-emerald-700 focus:ring-4 focus:ring-emerald-200 transition-all duration-200">
+                            <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"/></svg>Add Entry
+                        </button>
                     </div>
                 </div>
             </section>
 
             <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
                 <div class="flex flex-col gap-4 border-b border-slate-200 p-4 md:p-5 lg:flex-row lg:items-center lg:justify-between">
-<div class="flex items-start justify-between gap-4">
-                        <div>
-                            <h2 class="text-lg font-semibold text-slate-900">Budget Entries</h2>
-                            <p class="mt-1 text-sm text-slate-500">Manage account allocations and compare them with recorded expenses.</p>
-                        </div>
-                        <button id="budgetAddBtn" type="button" class="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg bg-emerald-500 px-3.5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-600 focus:ring-4 focus:ring-emerald-200">
-                            <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"/></svg>Add Entry
-                        </button>
+                    <div>
+                        <h2 class="text-lg font-semibold text-slate-900">Budget Entries</h2>
+                        <p class="mt-1 text-sm text-slate-500">Manage account allocations and compare them with recorded expenses.</p>
                     </div>
                     <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                         <label for="budgetSearch" class="sr-only">Search budget entries</label>
@@ -62,7 +65,6 @@ requireAuth();
                         <button id="budgetSortDirection" type="button" title="Toggle sort direction" class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white p-2 text-slate-600 hover:bg-slate-100" aria-label="Toggle sort direction">
                             <svg id="budgetSortDirectionIcon" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
                         </button>
-                        <button id="budgetCalculateBtn" type="button" class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-orange-500 bg-orange-500 px-3 py-2 text-sm font-semibold text-white hover:bg-orange-600 focus:ring-4 focus:ring-orange-200"><svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6M9 11h6m-9 4h.01M15 15h.01M5 5h14v14H5z"/></svg>Calculate</button>
                     </div>
                 </div>
 

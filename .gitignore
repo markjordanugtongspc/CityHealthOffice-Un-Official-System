@@ -16,6 +16,8 @@ config/.env
 .DS_Store
 Thumbs.db
 *.log
+.claude/
+.gemini/
 
 # Database
 *.sql
