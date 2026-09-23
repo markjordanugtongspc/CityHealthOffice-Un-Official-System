@@ -1,4 +1,4 @@
-﻿import { Drawer } from 'flowbite';
+import { Drawer } from 'flowbite';
 
 const DEFAULT_PASSWORD = 'mjUgtong2026!';
 
@@ -72,7 +72,7 @@ function ensureAdminDrawer() {
     const drawerHTML = `
         <div id="adminCreateUserDrawer" class="fixed top-0 right-0 z-[80] h-auto max-h-screen w-full max-w-3xl p-4 sm:p-5 lg:p-6 overflow-y-auto bg-white shadow-[-20px_0_60px_rgba(15,23,42,0.28)] border-l border-slate-200/80 transform translate-x-full transition-transform" tabindex="-1" aria-labelledby="adminCreateUserDrawerLabel">
             <div class="flex items-start justify-between border-b border-slate-200 pb-3 mb-4">
-                <div><p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-600 mb-1">User management</p><h2 id="adminCreateUserDrawerLabel" class="text-xl font-bold text-slate-900 leading-tight">Add User</h2><p class="mt-1 text-sm text-slate-500">Create or delete new users for this account.</p></div>
+                <div><p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-600 mb-1">User management</p><h2 id="adminCreateUserDrawerLabel" class="text-2xl font-bold text-slate-900 leading-tight">Add User</h2><p class="mt-1 text-sm text-slate-500">Create or delete new users for this account.</p></div>
                 <button type="button" id="adminDrawerCloseBtn" aria-controls="adminCreateUserDrawer" class="inline-flex items-center justify-center w-9 h-9 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 cursor-pointer transition-colors"><svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/></svg><span class="sr-only">Close panel</span></button>
             </div>
             <div id="adminDrawerValidationError" class="hidden mb-4 p-3 text-xs md:text-sm text-rose-800 bg-rose-50 rounded-lg border border-rose-200"></div>
@@ -118,13 +118,13 @@ function ensureBudgetDrawer() {
     const drawerHTML = `
         <!-- Budget Create Drawer -->
         <div id="budgetCreateDrawer"
-             class="fixed top-0 right-0 z-50 h-screen w-full max-w-xl md:max-w-lg lg:max-w-xl p-4 md:p-6 overflow-y-auto bg-white shadow-[0_20px_60px_rgba(15,23,42,0.45)] border-l border-slate-200/80 transform translate-x-full transition-transform"
+             class="fixed top-0 right-0 z-50 h-screen w-full max-w-3xl p-4 sm:p-6 lg:p-8 overflow-y-auto bg-white shadow-[-20px_0_60px_rgba(15,23,42,0.28)] border-l border-slate-200/80 transform translate-x-full transition-transform"
              tabindex="-1"
              aria-labelledby="budgetCreateDrawerLabel">
             <div class="flex items-center justify-between border-b border-slate-200 pb-4 mb-4">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 mb-1">Budget</p>
-                    <h2 id="budgetCreateDrawerLabel" class="text-xl font-bold text-slate-900 leading-tight">Initialize Budget Entry</h2>
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-600 mb-1">Budget</p>
+                    <h2 id="budgetCreateDrawerLabel" class="text-2xl font-bold text-slate-900 leading-tight">Initialize Budget Entry</h2>
                 </div>
                 <button type="button"
                         id="budgetDrawerCloseBtn"
@@ -140,7 +140,7 @@ function ensureBudgetDrawer() {
             <div id="budgetDrawerValidationError"
                  class="hidden mb-4 p-3 text-xs md:text-sm text-rose-800 bg-rose-50 rounded-lg border border-rose-200"></div>
 
-            <form id="budgetCreateDrawerForm" class="flex flex-col gap-6 pb-28 md:pb-4">
+            <form id="budgetCreateDrawerForm" class="flex flex-col gap-6 pb-28">
                 <!-- Account Identification -->
                 <section class="space-y-4">
                     <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
@@ -185,10 +185,10 @@ function ensureBudgetDrawer() {
                         </div>
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">
-                                Budget Allocation (â‚±) <span class="text-rose-500">*</span>
+                                Budget Allocation (₱) <span class="text-rose-500">*</span>
                             </label>
                             <div class="relative">
-                                <span class="absolute left-4 top-2.5 text-slate-400 text-sm font-bold">â‚±</span>
+                                <span class="absolute left-4 top-2.5 text-slate-400 text-sm font-bold">₱</span>
                                 <input type="number" step="0.01" id="budget-budget" placeholder="0.00"
                                        class="w-full pl-8 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-hidden text-[#224796]" />
                             </div>
@@ -206,7 +206,7 @@ function ensureBudgetDrawer() {
                         <div class="grid grid-cols-2 gap-8">
                             <div class="space-y-1">
                                 <p class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest opacity-80">Remaining Balance</p>
-                                <p id="budget-remaining-amount" class="text-2xl font-black text-white tracking-tight">â‚±0.00</p>
+                                <p id="budget-remaining-amount" class="text-2xl font-black text-white tracking-tight">₱0.00</p>
                             </div>
                             <div class="space-y-1">
                                 <p class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest opacity-80">Utilization Efficiency</p>
@@ -415,13 +415,13 @@ function ensureMonthlyDrawer() {
     const drawerHTML = `
         <!-- Monthly Expenses Drawer -->
         <div id="monthlyExpensesDrawer"
-             class="fixed top-0 right-0 z-50 h-screen w-full max-w-3xl p-4 md:p-6 overflow-y-auto bg-white shadow-[0_20px_60px_rgba(15,23,42,0.45)] border-l border-slate-200/80 transform translate-x-full transition-transform"
+             class="fixed top-0 right-0 z-50 h-screen w-full max-w-3xl p-4 md:p-6 overflow-y-auto bg-white shadow-[-20px_0_60px_rgba(15,23,42,0.28)] border-l border-slate-200/80 transform translate-x-full transition-transform"
              tabindex="-1"
              aria-labelledby="monthlyExpensesDrawerLabel">
             <div class="flex items-center justify-between border-b border-slate-200 pb-4 mb-4">
                 <div>
-                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 mb-1">Monthly expenses</p>
-                    <h2 id="monthlyExpensesDrawerLabel" class="text-xl font-bold text-slate-900 leading-tight">Add Monthly Expense Entry</h2>
+                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-600 mb-1">Monthly expenses</p>
+                    <h2 id="monthlyExpensesDrawerLabel" class="text-2xl font-bold text-slate-900 leading-tight">Add Monthly Expense Entry</h2>
                 </div>
                 <button type="button"
                         id="monthlyDrawerCloseBtn"
@@ -434,7 +434,7 @@ function ensureMonthlyDrawer() {
                 </button>
             </div>
 
-            <form id="monthlyExpensesDrawerForm" class="flex flex-col gap-6 pb-28 md:pb-4">
+            <form id="monthlyExpensesDrawerForm" class="flex flex-col gap-6 pb-28">
                 <!-- Account Title with G/L Code -->
                 <section class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-[136px_1fr] gap-2 md:gap-3 items-start">
@@ -454,7 +454,7 @@ function ensureMonthlyDrawer() {
                 <!-- Monthly Values Grid -->
                 <section class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-[136px_1fr] gap-2 md:gap-3 items-start">
-                        <label class="text-sm font-medium text-slate-700 pt-1 md:pt-2">Monthly Values (â‚±)</label>
+                        <label class="text-sm font-medium text-slate-700 pt-1 md:pt-2">Monthly Values (₱)</label>
                         <div class="w-full">
                             <div id="monthly-months-grid" class="grid max-h-[360px] grid-cols-2 gap-3 overflow-y-auto pr-1 pb-2 sm:grid-cols-3 md:max-h-[320px] md:grid-cols-4 lg:grid-cols-3">
                                 <!-- Month inputs injected by JS -->
@@ -469,7 +469,7 @@ function ensureMonthlyDrawer() {
                         <label class="text-sm font-medium text-slate-700 pt-1 md:pt-2">Total</label>
                         <div class="w-full rounded-lg border border-slate-200 bg-linear-to-br from-slate-50 to-slate-100 p-4">
                             <p class="mb-1.5 text-xs font-medium text-slate-500">Total Amount</p>
-                            <p id="monthly-total-amount" class="text-lg font-semibold text-slate-900 md:text-xl">â‚±0.00</p>
+                            <p id="monthly-total-amount" class="text-lg font-semibold text-slate-900 md:text-xl">₱0.00</p>
                         </div>
                     </div>
                 </section>

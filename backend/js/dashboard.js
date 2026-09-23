@@ -17,6 +17,23 @@ const SETTINGS_DROPDOWN_ACTIVE = [
 /**
  * Highlight Settings in the header user menu when on the settings page.
  */
+/**
+ * Initialize shared footer behavior on every page shell.
+ */
+export function initFooter() {
+    const currentYear = String(new Date().getFullYear());
+    document.querySelectorAll('[data-footer-year]').forEach((yearElement) => {
+        yearElement.textContent = currentYear;
+    });
+
+    document.querySelectorAll('[data-cookie-preferences]').forEach((button) => {
+        if (button.dataset.footerReady === 'true') return;
+        button.dataset.footerReady = 'true';
+        button.addEventListener('click', () => {
+            window.dispatchEvent(new CustomEvent('city-health:cookie-preferences'));
+        });
+    });
+}
 export function syncUserDropdownSettingsActive() {
     const link = document.getElementById('settingsBtn');
     if (!link) return;
@@ -109,6 +126,7 @@ export function init() {
     }
 
     syncUserDropdownSettingsActive();
+    initFooter();
 
     // Chart pagination functionality
     const chartPageButtons = document.querySelectorAll('.chart-page-btn');

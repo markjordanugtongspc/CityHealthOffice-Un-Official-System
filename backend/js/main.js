@@ -174,10 +174,7 @@ function initializeCurrentPageModules() {
     } else if (pagePath.includes('/export/')) {
         void loadPageModule(() => import('./modules/export.js'));
     } else if (pagePath.includes('/voucher/')) {
-        void loadPageModule(() => import('./modules/voucher.js'));
-    } else if (pagePath.includes('/about/')) {
-        void loadPageModule(() => import('./about.js'));
-    } else if (pagePath.includes('/settings/')) {
+        void loadPageModule(() => import('./modules/voucher.js'));} else if (pagePath.includes('/settings/')) {
         void loadPageModule(() => import('./settings.js'));
     } else if (pagePath.includes('/admin/')) {
         void loadPageModule(() => import('./admin.js'));

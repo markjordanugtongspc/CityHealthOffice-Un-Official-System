@@ -127,6 +127,7 @@ requireAuth();
                     </div>
                 </div>
             </section>
+                <?php require_once __DIR__ . '/../../components/components.php'; ?>
         </main>
     </div>
 

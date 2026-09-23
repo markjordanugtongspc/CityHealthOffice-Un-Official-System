@@ -715,23 +715,23 @@ function initInlineEditing() {
                     rowData.remainingPercent = remaining.remainingPercent;
                 }
                 
-                // Also update in specialFundData if it exists there
-                const dataIndex = specialFundData.findIndex(d => 
+                // Also update in specialFundRows if it exists there
+                const dataIndex = specialFundRows.findIndex(d => 
                     d.type === rowData.type && 
                     d.program === rowData.program && 
                     (d.glCode === rowData.glCode || (!d.glCode && !rowData.glCode))
                 );
                 if (dataIndex >= 0) {
                     if (fieldName === 'program') {
-                        specialFundData[dataIndex].program = newValue;
+                        specialFundRows[dataIndex].program = newValue;
                     } else if (fieldName === 'actual') {
-                        specialFundData[dataIndex].actual = rowData.actual;
-                        specialFundData[dataIndex].remainingAmount = rowData.remainingAmount;
-                        specialFundData[dataIndex].remainingPercent = rowData.remainingPercent;
+                        specialFundRows[dataIndex].actual = rowData.actual;
+                        specialFundRows[dataIndex].remainingAmount = rowData.remainingAmount;
+                        specialFundRows[dataIndex].remainingPercent = rowData.remainingPercent;
                     } else if (fieldName === 'budget') {
-                        specialFundData[dataIndex].budget = rowData.budget;
-                        specialFundData[dataIndex].remainingAmount = rowData.remainingAmount;
-                        specialFundData[dataIndex].remainingPercent = rowData.remainingPercent;
+                        specialFundRows[dataIndex].budget = rowData.budget;
+                        specialFundRows[dataIndex].remainingAmount = rowData.remainingAmount;
+                        specialFundRows[dataIndex].remainingPercent = rowData.remainingPercent;
                     }
                 }
                 
@@ -750,7 +750,7 @@ export function init() {
     if (!table) return;
 
     // Initialize rows from hierarchical data
-    specialFundRows = [...specialFundData];
+    specialFundRows = [...specialFundRows];
 
     // Expose specialFundRows to window for export module
     if (typeof window !== 'undefined') {

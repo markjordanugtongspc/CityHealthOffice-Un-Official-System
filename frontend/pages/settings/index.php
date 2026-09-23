@@ -25,6 +25,7 @@ requireAuth();
             <div id="settingsPageRoot" class="w-full min-w-0 max-w-none">
                 <?php require_once __DIR__ . '/../../components/settings-content.php'; ?>
             </div>
+                <?php require_once __DIR__ . '/../../components/components.php'; ?>
         </main>
     </div>
 </body>

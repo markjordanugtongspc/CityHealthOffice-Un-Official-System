@@ -421,6 +421,7 @@ function initDropdowns() {
 // START: setActiveNavState - Matches active URL to highlight current navigation item and parent dropdown
 function setActiveNavState() {
     const currentPath = window.location.pathname;
+    const currentPathNormalized = currentPath.replace(/\/$/, '').replace(/\/index\.php$/, '');
     const navItems = document.querySelectorAll('.nav-item[href], .nav-subitem-link[href]');
 
     navItems.forEach(item => {
@@ -460,15 +461,6 @@ function setActiveNavState() {
             );
             item.classList.add('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
 
-            // If this active item is inside a dropdown, also highlight the parent trigger for collapsed state
-            const parentDropdown = item.closest('.dropdown-content');
-            if (parentDropdown) {
-                const parentTrigger = document.querySelector(`[data-dropdown="${parentDropdown.id}"]`);
-                if (parentTrigger) {
-                    parentTrigger.classList.remove('border-transparent');
-                    parentTrigger.classList.add('text-white', 'border-b-2', '!border-emerald-400', 'nav-item-active');
-                }
-            }
         } else {
             item.classList.remove(
                 'text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active',
@@ -477,6 +469,15 @@ function setActiveNavState() {
             item.classList.add('text-white/80', 'border-transparent');
         }
     });
+
+    // Special Program is shared by both dropdowns, but its canonical selection is Annual Budget Summary.
+    // Keep the duplicate Expenses entry inactive.
+    if (currentPathNormalized.includes('specialfund')) {
+        document.querySelectorAll("#expenses-dropdown a[href*='specialfund'], #tooltip-expenses a[href*='specialfund']").forEach((link) => {
+            link.classList.remove('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
+            link.classList.add('text-white/80', 'border-transparent');
+        });
+    }
 }
 // END: setActiveNavState
 

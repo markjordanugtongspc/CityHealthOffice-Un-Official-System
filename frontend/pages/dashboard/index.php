@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 require_once __DIR__ . '/../../../config/vite_helper.php';
 require_once __DIR__ . '/../../../config/db.php';
 require_once __DIR__ . '/../../../config/session.php';
@@ -339,6 +339,7 @@ requireAuth();
                     </section>
                 </div>
             </div>
+                <?php require_once __DIR__ . '/../../components/components.php'; ?>
         </main>
     </div>
 

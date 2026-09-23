@@ -19,6 +19,7 @@ requireAuth();
     <div id="spaContentContainer" class="main-content ml-0 w-full max-w-full lg:w-auto lg:ml-80! lg:group-[.sidebar-collapsed]/body:!ml-[4.5rem] min-h-screen transition-all duration-300 flex-1 flex flex-col overflow-hidden!">
         <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6">
             <?php require_once __DIR__ . '/../../components/generateVoucher.php'; ?>
+                <?php require_once __DIR__ . '/../../components/components.php'; ?>
         </main>
     </div>
 </body>

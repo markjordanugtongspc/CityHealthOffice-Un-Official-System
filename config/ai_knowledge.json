@@ -1,7 +1,7 @@
 {
     "project_name": "City Health Office Monitoring System",
     "developer": "Mark Jordan Ugtong",
-    "about_me_link": "/frontend/pages/about/",
+    "about_me_link": "/Project/",
     "modules": {
         "Dashboard": "Provides a high-level visual overview of health metrics, trends, and real-time statistics.",
         "Budget": "Used for managing financial allocations, tracking budget utilization across different departments.",

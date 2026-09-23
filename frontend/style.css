@@ -842,3 +842,7 @@ h6,
 }
 
 /* END: System typography */
+/* Tooltip dropdown active state: keep the branch dot and underline limited to the selected label. */
+.sidebar-multidropdown-tooltip .nav-subitem-link { position: relative; }
+.sidebar-multidropdown-tooltip .nav-subitem-link.nav-item-active > span:first-child { border-color: #34d399 !important; background: #34d399 !important; box-shadow: 0 0 8px rgba(52, 211, 153, 0.5); }
+.sidebar-multidropdown-tooltip .nav-subitem-link.nav-item-active > span:last-child { color: #fff !important; text-decoration-line: underline; text-decoration-color: #34d399; text-decoration-thickness: 2px; text-underline-offset: 0.3rem; }

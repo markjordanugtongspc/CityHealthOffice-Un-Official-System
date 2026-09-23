@@ -256,7 +256,8 @@ requireAuth();
                         </div>
                     </div>
                 </section>
-            </main>
+                    <?php $footerSpacingClass = 'mt-8'; require_once __DIR__ . '/../../components/components.php'; ?>
+        </main>
     </div>
 
 </body>
