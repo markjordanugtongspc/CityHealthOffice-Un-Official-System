@@ -1,4 +1,4 @@
-/**
+﻿/**
  * User Management Module
  * Handles user creation, password hashing, and user management
  */
@@ -39,8 +39,12 @@ export async function createUser(userData) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                ...userData,
-                password: DEFAULT_PASSWORD, // Will be hashed server-side
+                username: userData.username,
+                full_name: userData.fullName,
+                email: userData.email,
+                role: userData.role,
+                password: userData.password || DEFAULT_PASSWORD,
+                permissions: userData.permissions || {}
             }),
         });
 
@@ -68,7 +72,7 @@ export function validateUserData(userData) {
         errors.push('Username must be at least 3 characters');
     }
 
-    if (!userData.full_name || userData.full_name.trim().length < 2) {
+    if (!userData.fullName || userData.fullName.trim().length < 2) {
         errors.push('Full name is required');
     }
 
@@ -101,4 +105,13 @@ export function validateUserData(userData) {
         valid: errors.length === 0,
         errors,
     };
+}
+
+
+export async function updateUser(userData) {
+    const apiBase = getApiBasePath();
+    const response = await fetch(`${apiBase}/api/users/update.php`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'same-origin', body: JSON.stringify({ username: userData.username, full_name: userData.fullName, email: userData.email, role: userData.role }) });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || 'Failed to update user');
+    return data;
 }

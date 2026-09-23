@@ -3,7 +3,7 @@
  * Checks if user is logged in before allowing access to protected pages
  */
 
-import { showUnauthorizedAccess, showPermissionDeniedToast } from './modal.js';
+import { showPermissionDeniedToast } from './modal.js';
 
 /**
  * Get API base path dynamically
@@ -13,6 +13,11 @@ function getApiBasePath() {
     const path = window.location.pathname || '/';
     const basePath = path.substring(0, path.indexOf('/frontend/') !== -1 ? path.indexOf('/frontend/') : path.lastIndexOf('/'));
     return basePath || '';
+}
+
+function redirectToLoginWithAuthError() {
+    const apiBase = getApiBasePath();
+    window.location.href = (apiBase || '') + '/?auth_error=login_required';
 }
 
 /**
@@ -59,9 +64,7 @@ export async function initAuthCheck() {
     const isAuthenticated = await checkAuth();
 
     if (!isAuthenticated) {
-        // Show unauthorized access modal
-        await showUnauthorizedAccess();
-        // Modal will redirect to login page
+        redirectToLoginWithAuthError();
         return;
     }
 

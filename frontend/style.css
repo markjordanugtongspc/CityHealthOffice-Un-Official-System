@@ -1,4 +1,116 @@
+/* START: Global Fonts (Inter as system font, Poppins for Headings) */
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 @import "tailwindcss";
+
+@theme {
+    --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    --font-poppins: 'Poppins', var(--font-sans);
+}
+
+/* System-wide base font */
+body {
+    font-family: var(--font-sans);
+}
+
+/* H1 / Page Title: Poppins, Weight: 700 Bold, Desktop: 36px, Mobile: 28px, Line-Height: 1.2 */
+h1,
+.page-title,
+.font-h1 {
+    font-family: 'Poppins', var(--font-sans);
+    font-weight: 700;
+    line-height: 1.2;
+    font-size: 28px;
+}
+
+@media (min-width: 768px) {
+
+    h1,
+    .page-title,
+    .font-h1 {
+        font-size: 36px;
+    }
+}
+
+/* H2 / Section Title: Poppins, Weight: 600 SemiBold, Desktop: 28px, Mobile: 22px, Line-Height: 1.25 */
+h2,
+.section-title,
+.font-h2 {
+    font-family: 'Poppins', var(--font-sans);
+    font-weight: 600;
+    line-height: 1.25;
+    font-size: 22px;
+}
+
+@media (min-width: 768px) {
+
+    h2,
+    .section-title,
+    .font-h2 {
+        font-size: 28px;
+    }
+}
+
+/* Hero Title: Poppins, Extra Bold / Black, Desktop: 56px-64px+, Mobile: 36px, Line-Height: 1.12 */
+.hero-title {
+    font-family: 'Poppins', var(--font-sans);
+    font-weight: 800;
+    line-height: 1.12;
+    font-size: 36px;
+    letter-spacing: -0.02em;
+}
+
+@media (min-width: 640px) {
+    .hero-title {
+        font-size: 48px;
+    }
+}
+
+@media (min-width: 768px) {
+    .hero-title {
+        font-size: 54px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .hero-title {
+        font-size: 64px;
+    }
+}
+
+/* Smooth left-to-right animated underline on hover */
+.animated-underline {
+    position: relative;
+    display: inline-block;
+}
+
+.animated-underline::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    transform: scaleX(0);
+    height: 1.5px;
+    bottom: -2px;
+    left: 0;
+    background-color: currentColor;
+    transform-origin: bottom left;
+    transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.animated-underline:hover::after {
+    transform: scaleX(1);
+}
+
+/* END: Global Fonts */
+
+/* ============================================================================
+   SMOOTH CAROUSEL SLIDE TRANSITION (Flowbite Right-to-Left Sliding Fix)
+   ============================================================================ */
+#landing-carousel [data-carousel-item] {
+    transition: transform 1200ms cubic-bezier(0.25, 1, 0.5, 1), opacity 800ms ease-in-out !important;
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+}
 
 /* Modern Chart Container Styles */
 .chart-container {
@@ -43,12 +155,14 @@
         margin-top 0.3s ease;
     max-height: 0;
     opacity: 0;
+    overflow: hidden;
 }
 
 .dropdown-content.show {
     max-height: 500px !important;
     opacity: 1 !important;
     margin-top: 0.25rem !important;
+    overflow: visible !important;
 }
 
 .dropdown-arrow {
@@ -228,6 +342,7 @@ body.page-voucher {
 #voucher-app.in-modal .voucher-preview-container {
     box-shadow: none !important;
     max-width: 100% !important;
+    width: 100% !important;
     border: none !important;
 }
 
@@ -257,3 +372,188 @@ html.cho-reduce-motion *::after {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
 }
+
+/* START: Cashflow chart surface and financial amounts */
+.cashflow-chart-surface {
+    background: transparent;
+}
+
+.financial-amount {
+    font-family: ui-monospace, 'Cascadia Mono', 'Roboto Mono', Consolas, monospace;
+    font-variant-numeric: tabular-nums lining-nums slashed-zero;
+}
+
+.financial-amount.is-rolling {
+    animation: financial-amount-settle 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.group:hover .financial-amount-hover {
+    transform: scale(1.035);
+}
+
+@keyframes financial-amount-settle {
+    0% {
+        opacity: 0.55;
+        transform: translateY(0.22em);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .financial-amount.is-rolling {
+        animation: none;
+    }
+
+    .group:hover .financial-amount-hover {
+        transform: none;
+    }
+}
+
+/* END: Cashflow chart surface and financial amounts */
+/* START: Dashboard ApexCharts tooltip overlay */
+#moneyCashflowChart,
+#remainingBudgetChart,
+#suppliesExpenseChart,
+#officeFinancialChart,
+#moneyCashflowChart .apexcharts-canvas,
+#remainingBudgetChart .apexcharts-canvas,
+#suppliesExpenseChart .apexcharts-canvas,
+#officeFinancialChart .apexcharts-canvas {
+    overflow: visible !important;
+}
+
+.apexcharts-tooltip,
+.apexcharts-xaxistooltip,
+.apexcharts-yaxistooltip {
+    z-index: 99999 !important;
+    pointer-events: none !important;
+    border: 1px solid #475569 !important;
+    box-shadow: 0 18px 40px -18px rgba(15, 23, 42, 0.45) !important;
+}
+
+#moneyCashflowChart .apexcharts-legend {
+    max-width: calc(100% - 1.5rem) !important;
+    padding-right: 0.75rem !important;
+    overflow: visible !important;
+}
+
+#moneyCashflowChart .apexcharts-legend-series {
+    margin-right: 0.75rem !important;
+    white-space: nowrap !important;
+}
+
+#suppliesExpenseChart .apexcharts-canvas,
+#suppliesExpenseChart svg {
+    overflow: visible !important;
+}
+
+#suppliesExpenseChart .apexcharts-inner.apexcharts-graphical {
+    transform-origin: center !important;
+}
+
+#suppliesExpenseChart .apexcharts-legend {
+    align-items: flex-start !important;
+    flex-direction: column !important;
+    gap: 0.65rem !important;
+    justify-content: flex-start !important;
+    top: 6px !important;
+    max-width: 52% !important;
+    width: auto !important;
+    overflow: visible !important;
+}
+
+#suppliesExpenseChart .apexcharts-legend-series {
+    align-items: center !important;
+    display: flex !important;
+    line-height: 1.35 !important;
+    margin: 0.15rem 0 !important;
+    white-space: nowrap !important;
+    cursor: pointer !important;
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+#suppliesExpenseChart .apexcharts-legend-series:hover {
+    transform: translateX(2px);
+}
+
+#suppliesExpenseChart .apexcharts-legend-text {
+    font-size: 0.85rem !important;
+    font-weight: 800 !important;
+    position: relative !important;
+    display: inline-block !important;
+    width: max-content !important;
+    max-width: max-content !important;
+    color: #0F172A !important;
+    transition: color 0.25s ease-in-out !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 2px !important;
+    margin-left: 6px !important;
+    margin-right: 0 !important;
+    cursor: pointer !important;
+}
+
+/* Hover effect: text font turns slight gray with distinct clean highlight */
+#suppliesExpenseChart .apexcharts-legend-series:hover .apexcharts-legend-text {
+    color: #475569 !important;
+}
+
+#suppliesExpenseChart .apexcharts-legend-series.apexcharts-inactive-legend {
+    opacity: 0.65 !important;
+}
+
+/* Smooth animated underline on hover and click - covers full text with slight trimmed end */
+#suppliesExpenseChart .apexcharts-legend-text::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background-color: currentColor;
+    transform: scaleX(0);
+    transform-origin: bottom left;
+    transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.25s ease;
+}
+
+#suppliesExpenseChart .apexcharts-legend-series:hover .apexcharts-legend-text::after {
+    transform: scaleX(0.95);
+    background-color: #64748B;
+}
+
+#suppliesExpenseChart .apexcharts-legend-series:active .apexcharts-legend-text::after,
+#suppliesExpenseChart .apexcharts-legend-series.is-active .apexcharts-legend-text::after,
+#suppliesExpenseChart .apexcharts-legend-series.apexcharts-inactive-legend .apexcharts-legend-text::after {
+    transform: scaleX(0.98);
+    background-color: #0F172A;
+}
+
+/* END: Dashboard ApexCharts tooltip overlay */
+/* START: System typography */
+body,
+button,
+input,
+select,
+textarea {
+    font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-heading,
+.page-title,
+.section-title {
+    font-family: var(--font-poppins);
+    font-weight: 700;
+}
+
+/* END: System typography */

@@ -4,22 +4,136 @@
     "name": "apexcharts.common",
     "isDynamicEntry": true
   },
+  "_drawer.js": {
+    "file": "assets/drawer.js",
+    "name": "drawer",
+    "imports": [
+      "backend/js/main.js"
+    ]
+  },
+  "_inline-edit.js": {
+    "file": "assets/inline-edit.js",
+    "name": "inline-edit",
+    "imports": [
+      "backend/js/main.js"
+    ]
+  },
+  "backend/js/about.js": {
+    "file": "assets/about.js",
+    "name": "about",
+    "src": "backend/js/about.js",
+    "isDynamicEntry": true
+  },
+  "backend/js/admin.js": {
+    "file": "assets/admin.js",
+    "name": "admin",
+    "src": "backend/js/admin.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "backend/js/main.js",
+      "_drawer.js"
+    ]
+  },
+  "backend/js/budget.js": {
+    "file": "assets/budget.js",
+    "name": "budget",
+    "src": "backend/js/budget.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "backend/js/main.js",
+      "_drawer.js"
+    ]
+  },
+  "backend/js/charts.js": {
+    "file": "assets/charts.js",
+    "name": "charts",
+    "src": "backend/js/charts.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "backend/js/main.js"
+    ],
+    "dynamicImports": [
+      "_apexcharts.common.js"
+    ]
+  },
+  "backend/js/dashboard.js": {
+    "file": "assets/dashboard.js",
+    "name": "dashboard",
+    "src": "backend/js/dashboard.js",
+    "isDynamicEntry": true
+  },
+  "backend/js/itemized.js": {
+    "file": "assets/itemized.js",
+    "name": "itemized",
+    "src": "backend/js/itemized.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "backend/js/main.js"
+    ]
+  },
   "backend/js/main.js": {
     "file": "assets/main.js",
     "name": "main",
     "src": "backend/js/main.js",
     "isEntry": true,
     "dynamicImports": [
-      "_apexcharts.common.js",
-      "backend/js/modules/cache-manager.js",
-      "backend/js/modules/cache-manager.js"
+      "backend/js/dashboard.js",
+      "backend/js/charts.js",
+      "backend/js/budget.js",
+      "backend/js/specialfund.js",
+      "backend/js/monthly-expenses.js",
+      "backend/js/itemized.js",
+      "backend/js/modules/export.js",
+      "backend/js/about.js",
+      "backend/js/settings.js",
+      "backend/js/admin.js",
+      "backend/js/modules/scroll-to-top.js"
     ]
   },
-  "backend/js/modules/cache-manager.js": {
-    "file": "assets/cache-manager.js",
-    "name": "cache-manager",
-    "src": "backend/js/modules/cache-manager.js",
+  "backend/js/modules/export.js": {
+    "file": "assets/export.js",
+    "name": "export",
+    "src": "backend/js/modules/export.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "backend/js/main.js"
+    ]
+  },
+  "backend/js/modules/scroll-to-top.js": {
+    "file": "assets/scroll-to-top.js",
+    "name": "scroll-to-top",
+    "src": "backend/js/modules/scroll-to-top.js",
     "isDynamicEntry": true
+  },
+  "backend/js/monthly-expenses.js": {
+    "file": "assets/monthly-expenses.js",
+    "name": "monthly-expenses",
+    "src": "backend/js/monthly-expenses.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "backend/js/main.js",
+      "_drawer.js",
+      "_inline-edit.js"
+    ]
+  },
+  "backend/js/settings.js": {
+    "file": "assets/settings.js",
+    "name": "settings",
+    "src": "backend/js/settings.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "backend/js/main.js"
+    ]
+  },
+  "backend/js/specialfund.js": {
+    "file": "assets/specialfund.js",
+    "name": "specialfund",
+    "src": "backend/js/specialfund.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "backend/js/main.js",
+      "_inline-edit.js"
+    ]
   },
   "style.css": {
     "file": "assets/style.css",

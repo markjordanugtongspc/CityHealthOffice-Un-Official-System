@@ -49,7 +49,9 @@ try {
         http_response_code(401);
         echo json_encode([
             'success' => false,
-            'message' => 'Invalid username or password'
+            'error_type' => 'user_not_found',
+            'field' => 'username',
+            'message' => 'Username not found'
         ]);
         exit;
     }
@@ -59,7 +61,9 @@ try {
         http_response_code(401);
         echo json_encode([
             'success' => false,
-            'message' => 'Invalid username or password'
+            'error_type' => 'incorrect_password',
+            'field' => 'password',
+            'message' => 'Incorrect password'
         ]);
         exit;
     }

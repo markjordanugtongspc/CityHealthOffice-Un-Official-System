@@ -21,3 +21,7 @@ Thumbs.db
 *.sql
 test_db*.php
 db_schema*.txt
+
+# AI Chatbot (Temporarily disabled)
+backend/js/modules/ai.js
+frontend/components/ai-chatbot.php

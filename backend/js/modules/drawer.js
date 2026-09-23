@@ -1,4 +1,4 @@
-import { Drawer } from 'flowbite';
+﻿import { Drawer } from 'flowbite';
 
 const DEFAULT_PASSWORD = 'mjUgtong2026!';
 
@@ -55,196 +55,63 @@ function showFloatingUI() {
 function ensureAdminDrawer() {
     if (document.getElementById('adminCreateUserDrawer')) return;
 
+    const sections = [
+        ['dashboard', 'Dashboard', true, false],
+        ['budget', 'Budget Summary', true, true],
+        ['expenses', 'Expenses', true, true],
+        ['export', 'Export', true, false],
+    ];
+    const permissionRows = sections.map(([key, label, readDefault, editAvailable]) => `
+        <tr class="border-t border-slate-100">
+            <th class="px-3 py-2 font-medium text-slate-800">${label}</th>
+            <td class="px-3 py-2">${permissionSwitch(`permission-${key}-read`, readDefault)}</td>
+            <td class="px-3 py-2">${editAvailable ? permissionSwitch(`permission-${key}-edit`, false) : '-'}</td>
+            <td class="px-3 py-2">${key === 'export' ? permissionSwitch(`permission-${key}-export`, true) : '-'}</td>
+        </tr>`).join('');
+
     const drawerHTML = `
-        <!-- Admin Create User Drawer -->
-        <div id="adminCreateUserDrawer"
-             class="fixed top-0 right-0 z-50 h-screen w-full max-w-xl md:max-w-lg lg:max-w-xl p-4 md:p-6 overflow-y-auto bg-white shadow-[0_20px_60px_rgba(15,23,42,0.45)] border-l border-slate-200/80 transform translate-x-full transition-transform"
-             tabindex="-1"
-             aria-labelledby="adminCreateUserDrawerLabel">
-            <div class="flex items-center justify-between border-b border-slate-200 pb-4 mb-4">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400 mb-1">User profile</p>
-                    <h2 id="adminCreateUserDrawerLabel" class="text-xl font-bold text-slate-900 leading-tight">Create new user</h2>
-                </div>
-                <button type="button"
-                        id="adminDrawerCloseBtn"
-                        aria-controls="adminCreateUserDrawer"
-                        class="inline-flex items-center justify-center w-9 h-9 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 cursor-pointer transition-colors">
-                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/>
-                    </svg>
-                    <span class="sr-only">Close panel</span>
-                </button>
+        <div id="adminCreateUserDrawer" class="fixed top-0 right-0 z-[80] h-auto max-h-screen w-full max-w-3xl p-4 sm:p-5 lg:p-6 overflow-y-auto bg-white shadow-[-20px_0_60px_rgba(15,23,42,0.28)] border-l border-slate-200/80 transform translate-x-full transition-transform" tabindex="-1" aria-labelledby="adminCreateUserDrawerLabel">
+            <div class="flex items-start justify-between border-b border-slate-200 pb-3 mb-4">
+                <div><p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-600 mb-1">User management</p><h2 id="adminCreateUserDrawerLabel" class="text-xl font-bold text-slate-900 leading-tight">Add User</h2><p class="mt-1 text-sm text-slate-500">Create or delete new users for this account.</p></div>
+                <button type="button" id="adminDrawerCloseBtn" aria-controls="adminCreateUserDrawer" class="inline-flex items-center justify-center w-9 h-9 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 cursor-pointer transition-colors"><svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/></svg><span class="sr-only">Close panel</span></button>
             </div>
-
-            <div id="adminDrawerValidationError"
-                 class="hidden mb-4 p-3 text-xs md:text-sm text-rose-800 bg-rose-50 rounded-lg border border-rose-200"></div>
-
-            <form id="adminCreateUserDrawerForm" class="flex flex-col gap-6 pb-32 max-md:pb-40 md:pb-4">
-                <!-- Account section -->
-                <section class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                        <div class="md:col-span-4">
-                            <p class="text-[11px] font-semibold tracking-[0.18em] uppercase text-slate-400 mb-1.5">Account</p>
-                            <p class="text-sm text-slate-500">Basic credentials used to sign in.</p>
-                        </div>
-                        <div class="md:col-span-8 space-y-3">
-                            <div>
-                                <label for="admin-username" class="block mb-1 text-xs font-semibold text-slate-600">Username<span class="text-rose-500">*</span></label>
-                                <input id="admin-username" name="username" type="text" required
-                                       class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#224796] focus:border-[#224796]"
-                                       placeholder="e.g., jdoe" />
-                            </div>
-                            <div>
-                                <label for="admin-full-name" class="block mb-1 text-xs font-semibold text-slate-600">Full name<span class="text-rose-500">*</span></label>
-                                <input id="admin-full-name" name="full-name" type="text" required
-                                       class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#224796] focus:border-[#224796]"
-                                       placeholder="e.g., John Doe" />
-                            </div>
-                            <div>
-                                <label for="admin-email" class="block mb-1 text-xs font-semibold text-slate-600">Email<span class="text-rose-500">*</span></label>
-                                <input id="admin-email" name="email" type="email" required
-                                       class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#224796] focus:border-[#224796]"
-                                       placeholder="e.g., john.doe@example.com" />
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Role & details -->
-                <section class="space-y-4">
-                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                        <div class="md:col-span-4">
-                            <p class="text-[11px] font-semibold tracking-[0.18em] uppercase text-slate-400 mb-1.5">Role & details</p>
-                            <p class="text-sm text-slate-500">Assign access level and basic profile details.</p>
-                        </div>
-                        <div class="md:col-span-8 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div class="sm:col-span-2">
-                                <label for="admin-role" class="block mb-1 text-xs font-semibold text-slate-600">Role<span class="text-rose-500">*</span></label>
-                                <select id="admin-role" required
-                                        class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#224796] focus:border-[#224796] cursor-pointer">
-                                    <option value="">Select role...</option>
-                                    <option value="Administrator">Administrator</option>
-                                    <option value="CEO">CEO</option>
-                                    <option value="Manager">Manager</option>
-                                    <option value="Workmate">Workmate</option>
-                                    <option value="Staff">Staff</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label for="admin-phone" class="block mb-1 text-xs font-semibold text-slate-600">Mobile</label>
-                                <div class="flex rounded-lg border border-slate-300 bg-white overflow-hidden focus-within:ring-2 focus-within:ring-[#224796] focus-within:border-[#224796]">
-                                    <span class="inline-flex items-center px-3 text-xs font-semibold text-slate-600 bg-slate-50 border-r border-slate-200 select-none">+64</span>
-                                    <input id="admin-phone" name="phone" type="tel" inputmode="tel"
-                                           class="block w-full border-0 bg-transparent px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-0"
-                                           placeholder="9XXXXXXXX" />
-                                </div>
-                            </div>
-                            <div>
-                                <label for="admin-dob" class="block mb-1 text-xs font-semibold text-slate-600">Birthday</label>
-                                <input id="admin-dob" name="dob" type="date"
-                                       class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#224796] focus:border-[#224796]" />
-                            </div>
-                            <div>
-                                <label for="admin-gender" class="block mb-1 text-xs font-semibold text-slate-600">Gender</label>
-                                <select id="admin-gender"
-                                        class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#224796] focus:border-[#224796] cursor-pointer">
-                                    <option value="">Select gender...</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            <div class="sm:col-span-2">
-                                <label for="admin-bio" class="block mb-1 text-xs font-semibold text-slate-600">Short bio</label>
-                                <textarea id="admin-bio" rows="3"
-                                          class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#224796] focus:border-[#224796]"
-                                          placeholder="Brief description about the user..."></textarea>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Default password info -->
-                <section>
-                    <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2.5">
-                        <p class="text-[11px] md:text-xs font-semibold text-emerald-900">
-                            <strong>Default password:</strong> <span id="admin-default-password-label">${DEFAULT_PASSWORD}</span>
-                        </p>
-                        <p class="mt-1 text-[11px] md:text-xs text-emerald-700">
-                            The user will be asked to change this on their first login.
-                        </p>
-                    </div>
-                </section>
-
-                <!-- Footer actions -->
-                <div class="mt-4 border-t border-slate-200 pt-3 pb-3 bg-white max-md:fixed max-md:bottom-0 max-md:left-0 max-md:right-0 max-md:px-4 md:sticky md:bottom-0 md:left-0 md:right-0">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <button type="submit"
-                                class="inline-flex items-center justify-center rounded-lg bg-[#224796] px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-semibold text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-4 focus:ring-[#224796]/45 cursor-pointer w-full sm:w-[48%] md:w-[48%]">
-                            <svg class="mr-1.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                      d="M12 5v14m7-7H5" />
-                            </svg>
-                            Create user
-                        </button>
-                        <button type="button"
-                                id="adminDrawerCancelBtn"
-                                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-medium text-slate-800 hover:bg-red-50 hover:text-red-600 hover:border-red-300 focus:outline-none focus:ring-4 focus:ring-red-200 cursor-pointer w-full sm:w-[48%] md:w-[48%]">
-                            Cancel
-                        </button>
-                    </div>
-                </div>
+            <div id="adminDrawerValidationError" class="hidden mb-4 p-3 text-xs md:text-sm text-rose-800 bg-rose-50 rounded-lg border border-rose-200"></div>
+            <form id="adminCreateUserDrawerForm" class="flex flex-col gap-4">
+                <section><div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    ${field('admin-full-name','full-name','Name','Enter your full name','text')}
+                    ${field('admin-username','username','Username','Enter your username | e.g., maria.santos','text')}
+                    ${field('admin-email','email','Email','e.g., maria.santos@cho.gov.ph','email')}
+                    <div><label for="admin-role" class="block mb-1.5 text-sm font-semibold text-slate-800">Role</label><select id="admin-role" name="role" required class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-cyan-500 focus:ring-cyan-500"><option value="">Select role...</option><option>Administrator</option><option>CEO</option><option>Manager</option><option>Workmate</option><option>Staff</option></select></div>
+                    <div class="md:col-span-2"><label for="admin-password" class="flex items-center justify-between mb-1.5 text-sm font-semibold text-slate-800"><span>Password</span><button type="button" id="adminClearPassword" class="text-xs font-medium text-slate-500 hover:text-slate-900">Clear</button></label><div class="relative"><input id="admin-password" name="password" type="password" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 pr-11 text-sm tracking-[0.25em] text-slate-900 focus:border-cyan-500 focus:ring-cyan-500" placeholder="Default password" value="${DEFAULT_PASSWORD}" /><button type="button" id="adminPasswordEye" aria-label="Hold to show password" class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center text-slate-500 hover:text-cyan-600"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7Z"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg></button></div></div>
+                </div></section>
+                <section><div class="border-b border-slate-200 pb-2"><h3 class="text-lg font-semibold text-slate-900">User Permissions</h3><p class="mt-1 text-sm text-slate-500">Select what a user can see or do in the app.</p></div><div class="mt-3 overflow-x-auto rounded-lg border border-slate-200"><table class="w-full min-w-[560px] text-sm text-left"><thead class="bg-slate-50 text-slate-600"><tr><th class="px-3 py-2 font-medium">Section</th><th class="px-3 py-2 font-medium">Read</th><th class="px-3 py-2 font-medium">Edit</th><th class="px-3 py-2 font-medium">Export</th></tr></thead><tbody>${permissionRows}</tbody></table></div></section>
+                <section><div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2"><p class="text-xs font-semibold text-emerald-900"><strong>Default password:</strong> <span>${DEFAULT_PASSWORD}</span></p><p class="mt-1 text-xs text-emerald-700">The user can change this after signing in.</p></div></section>
+                <div class="sticky bottom-0 z-10 mt-3 border-t border-slate-200 bg-white pt-3"><div class="flex items-center gap-3"><button type="button" id="adminDrawerCancelBtn" class="inline-flex items-center justify-center rounded-lg border border-rose-600 bg-transparent w-1/2 px-4 py-2 text-sm font-semibold text-rose-600 shadow-sm hover:bg-rose-600 hover:border-rose-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-rose-200 cursor-pointer">Discard</button><button type="submit" class="inline-flex items-center justify-center rounded-lg bg-cyan-600 w-1/2 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700 focus:outline-none focus:ring-4 focus:ring-cyan-200 cursor-pointer"><svg class="mr-1.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"/></svg>Create User</button></div></div>
             </form>
-        </div>
-    `;
-
+        </div>`;
     document.body.insertAdjacentHTML('beforeend', drawerHTML);
-
     const drawerEl = document.getElementById('adminCreateUserDrawer');
-    const cancelBtn = document.getElementById('adminDrawerCancelBtn');
-    const closeBtn = document.getElementById('adminDrawerCloseBtn');
     const form = document.getElementById('adminCreateUserDrawerForm');
-    const phoneInput = document.getElementById('admin-phone');
-
-    if (!drawerEl) return;
-
-    adminDrawerInstance = new Drawer(drawerEl, {
-        placement: 'right',
-        backdrop: 'dynamic',
-        backdropClasses: 'bg-slate-900/30 fixed inset-0 z-40'
-    });
-
-    const hideDrawer = () => {
-        adminDrawerInstance?.hide();
-        adminDrawerOnConfirm = null;
-        adminDrawerValidationError = null;
-        showFloatingUI();
-    };
-
-    cancelBtn?.addEventListener('click', hideDrawer);
-    closeBtn?.addEventListener('click', hideDrawer);
-
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') hideDrawer();
-    });
-
-    // Phone normalization on blur
-    phoneInput?.addEventListener('blur', () => {
-        let value = phoneInput.value || '';
-        let digits = value.replace(/[^0-9]/g, '');
-        if (digits.startsWith('0')) {
-            digits = digits.slice(1);
-        }
-        phoneInput.value = digits;
-    });
-
-    form?.addEventListener('submit', (e) => {
-        e.preventDefault();
-        handleAdminDrawerSubmit();
-    });
+    adminDrawerInstance = new Drawer(drawerEl, { placement: 'right', backdrop: 'dynamic', backdropClasses: 'bg-slate-900/40 backdrop-blur-sm fixed inset-0 z-[70]' });
+    const hideDrawer = () => { adminDrawerInstance?.hide(); adminDrawerOnConfirm = null; adminDrawerValidationError = null; showFloatingUI(); };
+    document.getElementById('adminDrawerCancelBtn')?.addEventListener('click', hideDrawer);
+    document.getElementById('adminDrawerCloseBtn')?.addEventListener('click', hideDrawer);
+    document.getElementById('adminClearPassword')?.addEventListener('click', () => { const input = document.getElementById('admin-password'); if (input) input.value = ''; });
+    const eye = document.getElementById('adminPasswordEye');
+    const password = document.getElementById('admin-password');
+    const reveal = () => { if (password) password.type = 'text'; };
+    const conceal = () => { if (password) password.type = 'password'; };
+    eye?.addEventListener('pointerdown', reveal); eye?.addEventListener('pointerup', conceal); eye?.addEventListener('pointerleave', conceal); eye?.addEventListener('pointercancel', conceal);
+    form?.addEventListener('submit', (e) => { e.preventDefault(); handleAdminDrawerSubmit(); });
 }
 
+function field(id, name, label, placeholder, type) {
+    return `<div><label for="${id}" class="block mb-1.5 text-sm font-semibold text-slate-800">${label}</label><input id="${id}" name="${name}" type="${type}" required class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-cyan-500 focus:ring-cyan-500" placeholder="${placeholder}" /></div>`;
+}
+
+function permissionSwitch(name, checked) {
+    return `<label class="inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" name="${name}" class="sr-only peer" ${checked ? 'checked' : ''}><span class="relative h-5 w-9 rounded-full bg-slate-200 peer-checked:bg-cyan-600 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full"></span><span class="text-xs text-slate-500">Active</span></label>`;
+}
 function ensureBudgetDrawer() {
     if (document.getElementById('budgetCreateDrawer')) return;
 
@@ -318,10 +185,10 @@ function ensureBudgetDrawer() {
                         </div>
                         <div class="space-y-1.5">
                             <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">
-                                Budget Allocation (₱) <span class="text-rose-500">*</span>
+                                Budget Allocation (â‚±) <span class="text-rose-500">*</span>
                             </label>
                             <div class="relative">
-                                <span class="absolute left-4 top-2.5 text-slate-400 text-sm font-bold">₱</span>
+                                <span class="absolute left-4 top-2.5 text-slate-400 text-sm font-bold">â‚±</span>
                                 <input type="number" step="0.01" id="budget-budget" placeholder="0.00"
                                        class="w-full pl-8 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-hidden text-[#224796]" />
                             </div>
@@ -339,7 +206,7 @@ function ensureBudgetDrawer() {
                         <div class="grid grid-cols-2 gap-8">
                             <div class="space-y-1">
                                 <p class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest opacity-80">Remaining Balance</p>
-                                <p id="budget-remaining-amount" class="text-2xl font-black text-white tracking-tight">₱0.00</p>
+                                <p id="budget-remaining-amount" class="text-2xl font-black text-white tracking-tight">â‚±0.00</p>
                             </div>
                             <div class="space-y-1">
                                 <p class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest opacity-80">Utilization Efficiency</p>
@@ -587,7 +454,7 @@ function ensureMonthlyDrawer() {
                 <!-- Monthly Values Grid -->
                 <section class="space-y-4">
                     <div class="grid grid-cols-1 md:grid-cols-[136px_1fr] gap-2 md:gap-3 items-start">
-                        <label class="text-sm font-medium text-slate-700 pt-1 md:pt-2">Monthly Values (₱)</label>
+                        <label class="text-sm font-medium text-slate-700 pt-1 md:pt-2">Monthly Values (â‚±)</label>
                         <div class="w-full">
                             <div id="monthly-months-grid" class="grid max-h-[360px] grid-cols-2 gap-3 overflow-y-auto pr-1 pb-2 sm:grid-cols-3 md:max-h-[320px] md:grid-cols-4 lg:grid-cols-3">
                                 <!-- Month inputs injected by JS -->
@@ -602,7 +469,7 @@ function ensureMonthlyDrawer() {
                         <label class="text-sm font-medium text-slate-700 pt-1 md:pt-2">Total</label>
                         <div class="w-full rounded-lg border border-slate-200 bg-linear-to-br from-slate-50 to-slate-100 p-4">
                             <p class="mb-1.5 text-xs font-medium text-slate-500">Total Amount</p>
-                            <p id="monthly-total-amount" class="text-lg font-semibold text-slate-900 md:text-xl">₱0.00</p>
+                            <p id="monthly-total-amount" class="text-lg font-semibold text-slate-900 md:text-xl">â‚±0.00</p>
                         </div>
                     </div>
                 </section>
@@ -787,39 +654,15 @@ function handleAdminDrawerSubmit() {
     const form = document.getElementById('adminCreateUserDrawerForm');
     const errorEl = document.getElementById('adminDrawerValidationError');
     if (!form) return;
-
     const formData = new FormData(form);
-    const userData = {
-        username: (formData.get('username') || '').toString().trim(),
-        fullName: (formData.get('full-name') || '').toString().trim(),
-        email: (formData.get('email') || '').toString().trim(),
-        role: document.getElementById('admin-role')?.value || '',
-        phone: (formData.get('phone') || '').toString().trim(),
-        dob: (formData.get('dob') || '').toString(),
-        gender: document.getElementById('admin-gender')?.value || '',
-        bio: document.getElementById('admin-bio')?.value || '',
-    };
-
-    if (!userData.username || !userData.fullName || !userData.email || !userData.role) {
-        if (errorEl) {
-            errorEl.textContent = 'Please fill in all required fields.';
-            errorEl.classList.remove('hidden');
-        }
-        adminDrawerValidationError = 'Validation error';
-        return;
-    }
-
-    if (errorEl) {
-        errorEl.classList.add('hidden');
-    }
-
+    const permissions = {};
+    ['dashboard','budget','expenses','export'].forEach((key) => { permissions[key] = { read: formData.get(`permission-${key}-read`) !== null, edit: formData.get(`permission-${key}-edit`) !== null, export: formData.get(`permission-${key}-export`) !== null }; });
+    const userData = { username: (formData.get('username') || '').toString().trim(), fullName: (formData.get('full-name') || '').toString().trim(), email: (formData.get('email') || '').toString().trim(), role: (formData.get('role') || '').toString(), password: (formData.get('password') || '').toString(), permissions };
+    if (!userData.username || !userData.fullName || !userData.email || !userData.role) { if (errorEl) { errorEl.textContent = 'Please fill in all required fields.'; errorEl.classList.remove('hidden'); } return; }
+    if (errorEl) errorEl.classList.add('hidden');
     adminDrawerInstance?.hide();
-
-    if (adminDrawerOnConfirm) {
-        adminDrawerOnConfirm(userData);
-    }
+    if (adminDrawerOnConfirm) adminDrawerOnConfirm(userData);
 }
-
 /**
  * Public API used by admin.js
  */
@@ -831,6 +674,10 @@ export function showAdminCreateUserDrawer(onConfirm) {
     const errorEl = document.getElementById('adminDrawerValidationError');
 
     form?.reset();
+    document.getElementById('adminCreateUserDrawerLabel').textContent = 'Add User';
+    document.getElementById('admin-username').readOnly = false;
+    const submitButton = document.querySelector('#adminCreateUserDrawerForm button[type="submit"]');
+    if (submitButton) submitButton.lastChild.textContent = 'Create User';
     if (errorEl) {
         errorEl.classList.add('hidden');
     }
@@ -845,4 +692,36 @@ export function showAdminCreateUserDrawer(onConfirm) {
         usernameInput.select();
     }
 }
+
+
+
+
+
+
+
+
+
+export async function showAdminEditUserDrawer(username, onConfirm) {
+    ensureAdminDrawer();
+    const path = window.location.pathname;
+    const base = path.substring(0, path.indexOf('/frontend/') !== -1 ? path.indexOf('/frontend/') : path.lastIndexOf('/'));
+    const response = await fetch(`${base}/api/users/get.php?username=${encodeURIComponent(username)}`, { credentials: 'same-origin' });
+    const data = await response.json();
+    if (!response.ok || !data.user) throw new Error(data.message || 'Unable to load user');
+    const user = data.user;
+    adminDrawerOnConfirm = onConfirm;
+    document.getElementById('adminCreateUserDrawerLabel').textContent = 'Edit User';
+    document.getElementById('adminCreateUserDrawerLabel')?.nextElementSibling?.replaceChildren(document.createTextNode('Update this user account and access.'));
+    document.getElementById('admin-full-name').value = user.full_name || '';
+    document.getElementById('admin-username').value = user.username || '';
+    document.getElementById('admin-username').readOnly = true;
+    document.getElementById('admin-email').value = user.email || '';
+    document.getElementById('admin-role').value = user.role || '';
+    document.getElementById('admin-password').value = '';
+    document.querySelector('#adminCreateUserDrawerForm button[type="submit"]').lastChild.textContent = 'Save Changes';
+    document.getElementById('adminDrawerValidationError')?.classList.add('hidden');
+    hideFloatingUI();
+    adminDrawerInstance?.show();
+}
+
 

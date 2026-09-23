@@ -24,23 +24,10 @@ REM Base URL: http://localhost/<folder>/
 set "TARGET_URL=http://localhost/!FOLDER_NAME!/"
 
 REM ------------------------------------------------------------------
-REM 1) Run npm install and npm run build (with 5-minute timeout check)
+REM 1) Run npm install and npm run build (Production Build Mode)
 REM ------------------------------------------------------------------
-set "RUN_BUILD=1"
-set "MARKER_FILE=%FINAL_PROJECT_PATH%\.build_timestamp"
-
-if exist "!MARKER_FILE!" (
-    for /f "delims=" %%i in ('powershell -NoProfile -Command "if ((Get-Date) - (Get-Item '!MARKER_FILE!').LastWriteTime -le [TimeSpan]::FromMinutes(5)) { Write-Output 'SKIP' } else { Write-Output 'RUN' }"') do set "CHECK_TIME=%%i"
-    if "!CHECK_TIME!"=="SKIP" (
-        set "RUN_BUILD=0"
-    )
-)
-
-REM We use flat logic here (goto) to prevent Batch parenthesis crashes
-if "!RUN_BUILD!"=="0" goto skip_build
-
-echo Running npm install and npm run build in "!FINAL_PROJECT_PATH!"...
-call :log Running npm install in !FINAL_PROJECT_PATH! (CMD)
+echo Running npm install and fresh production build in "!FINAL_PROJECT_PATH!"...
+call :log Running npm install and npm run build (Production Build Mode)
 pushd "!FINAL_PROJECT_PATH!"
 
 call npm install
@@ -51,8 +38,8 @@ call npm run build
 if errorlevel 1 goto fallback_gitbash
 
 REM If we reach here, standard CMD succeeded!
-echo. > "!MARKER_FILE!"
-call :log Build successful (CMD). Updated timestamp marker.
+echo. > "%FINAL_PROJECT_PATH%\.build_timestamp"
+call :log Production build successful (CMD).
 goto finish_build
 
 REM ------------------------------------------------------------------
@@ -101,11 +88,6 @@ if defined GIT_BASH_EXE (
 :finish_build
 popd
 goto setup_laragon
-
-:skip_build
-echo Build was successfully executed within the last 5 minutes.
-echo Skipping npm install and npm run build...
-call :log Skipped npm install and build (ran less than 5 mins ago).
 
 :setup_laragon
 REM ------------------------------------------------------------------

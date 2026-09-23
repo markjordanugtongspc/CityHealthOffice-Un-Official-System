@@ -3,7 +3,10 @@
  * Handles the floating AI chat button and chat interface
  */
 
+// START: AI Chatbot Module (Temporarily Disabled)
 export function init() {
+    // Temporary disabled per user request
+    return;
     // Only attach once
     if (document.getElementById('aiChatButton')) return;
 

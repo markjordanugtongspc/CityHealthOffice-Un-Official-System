@@ -82,13 +82,15 @@ function clearUserSession() {
  */
 function requireAuth($returnJson = false) {
     if (!isLoggedIn()) {
+        $loginRedirect = '/Project/?auth_error=login_required';
+
         if ($returnJson) {
             header('Content-Type: application/json');
             http_response_code(401);
             echo json_encode([
                 'success' => false,
                 'message' => 'Authentication required',
-                'redirect' => '/'
+                'redirect' => $loginRedirect
             ]);
             exit;
         } else {
@@ -103,7 +105,7 @@ function requireAuth($returnJson = false) {
                 exit;
             }
             // For frontend pages, redirect to login
-            header('Location: /');
+            header('Location: ' . $loginRedirect);
             exit;
         }
     }

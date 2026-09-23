@@ -18,7 +18,7 @@ export function init() {
     btn.type = 'button';
     btn.setAttribute('aria-label', 'Scroll to top');
     btn.className =
-  'fixed animate-bounce duration-100 ease-in-out bottom-24 right-6 z-[9999] hidden items-center justify-center rounded-full bg-[#224796] text-white shadow-lg ring-1 ring-black/10 transition hover:bg-[#163473] focus:outline-none focus:ring-4 focus:ring-[#224796]/30 cursor-pointer w-12 h-12';
+        'fixed animate-bounce duration-100 ease-in-out bottom-4 right-4 z-[1001] hidden items-center justify-center rounded-full bg-[#224796] text-white shadow-lg ring-1 ring-black/10 transition hover:bg-[#163473] focus:outline-none focus:ring-4 focus:ring-[#224796]/30 cursor-pointer w-14 h-14';
 
     btn.innerHTML = `
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">

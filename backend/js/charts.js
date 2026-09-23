@@ -1,2024 +1,630 @@
-/**
- * Charts module for Dashboard
- * Modern Flowbite Charts implementation using ApexCharts
- */
+/** Dashboard financial charts: mock data placeholders until API endpoints are connected. */
+let ApexCharts = null;
 
-// Color palette matching brand colors
-const colors = {
-    primary: '#224796',
-    secondary: '#FCF350',
-    accent1: '#10b981', // Emerald
-    accent2: '#f43f5e', // Rose
-    accent3: '#6366f1', // Indigo
-    chartColors: [
-        '#224796', // Brand Blue
-        '#FCF350', // Brand Gold
-        '#10b981', // Emerald
-        '#6366f1', // Indigo
-        '#f43f5e', // Rose
-        '#06b6d4', // Cyan
-        '#f59e0b', // Amber
-        '#8b5cf6', // Violet
-        '#14b8a6', // Teal
-        '#ef4444', // Red
-        '#3b82f6', // Bright Blue
-        '#ec4899'  // Pink
-    ]
+const charts = {};
+const peso = new Intl.NumberFormat('en-PH', {
+    style: 'currency',
+    currency: 'PHP',
+    maximumFractionDigits: 0,
+});
+
+const STORAGE_KEY = 'cho_cashflow_year';
+const SUPPLIES_VIEW_KEY = 'cho_supplies_view';
+const REMAINING_YEAR_KEY = 'cho_remaining_budget_year';
+const SUPPLIES_YEAR_KEY = 'cho_supplies_year';
+const SUPPLIES_MONTH_KEY = 'cho_supplies_month';
+const OFFICE_YEAR_KEY = 'cho_office_financial_year';
+let suppliesView = localStorage.getItem(SUPPLIES_VIEW_KEY) === 'payment' ? 'payment' : 'category';
+let remainingBudgetYear = localStorage.getItem(REMAINING_YEAR_KEY) || '2026';
+let suppliesYear = localStorage.getItem(SUPPLIES_YEAR_KEY) || '2026';
+let suppliesMonth = localStorage.getItem(SUPPLIES_MONTH_KEY) || 'all';
+let officeFinancialYear = localStorage.getItem(OFFICE_YEAR_KEY) || '2026';
+
+const mock = {
+    stats: {
+        totalBudget: 418750000,
+        yearlyBudget: 418750000,
+        totalExpenses: 173840000,
+        fundDownloaded: 244910000,
+    },
+    cashflow: {
+        2026: {
+            cashInBank: [12400000, 9800000, 14850000, 16200000, 13750000, 18450000, 17200000, 19650000, 22100000, 18800000, 24350000, 26750000],
+            expenses: [8100000, 6300000, 9000000, 10250000, 8700000, 12000000, 11100000, 13600000, 14900000, 12800000, 16650000, 18350000],
+            recordedAt: 'Updated Sep 22, 2026 08:30 AM',
+        },
+        2025: {
+            cashInBank: [10250000, 8900000, 11800000, 13300000, 12750000, 15100000, 16200000, 17400000, 18900000, 17100000, 19800000, 21600000],
+            expenses: [6800000, 5900000, 7200000, 8600000, 8200000, 9700000, 10800000, 11600000, 12600000, 11900000, 13900000, 15100000],
+            recordedAt: 'Closed Dec 31, 2025 05:00 PM',
+        },
+        2024: {
+            cashInBank: [8800000, 7600000, 9600000, 11200000, 10400000, 12900000, 13800000, 15100000, 16300000, 15400000, 17700000, 19200000],
+            expenses: [5200000, 4800000, 6100000, 7300000, 7000000, 8400000, 9300000, 10100000, 11200000, 10700000, 12100000, 13400000],
+            recordedAt: 'Closed Dec 31, 2024 05:00 PM',
+        },
+    },
+    months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+    remaining: [28500000, 24000000, 18800000, 15100000, 11900000, 9400000, 7200000, 5200000, 3500000, 2100000, 1100000, 420000],
+    supplies: [
+        { name: 'Medicines', y: 7450000, color: '#0F766E', method: 'Cheque', recordedAt: 'Sep 21, 2026 02:40 PM' },
+        { name: 'Laboratory supplies', y: 4250000, color: '#2563EB', method: 'Cheque', recordedAt: 'Sep 20, 2026 11:10 AM' },
+        { name: 'Office supplies', y: 2980000, color: '#F59E0B', method: 'Cash', recordedAt: 'Sep 20, 2026 10:15 AM' },
+        { name: 'Medical equipment', y: 3420000, color: '#BE123C', method: 'Cheque', recordedAt: 'Sep 19, 2026 03:25 PM' },
+    ],
+    offices: [
+        { name: 'BTSD MOOE - Income', data: [12500000, 14500000, 16800000, 18100000, 19400000, 22100000, 23900000, 25800000, 27600000, 29100000, 31800000, 34200000] },
+        { name: 'BTSD SPF Programs - Expenses', data: [8200000, 9600000, 11100000, 12600000, 13900000, 15100000, 16800000, 18200000, 19700000, 21400000, 23200000, 24900000] },
+        { name: 'PhilHealth Konsulta/Yakap/MCP - Income', data: [4800000, 5200000, 6100000, 6900000, 7300000, 8100000, 9200000, 10100000, 11200000, 12100000, 13400000, 14800000] },
+        { name: 'CHO Professional Fee Account - Expenses', data: [3100000, 3600000, 4200000, 4700000, 5100000, 5800000, 6400000, 7200000, 7900000, 8600000, 9400000, 10300000] },
+    ],
+    dv: [
+        ['DV-2026-0018', 'City Health Office - BTSD', 'Medical supplies replenishment', 1850000, 'Sep 21, 2026 09:42 AM', 'For review'],
+        ['DV-2026-0019', 'CHO Marawi BARMM', 'Konsulta medicines', 2345000, 'Sep 20, 2026 02:16 PM', 'For approval'],
+        ['DV-2026-0020', 'CHO Professional Fee Account', 'MCP professional fees', 980000, 'Sep 19, 2026 10:08 AM', 'For review'],
+        ['DV-2026-0021', 'City Health Office - BTSD', 'Laboratory reagents', 1265000, 'Sep 18, 2026 04:25 PM', 'For approval'],
+        ['DV-2026-0022', 'CHO Marawi BARMM', 'Yakap facility expenses', 3180000, 'Sep 17, 2026 11:31 AM', 'For review'],
+        ['DV-2026-0023', 'City Health Office - BTSD', 'Office operating expenses', 745000, 'Sep 16, 2026 08:54 AM', 'For approval'],
+    ],
 };
 
-// Simple currency formatter for peso values
-function formatCurrency(value) {
-    if (typeof value !== 'number' || isNaN(value)) {
-        return '₱0';
-    }
-    return '₱' + value.toLocaleString();
-}
-
-let ApexCharts;
-const chartInstances = {};
-
-/**
- * Toggle skeleton/loading state for chart containers.
- * Expects a chart element with id=chartId and a skeleton with id=skeletonId.
- */
-function toggleChartSkeleton(chartId, skeletonId, isLoading) {
-    const chartEl = document.getElementById(chartId);
-    const skeletonEl = document.getElementById(skeletonId);
-    if (!chartEl || !skeletonEl) return;
-    if (isLoading) {
-        skeletonEl.classList.remove('hidden');
-        chartEl.classList.add('hidden');
-    } else {
-        skeletonEl.classList.add('hidden');
-        chartEl.classList.remove('hidden');
-    }
-}
-
-function getApiBasePath() {
-    const path = window.location.pathname || '/';
-    const idx = path.indexOf('/frontend/');
-    return idx !== -1 ? path.substring(0, idx) : path.substring(0, path.lastIndexOf('/')) || '';
-}
-
-// -----------------------------------------------------------------------------
-// Lightweight dashboard caching (localStorage)
-// -----------------------------------------------------------------------------
-
-const DASHBOARD_CACHE_KEY = 'dashboardState_v1';
-
-function loadDashboardCache() {
-    try {
-        const raw = localStorage.getItem(DASHBOARD_CACHE_KEY);
-        if (!raw) return null;
-        return JSON.parse(raw);
-    } catch {
-        return null;
-    }
-}
-
-function saveDashboardCache(partial) {
-    try {
-        const current = loadDashboardCache() || {};
-        const next = { ...current, ...partial, updatedAt: Date.now() };
-        localStorage.setItem(DASHBOARD_CACHE_KEY, JSON.stringify(next));
-    } catch {
-        // ignore storage errors
-    }
-}
-
-function hydrateDashboardFromCache() {
-    const cache = loadDashboardCache();
-    if (!cache) return;
-
-    // Top stat cards
-    if (cache.totalIncome) {
-        const el = document.getElementById('dashboardTotalIncome');
-        if (el) el.textContent = cache.totalIncome;
-    }
-    if (cache.totalExpenses) {
-        const el = document.getElementById('dashboardTotalExpenses');
-        if (el) el.textContent = cache.totalExpenses;
-    }
-    if (cache.fundDownloadedTotal) {
-        const el = document.getElementById('dashboardFundDownloadedTotal');
-        if (el) el.textContent = cache.fundDownloadedTotal;
-    }
-}
-
-/**
- * Initialize all charts
- */
-export async function init() {
-    // First, hydrate static values from localStorage so the UI feels instant
-    hydrateDashboardFromCache();
-
-    try {
-        const apexchartsModule = await import('apexcharts');
-
-        if (typeof apexchartsModule.default !== 'undefined') {
-            ApexCharts = apexchartsModule.default;
-        } else if (typeof apexchartsModule.ApexCharts !== 'undefined') {
-            ApexCharts = apexchartsModule.ApexCharts;
-        } else if (typeof apexchartsModule === 'function') {
-            ApexCharts = apexchartsModule;
-        } else {
-            ApexCharts = apexchartsModule.default || apexchartsModule;
-        }
-
-        if (!ApexCharts || typeof ApexCharts !== 'function') {
-            console.error('ApexCharts not found or not a constructor');
-            return;
-        }
-
-        const initCharts = () => {
-            setTimeout(() => {
-                initializeCharts();
-            }, 300);
-        };
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', initCharts);
-        } else {
-            initCharts();
-        }
-    } catch (error) {
-        console.error('Failed to load ApexCharts:', error);
-    }
-}
-
-/**
- * Initialize all chart instances
- */
-function initializeCharts() {
-    if (!ApexCharts) {
-        console.error('ApexCharts not loaded');
-        return;
-    }
-
-    // Page 1: Vouchers Charts
-    initMonthlyVouchersChart();
-    initFundDownloadedTimelineChart();
-    initFundDownloadedSummaryChart();
-    initWeeklyVouchersChart();
-    initDailyVouchersChart();
-    initYearlyVouchersChart();
-
-    // Page 2: Daily Transactions Charts
-    initDailyTransactionsPieChart();
-    initExpensesOverviewChart();
-    initExpensesCategoryChart();
-
-    // Page 3: Monthly/Weekly Transactions Charts
-    initMonthlyTransactionsChart();
-    initWeeklyTransactionsChart();
-
-    // Page 4: Quarterly Transactions Charts
-    initQuarterlyTransactionsChart();
-    initQuarterlyComparisonChart();
-
-    // Page 5: Expenses Charts
-    initExpensesOverviewChart();
-    initExpensesCategoryChart();
-}
-
-/**
- * Initialize charts for a specific page
- */
-window.initPageCharts = function (pageNumber) {
-    if (!ApexCharts) return;
-
-    setTimeout(() => {
-        switch (pageNumber) {
-            case 1:
-                initMonthlyVouchersChart();
-                initFundDownloadedTimelineChart();
-                initFundDownloadedSummaryChart();
-                initWeeklyVouchersChart();
-                initDailyVouchersChart();
-                initYearlyVouchersChart();
-                break;
-            case 2:
-                initDailyTransactionsPieChart();
-                initExpensesOverviewChart();
-                initExpensesCategoryChart();
-                break;
-            case 3:
-                initMonthlyTransactionsChart();
-                initWeeklyTransactionsChart();
-                break;
-            case 4:
-                initQuarterlyTransactionsChart();
-                initQuarterlyComparisonChart();
-                break;
-            case 5:
-                initExpensesOverviewChart();
-                initExpensesCategoryChart();
-                break;
-        }
-    }, 100);
-};
-
-/**
- * Monthly Vouchers Donut Chart - Flowbite Style
- */
-function initMonthlyVouchersChart() {
-    const chartElement = document.getElementById('monthlyVouchersChart');
-    if (!chartElement || !ApexCharts) return;
-
-    // Show skeleton while setting up this chart
-    toggleChartSkeleton('monthlyVouchersChart', 'monthlyVouchersSkeleton', true);
-
-    // Brand colors
-    const brandColor = colors.primary;
-    const brandSecondaryColor = colors.secondary;
-    const brandTertiaryColor = colors.accent1;
-
-    // Base monthly cash-in-bank data (used to derive yearly data)
-    const monthlyBaseData = {
-        'Jan': { value: 285, quarter: 'Q1' },
-        'Feb': { value: 312, quarter: 'Q1' },
-        'Mar': { value: 298, quarter: 'Q1' },
-        'Apr': { value: 345, quarter: 'Q2' },
-        'May': { value: 367, quarter: 'Q2' },
-        'Jun': { value: 389, quarter: 'Q2' },
-        'Jul': { value: 425, quarter: 'Q3' },
-        'Aug': { value: 398, quarter: 'Q3' },
-        'Sep': { value: 356, quarter: 'Q3' },
-        'Oct': { value: 334, quarter: 'Q4' },
-        'Nov': { value: 301, quarter: 'Q4' },
-        'Dec': { value: 278, quarter: 'Q4' }
-    };
-
-    const years = [2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025, 2026];
-
-    // Build synthetic yearly datasets based on the base data
-    const cashInBankByYear = {};
-    years.forEach((year, index) => {
-        const scale = 0.65 + index * 0.05; // slightly increase per year (starting from 0.65 for 2018)
-        const yearData = {};
-        Object.keys(monthlyBaseData).forEach((month) => {
-            yearData[month] = {
-                quarter: monthlyBaseData[month].quarter,
-                value: Math.round(monthlyBaseData[month].value * scale)
-            };
-        });
-        cashInBankByYear[year] = yearData;
-    });
-
-    // Category multipliers (for future real data these would come from API)
-    const categoryMultipliers = {
-        all: 1,
-        MOOE: 0.6,
-        PHM: 0.5,
-        PHIC: 0.5,
-        'PHM - Konsulta': 0.35,
-        'PHM - SPF': 0.25,
-        'PHIC - PF': 0.55,
-        'PHIC - Facility': 0.45
-    };
-
-    // PHM sub-type multipliers
-    const phmSubtypeMultipliers = {
-        'PHM - Konsulta': 0.35,
-        'PHM - SPF': 0.25
-    };
-
-    // PHIC sub-type multipliers
-    const phicSubtypeMultipliers = {
-        'PHIC - PF': 0.55,
-        'PHIC - Facility': 0.45
-    };
-
-    let currentYear = new Date().getFullYear();
-    if (!years.includes(currentYear)) {
-        currentYear = 2026;
-    }
-    let currentCategory = 'all';
-    let currentPhmSubtype = 'PHM - Konsulta';
-    let currentPhicSubtype = 'PHIC - PF';
-
-    // Labels/series references used by formatters (kept up to date)
-    let labels = [];
-    let series = [];
-    let total = 0;
-
-    function buildData(year, category) {
-        const yearData = cashInBankByYear[year] || cashInBankByYear[2026];
-        let multiplier;
-
-        if (category === 'PHM') {
-            multiplier = phmSubtypeMultipliers[currentPhmSubtype] || categoryMultipliers.PHM;
-        } else if (category === 'PHIC') {
-            multiplier = phicSubtypeMultipliers[currentPhicSubtype] || categoryMultipliers.PHIC;
-        } else {
-            multiplier = categoryMultipliers[category] || 1;
-        }
-
-        labels = Object.keys(yearData);
-        series = labels.map((month) => Math.round(yearData[month].value * multiplier));
-        total = series.reduce((sum, val) => sum + val, 0);
-
-        return { labels, series, total };
-    }
-
-    // Initial data build
-    buildData(currentYear, currentCategory);
-
-    // Generate colors for 12 months using premium palette
-    const generateColors = () => {
-        return colors.chartColors.slice(0, 12);
-    };
-
-    /** Full donut label config (Apex `responsive` uses window width, not card width — we sync from `[data-cash-chart-wrap]` instead). */
-    const buildDonutLabels = (tier) => {
-        const totalFormatter = function (w) {
-            const sum = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-            return formatCurrency(sum);
-        };
-        const valueFormatter = (value) => formatCurrency(value);
-        if (tier === 'compact') {
-            return {
-                show: true,
-                name: {
-                    show: true,
-                    fontFamily: 'inherit',
-                    offsetY: 12,
-                    fontSize: '10px',
-                    fontWeight: 600,
-                    color: '#224796'
-                },
-                total: {
-                    showAlways: true,
-                    show: true,
-                    label: 'Yearly Revenue',
-                    fontFamily: 'inherit',
-                    fontSize: '8px',
-                    fontStyle: 'uppercase',
-                    fontWeight: 900,
-                    color: '#94a3b8',
-                    formatter: totalFormatter
-                },
-                value: {
-                    show: true,
-                    fontFamily: 'inherit',
-                    offsetY: -10,
-                    fontSize: '15px',
-                    fontWeight: 800,
-                    color: '#1e293b',
-                    formatter: valueFormatter
-                }
-            };
-        }
-        if (tier === 'medium') {
-            return {
-                show: true,
-                name: {
-                    show: true,
-                    fontFamily: 'inherit',
-                    offsetY: 16,
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    color: '#224796'
-                },
-                total: {
-                    showAlways: true,
-                    show: true,
-                    label: 'Yearly Revenue',
-                    fontFamily: 'inherit',
-                    fontSize: '10px',
-                    fontStyle: 'uppercase',
-                    fontWeight: 900,
-                    color: '#94a3b8',
-                    formatter: totalFormatter
-                },
-                value: {
-                    show: true,
-                    fontFamily: 'inherit',
-                    offsetY: -15,
-                    fontSize: '19px',
-                    fontWeight: 900,
-                    color: '#1e293b',
-                    formatter: valueFormatter
-                }
-            };
-        }
-        return {
-            show: true,
-            name: {
-                show: true,
-                fontFamily: 'inherit',
-                offsetY: 20,
-                fontSize: '14px',
-                fontWeight: 500,
-                color: '#224796'
-            },
-            total: {
-                showAlways: true,
-                show: true,
-                label: 'Yearly Revenue',
-                fontFamily: 'inherit',
-                fontSize: '12px',
-                fontStyle: 'uppercase',
-                fontWeight: 900,
-                color: '#94a3b8',
-                formatter: totalFormatter
-            },
-            value: {
-                show: true,
-                fontFamily: 'inherit',
-                offsetY: -20,
-                fontSize: '24px',
-                fontWeight: 900,
-                color: '#1e293b',
-                formatter: valueFormatter
-            }
-        };
-    };
-
-    /**
-     * Size donut to the wrapper width. Tall charts in narrow grid columns caused the pie to extend past the cell and get clipped.
-     */
-    const getWrapChartLayout = (cw) => {
-        const w = Math.max(cw, 80);
-        const capHeight = Math.round(Math.min(w * 1.12 + 44, w + 120));
-        const pick = (height, size, tier) => ({
-            height: Math.min(Math.max(120, height), capHeight),
-            size,
-            tier
-        });
-        if (w < 300) return pick(198, '58%', 'compact');
-        if (w < 360) return pick(220, '61%', 'compact');
-        if (w < 440) return pick(248, '65%', 'medium');
-        if (w < 520) return pick(278, '69%', 'medium');
-        if (w < 640) return pick(310, '72%', 'medium');
-        if (w < 768) return pick(340, '75%', 'medium');
-        if (w < 900) return pick(368, '77%', 'full');
-        if (w < 1024) return pick(392, '79%', 'full');
-        if (w < 1280) return pick(418, '81%', 'full');
-        return { height: Math.min(430, capHeight), size: '82%', tier: 'full' };
-    };
-
-    const getChartOptions = () => {
-        let wrapW = document.querySelector('[data-cash-chart-wrap]')?.getBoundingClientRect().width ?? 0;
-        if (wrapW < 80) {
-            wrapW = Math.min(Math.max(window.innerWidth - 64, 280), 1200);
-        }
-        const initialLayout = getWrapChartLayout(wrapW);
-
-        return {
-            series: series,
-            colors: generateColors(),
-            chart: {
-                height: initialLayout.height,
-                width: '100%',
-                type: 'donut',
-                fontFamily: 'inherit',
-                toolbar: { show: false }
-            },
-            stroke: {
-                colors: ['transparent'],
-                lineCap: ''
-            },
-            plotOptions: {
-                pie: {
-                    donut: {
-                        labels: buildDonutLabels(initialLayout.tier),
-                        size: initialLayout.size
-                    }
-                }
-            },
-            grid: {
-                padding: {
-                    top: -2
-                }
-            },
-            labels: labels,
-            dataLabels: {
-                enabled: false
-            },
-            legend: {
-                show: false
-            },
-            tooltip: {
-                style: {
-                    fontFamily: 'inherit',
-                    fontSize: '13px'
-                },
-                y: {
-                    formatter: function (value, opts) {
-                        const monthLabel = labels[opts.seriesIndex] || '';
-                        return monthLabel + ' ' + currentYear + ': ' + formatCurrency(value);
-                    }
-                },
-                theme: 'dark',
-                fillSeriesColor: true
-            }
-        };
-    };
-
-    try {
-        if (chartInstances.monthly) {
-            chartInstances.monthly.destroy();
-        }
-
-        // Custom Legend Handling
-        // Custom Legend Handling (Flanking Layout)
-        const updateCustomLegend = () => {
-            const leftEl = document.getElementById('monthlyVouchersLegendLeft');
-            const rightEl = document.getElementById('monthlyVouchersLegendRight');
-            const mobileEl = document.getElementById('monthlyVouchersLegendMobile');
-
-            if (!leftEl || !rightEl || !mobileEl) return;
-
-            // Clear all containers
-            leftEl.innerHTML = '';
-            rightEl.innerHTML = '';
-            mobileEl.innerHTML = '';
-
-            const chartColors = generateColors();
-
-            labels.forEach((label, idx) => {
-                const val = series[idx];
-                const percentage = ((val / total) * 100).toFixed(1);
-                const color = chartColors[idx];
-                const isRightSide = idx >= 6; // Jul-Dec on the right side
-
-                // Standard item template
-                const createItem = (alignRight = false) => {
-                    const item = document.createElement('div');
-                    item.className = `flex ${alignRight ? 'flex-row-reverse text-right' : 'flex-row'} items-start sm:items-center gap-0.5 sm:gap-0 text-[10px] sm:text-[11px] text-slate-600 transition-colors duration-200 py-1.5 sm:py-1 rounded-lg hover:bg-slate-50 w-full min-w-0`;
-                    item.innerHTML = `
-                        <span class="w-2 h-2 rounded-full ${alignRight ? 'ml-1.5 sm:ml-2' : 'mr-1.5 sm:mr-2'} shrink-0 mt-0.5 sm:mt-0 shadow-xs" style="background-color: ${color}"></span>
-                        <div class="flex flex-col flex-1 min-w-0 overflow-hidden">
-                            <div class="flex flex-wrap items-center ${alignRight ? 'justify-end' : ''} gap-x-1 gap-y-0.5 leading-tight">
-                                <span class="font-bold text-slate-700 shrink-0">${label}</span>
-                                <span class="text-[8px] font-bold text-slate-400 bg-slate-100 px-1 rounded tabular-nums">(${percentage}%)</span>
-                            </div>
-                            <span class="font-extrabold text-[#224796] truncate text-[10px] sm:text-[11px]">${formatCurrency(val)}</span>
-                        </div>
-                    `;
-                    return item;
-                };
-
-                // Add to side containers (Desktop)
-                if (isRightSide) {
-                    rightEl.appendChild(createItem(true));
-                } else {
-                    leftEl.appendChild(createItem(false));
-                }
-
-                // Add to mobile grid
-                mobileEl.appendChild(createItem(false));
-            });
-        };
-
-        const chart = new ApexCharts(chartElement, getChartOptions());
-        chartInstances.monthly = chart;
-        chart.render();
-        updateCustomLegend();
-
-        const applyCashLayoutFromWrapper = () => {
-            const wrap = document.querySelector('[data-cash-chart-wrap]');
-            if (!wrap) return;
-            const cw = wrap.getBoundingClientRect().width;
-            if (cw < 40) return;
-            const { height, size, tier } = getWrapChartLayout(cw);
-            try {
-                chart.updateOptions(
-                    {
-                        chart: { height },
-                        plotOptions: {
-                            pie: {
-                                donut: {
-                                    size,
-                                    labels: buildDonutLabels(tier)
-                                }
-                            }
-                        }
-                    },
-                    false,
-                    true,
-                    false
-                );
-            } catch {
-                /* ignore */
-            }
-        };
-
-        requestAnimationFrame(() => {
-            requestAnimationFrame(applyCashLayoutFromWrapper);
-        });
-
-        const cashChartWrap = document.querySelector('[data-cash-chart-wrap]');
-        if (cashChartWrap && typeof ResizeObserver !== 'undefined') {
-            let resizeDebounce;
-            const ro = new ResizeObserver(() => {
-                window.clearTimeout(resizeDebounce);
-                resizeDebounce = window.setTimeout(() => {
-                    applyCashLayoutFromWrapper();
-                    try {
-                        chart.resize();
-                    } catch {
-                        /* ignore */
-                    }
-                }, 80);
-            });
-            ro.observe(cashChartWrap);
-        }
-
-        // Hide skeleton once chart is ready
-        toggleChartSkeleton('monthlyVouchersChart', 'monthlyVouchersSkeleton', false);
-
-        // Update Total Income stat card
-        const incomeStatElement = document.getElementById('dashboardTotalIncome');
-        if (incomeStatElement) {
-            const formatted = formatCurrency(total);
-            incomeStatElement.textContent = formatted;
-            saveDashboardCache({ totalIncome: formatted });
-        }
-
-        // Year dropdown handling
-        const yearButton = document.getElementById('cashYearButton');
-        const yearDropdown = document.getElementById('cashYearDropdown');
-        if (yearButton && yearDropdown) {
-            const yearItems = yearDropdown.querySelectorAll('[data-year]');
-            yearItems.forEach((item) => {
-                item.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    const yearAttr = item.getAttribute('data-year');
-                    const parsedYear = parseInt(yearAttr || '', 10);
-                    if (!isNaN(parsedYear)) {
-                        currentYear = parsedYear;
-                        yearButton.textContent = item.textContent || String(parsedYear);
-                        const data = buildData(currentYear, currentCategory);
-                        chart.updateSeries(data.series);
-                        chart.updateOptions({ labels: data.labels });
-                        updateCustomLegend();
-                        if (incomeStatElement) {
-                            incomeStatElement.textContent = formatCurrency(data.total);
-                        }
-                    }
-                });
-            });
-        }
-
-        // Category dropdown handling (All Categories, MOOE, PHM (with subtype), PHIC (with subtype))
-        const categoryButton = document.getElementById('cashCategoryButton');
-        const categoryDropdown = document.getElementById('cashCategoryDropdown');
-        const phmWrapper = document.getElementById('phmWrapper');
-        const phicWrapper = document.getElementById('phicWrapper');
-        if (categoryButton && categoryDropdown) {
-            const categoryItems = categoryDropdown.querySelectorAll('[data-category]');
-            categoryItems.forEach((item) => {
-                item.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    const category = item.getAttribute('data-category') || 'all';
-                    currentCategory = category;
-
-                    if (category === 'all') {
-                        categoryButton.textContent = 'All Categories';
-                    } else {
-                        categoryButton.textContent = item.textContent || 'All Categories';
-                    }
-
-                    const data = buildData(currentYear, currentCategory);
-                    chart.updateSeries(data.series);
-                    chart.updateOptions({ labels: data.labels });
-                    updateCustomLegend();
-                    if (incomeStatElement) {
-                        incomeStatElement.textContent = formatCurrency(data.total);
-                    }
-                });
-            });
-        }
-
-        // NESTED PHM Subtype handling
-        const phmNestedDropdown = document.getElementById('phmNestedDropdown');
-        if (phmNestedDropdown) {
-            const phmSubtypeItems = phmNestedDropdown.querySelectorAll('[data-phm-subtype]');
-            phmSubtypeItems.forEach((item) => {
-                item.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    const subtype = item.getAttribute('data-phm-subtype');
-                    if (!subtype) return;
-                    currentCategory = 'PHM';
-                    currentPhmSubtype = subtype;
-
-                    if (categoryButton) {
-                        categoryButton.textContent = subtype;
-                    }
-
-                    const data = buildData(currentYear, currentCategory);
-                    chart.updateSeries(data.series);
-                    chart.updateOptions({ labels: data.labels });
-                    updateCustomLegend();
-                    if (incomeStatElement) {
-                        incomeStatElement.textContent = formatCurrency(data.total);
-                    }
-                });
-            });
-        }
-
-        // NESTED PHIC Subtype handling
-        const phicNestedDropdown = document.getElementById('phicNestedDropdown');
-        if (phicNestedDropdown) {
-            const phicSubtypeItems = phicNestedDropdown.querySelectorAll('[data-phic-subtype]');
-            phicSubtypeItems.forEach((item) => {
-                item.addEventListener('click', (event) => {
-                    event.preventDefault();
-                    const subtype = item.getAttribute('data-phic-subtype');
-                    if (!subtype) return;
-                    currentCategory = 'PHIC';
-                    currentPhicSubtype = subtype;
-
-                    if (categoryButton) {
-                        categoryButton.textContent = subtype;
-                    }
-
-                    const data = buildData(currentYear, currentCategory);
-                    chart.updateSeries(data.series);
-                    chart.updateOptions({ labels: data.labels });
-                    updateCustomLegend();
-                    if (incomeStatElement) {
-                        incomeStatElement.textContent = formatCurrency(data.total);
-                    }
-                });
-            });
-        }
-
-        // Get all the checkboxes for quarters
-        const checkboxes = document.querySelectorAll('#voucher-quarters input[type="checkbox"]');
-
-        // Function to handle the checkbox change event - show/hide months by quarter
-        function handleCheckboxChange(event, chart) {
-            const checkbox = event.target;
-            const quarter = checkbox.value;
-            const isChecked = checkbox.checked;
-
-            // Get months for this quarter
-            const currentYearData = cashInBankByYear[currentYear] || monthlyBaseData;
-            const quarterMonths = Object.keys(currentYearData).filter(
-                month => currentYearData[month].quarter === quarter
-            );
-
-            // Show or hide series for this quarter's months
-            quarterMonths.forEach((month) => {
-                const seriesIndex = labels.indexOf(month);
-                if (isChecked) {
-                    chart.showSeries(month);
-                } else {
-                    chart.hideSeries(month);
-                }
-            });
-        }
-
-        // Attach the event listener to each checkbox
-        checkboxes.forEach((checkbox) => {
-            checkbox.addEventListener('change', (event) => handleCheckboxChange(event, chart));
-        });
-    } catch (error) {
-        console.error('Error creating monthly chart:', error);
-    }
-}
-
-/**
- * Fund Downloaded Timeline Chart
- */
-function initFundDownloadedTimelineChart() {
-    const chartElement = document.getElementById('fundDownloadedTimelineChart');
-    if (!chartElement || !ApexCharts) return;
-
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const fundData = months.map(() => Math.floor(Math.random() * 200000) + 50000);
-
-    const options = {
-        series: [{ name: 'Fund Downloaded', data: fundData }],
-        colors: [colors.accent1],
-        chart: {
-            type: 'line',
-            height: '350px',
-            fontFamily: 'inherit',
-            toolbar: { show: false },
-            animations: { enabled: true, easing: 'easeinout', speed: 800 }
-        },
-        stroke: { curve: 'smooth', width: 3 },
-        fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3 } },
-        xaxis: { categories: months, labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        yaxis: {
-            labels: {
-                style: { colors: '#64748B', fontSize: '12px' },
-                formatter: (val) => `₱${(val / 1000).toFixed(0)}k`
-            }
-        },
-        grid: { borderColor: '#E2E8F0', strokeDashArray: 4 },
-        tooltip: {
-            theme: 'dark',
-            style: { fontSize: '13px', fontFamily: 'inherit' },
-            y: { formatter: (val) => `₱${val.toLocaleString()}` }
-        },
-        dataLabels: { enabled: false },
-        legend: { show: false },
-        responsive: [{
-            breakpoint: 768,
-            options: { chart: { height: 300 } }
-        }]
-    };
-
-    try {
-        if (chartInstances.fundDownloadedTimeline) chartInstances.fundDownloadedTimeline.destroy();
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.fundDownloadedTimeline = chart;
-        chart.render();
-    } catch (error) {
-        console.error('Error creating fund downloaded timeline chart:', error);
-    }
-}
-
-/**
- * Fund Downloaded Summary Chart
- */
-function initFundDownloadedSummaryChart() {
-    const chartElement = document.getElementById('fundDownloadedSummaryChart');
-    if (!chartElement || !ApexCharts) return;
-
-    const periods = ['Q1', 'Q2', 'Q3', 'Q4'];
-    const fundData = periods.map(() => Math.floor(Math.random() * 500000) + 200000);
-
-    const totalFund = fundData.reduce((sum, val) => sum + val, 0);
-
-    const options = {
-        series: [{ name: 'Fund Downloaded', data: fundData }],
-        colors: [colors.secondary],
-        chart: {
-            type: 'bar',
-            height: '350px',
-            fontFamily: 'inherit',
-            toolbar: { show: false },
-            animations: { enabled: true, easing: 'easeinout', speed: 800 }
-        },
-        plotOptions: { bar: { borderRadius: 8, columnWidth: '60%' } },
-        xaxis: { categories: periods, labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        yaxis: {
-            labels: {
-                style: { colors: '#64748B', fontSize: '12px' },
-                formatter: (val) => `₱${(val / 1000).toFixed(0)}k`
-            }
-        },
-        grid: { borderColor: '#E2E8F0', strokeDashArray: 4 },
-        tooltip: {
-            theme: 'dark',
-            style: { fontSize: '13px', fontFamily: 'inherit' },
-            y: { formatter: (val) => `₱${val.toLocaleString()}` }
-        },
-        dataLabels: { enabled: false },
-        legend: { show: false },
-        responsive: [{
-            breakpoint: 768,
-            options: { chart: { height: 300 } }
-        }]
-    };
-
-    try {
-        if (chartInstances.fundDownloadedSummary) chartInstances.fundDownloadedSummary.destroy();
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.fundDownloadedSummary = chart;
-        chart.render();
-
-        // Update Fund Downloaded Summary stat card
-        const fundStatElement = document.getElementById('dashboardFundDownloadedTotal');
-        if (fundStatElement) {
-            const formatted = formatCurrency(totalFund);
-            fundStatElement.textContent = formatted;
-            saveDashboardCache({ fundDownloadedTotal: formatted });
-        }
-    } catch (error) {
-        console.error('Error creating fund downloaded summary chart:', error);
-    }
-}
-
-/**
- * Daily Vouchers Column Chart - Flowbite Style
- */
-function initDailyVouchersChart() {
-    const chartElement = document.getElementById('dailyVouchersChart');
-    if (!chartElement || !ApexCharts) return;
-
-    // Daily voucher data - split into two categories for grouped columns
-    const dailyData = [
-        { x: 'Mon', y: 18 },
-        { x: 'Tue', y: 22 },
-        { x: 'Wed', y: 19 },
-        { x: 'Thu', y: 25 },
-        { x: 'Fri', y: 28 },
-        { x: 'Sat', y: 12 },
-        { x: 'Sun', y: 8 }
+const money = value => peso.format(Number(value || 0));
+const sum = values => values.reduce((total, value) => total + Number(value || 0), 0);
+
+function compactMoney(value) {
+    const numeric = Number(value || 0);
+    const amount = Math.abs(numeric);
+    const sign = numeric < 0 ? '-' : '';
+    const units = [
+        { value: 1_000_000_000, suffix: 'B' },
+        { value: 1_000_000, suffix: 'M' },
+        { value: 1_000, suffix: 'k' },
     ];
+    const unit = units.find(item => amount >= item.value);
+    if (!unit) return `${sign}\u20B1${amount.toLocaleString('en-PH', { maximumFractionDigits: 0 })}`;
+    const compact = amount / unit.value;
+    const digits = compact >= 10 || Number.isInteger(compact) ? 0 : 1;
+    return `${sign}\u20B1${compact.toLocaleString('en-PH', { maximumFractionDigits: digits })}${unit.suffix}`;
+}
 
-    // Simulated second series data (e.g., different voucher types)
-    const dailyDataSecondary = [
-        { x: 'Mon', y: 15 },
-        { x: 'Tue', y: 18 },
-        { x: 'Wed', y: 16 },
-        { x: 'Thu', y: 20 },
-        { x: 'Fri', y: 24 },
-        { x: 'Sat', y: 10 },
-        { x: 'Sun', y: 6 }
-    ];
+function percentage(value, total) {
+    return total > 0 ? (Number(value || 0) / total) * 100 : 0;
+}
 
-    // Calculate stats
-    const total = dailyData.reduce((sum, item) => sum + item.y, 0);
-    const average = (total / dailyData.length).toFixed(1);
-    const maxDay = dailyData.reduce((max, item) => item.y > max.y ? item : max, dailyData[0]);
-    const previousWeekTotal = 115; // Simulated previous week
-    const growthPercentage = (((total - previousWeekTotal) / previousWeekTotal) * 100).toFixed(1);
+function yearFactor(year) {
+    return ({ 2026: 1, 2025: 0.86, 2024: 0.74 })[String(year)] || 1;
+}
 
-    // Update stats in HTML
-    const totalElement = document.getElementById('dailyTotalVouchers');
-    const growthElement = document.getElementById('dailyGrowthPercentage');
-    const peakDayElement = document.getElementById('dailyPeakDay');
-    const averageElement = document.getElementById('dailyAverage');
+function monthFactor(month) {
+    if (!month || month === 'all') return 1;
+    const index = Math.max(mock.months.indexOf(month), 0);
+    return 0.052 + (index * 0.006);
+}
 
-    if (totalElement) totalElement.textContent = total.toString();
-    if (growthElement) growthElement.textContent = `${growthPercentage > 0 ? '+' : ''}${growthPercentage}%`;
-    if (peakDayElement) peakDayElement.textContent = maxDay.x;
-    if (averageElement) averageElement.textContent = average;
+function scaleValues(values, factor) {
+    return values.map(value => Math.round(Number(value || 0) * factor));
+}
 
-    const options = {
-        colors: [colors.primary, colors.secondary],
-        series: [
-            {
-                name: 'Primary Vouchers',
-                color: colors.primary,
-                data: dailyData
-            },
-            {
-                name: 'Secondary Vouchers',
-                color: colors.secondary,
-                data: dailyDataSecondary
-            }
-        ],
-        chart: {
-            type: 'bar',
-            height: '320px',
-            fontFamily: 'inherit',
-            toolbar: { show: false },
-            animations: {
-                enabled: true,
-                easing: 'easeinout',
-                speed: 800,
-                animateGradually: {
-                    enabled: true,
-                    delay: 100
-                }
-            }
-        },
-        plotOptions: {
-            bar: {
-                horizontal: false,
-                columnWidth: '70%',
-                borderRadiusApplication: 'end',
-                borderRadius: 8
-            }
-        },
+function setSelectValue(id, value) {
+    const select = document.getElementById(id);
+    if (select) select.value = value;
+}
+
+function setText(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = value;
+    el.classList.remove('is-rolling');
+    void el.offsetWidth;
+    el.classList.add('is-rolling');
+}
+
+// START: Animate Rolling Counter Number Animation
+const activeNumberAnimations = new Map();
+
+function animateRollingNumber(id, targetValue, duration = 1200) {
+    const el = document.getElementById(id);
+    if (!el) return;
+
+    if (activeNumberAnimations.has(id)) {
+        cancelAnimationFrame(activeNumberAnimations.get(id));
+        activeNumberAnimations.delete(id);
+    }
+
+    const start = performance.now();
+    const startValue = 0;
+    const finalNumeric = Number(targetValue || 0);
+
+    const step = (currentTime) => {
+        const elapsed = currentTime - start;
+        const progress = Math.min(elapsed / duration, 1);
+        // Easing: easeOutExpo
+        const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        const currentVal = Math.round(startValue + (finalNumeric - startValue) * ease);
+
+        el.textContent = money(currentVal);
+
+        if (progress < 1) {
+            const frameId = requestAnimationFrame(step);
+            activeNumberAnimations.set(id, frameId);
+        } else {
+            el.textContent = money(finalNumeric);
+            activeNumberAnimations.delete(id);
+            el.classList.remove('is-rolling');
+            void el.offsetWidth;
+            el.classList.add('is-rolling');
+        }
+    };
+
+    const initialFrame = requestAnimationFrame(step);
+    activeNumberAnimations.set(id, initialFrame);
+}
+// END: Animate Rolling Counter Number Animation
+
+function render(id, options) {
+    const el = document.getElementById(id);
+    if (!el || !ApexCharts) return;
+    if (charts[id]) charts[id].destroy();
+    charts[id] = new ApexCharts(el, options);
+    charts[id].render();
+}
+
+function baseChart(type, height = 320) {
+    return {
+        chart: { type, height, fontFamily: 'Inter, sans-serif', toolbar: { show: false }, zoom: { enabled: false } },
+        dataLabels: { enabled: false },
+        grid: { show: true, borderColor: '#9CA3AF', strokeDashArray: 5, xaxis: { lines: { show: false } }, yaxis: { lines: { show: true } } },
+        legend: { labels: { colors: '#0F172A' }, fontWeight: 700 },
         tooltip: {
-            shared: true,
+            theme: 'light',
+            shared: false,
             intersect: false,
-            style: {
-                fontFamily: 'inherit',
-                fontSize: '13px'
-            },
-            y: {
-                formatter: (val) => val + ' vouchers'
-            },
-            theme: 'dark',
-            fillSeriesColor: true
+            x: { show: true },
+            y: { formatter: money },
+            fixed: { enabled: true, position: 'topRight', offsetX: -12, offsetY: 8 },
         },
-        states: {
-            hover: {
-                filter: {
-                    type: 'darken',
-                    value: 0.15
-                }
-            }
-        },
-        stroke: {
-            show: true,
-            width: 0,
-            colors: ['transparent']
-        },
-        grid: {
-            show: false,
-            strokeDashArray: 4,
-            padding: {
-                left: 2,
-                right: 2,
-                top: -14
-            }
-        },
-        dataLabels: {
-            enabled: false
-        },
-        legend: {
-            show: false
-        },
-        xaxis: {
-            floating: false,
-            labels: {
-                show: true,
-                style: {
-                    fontFamily: 'inherit',
-                    fontSize: '12px',
-                    fontWeight: 500,
-                    colors: '#64748B'
-                }
-            },
-            axisBorder: {
-                show: false
-            },
-            axisTicks: {
-                show: false
-            }
-        },
-        yaxis: {
-            show: false
-        },
-        fill: {
-            opacity: 1
-        },
-        responsive: [{
-            breakpoint: 1024,
-            options: {
-                chart: { height: '300px' }
-            }
-        }, {
-            breakpoint: 768,
-            options: {
-                chart: { height: '280px' },
-                plotOptions: { bar: { columnWidth: '65%' } }
-            }
-        }, {
+    };
+}
+
+function activeCashflowYear() {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    return mock.cashflow[stored] ? stored : Object.keys(mock.cashflow).sort((a, b) => Number(b) - Number(a))[0];
+}
+
+function updateYearButtonState(year) {
+    document.querySelectorAll('[data-cashflow-year]').forEach((button) => {
+        const active = button.dataset.cashflowYear === String(year);
+        button.classList.toggle('bg-slate-200', active);
+        button.classList.toggle('text-slate-950', active);
+        button.classList.toggle('font-black', active);
+        button.setAttribute('aria-current', active ? 'true' : 'false');
+    });
+}
+
+function renderCashflow(year = activeCashflowYear()) {
+    const record = mock.cashflow[year] || mock.cashflow[activeCashflowYear()];
+    const options = baseChart('area', 330);
+    options.series = [
+        { name: 'Cash In Bank (Deposits)', data: record.cashInBank },
+        { name: 'Expenses (Disbursements)', data: record.expenses },
+    ];
+    options.colors = ['#075985', '#BE123C'];
+    options.legend = {
+        show: true,
+        position: 'top',
+        horizontalAlign: 'right',
+        floating: false,
+        offsetX: -18,
+        offsetY: 0,
+        fontSize: '14px',
+        fontWeight: 800,
+        labels: { colors: '#0F172A' },
+        markers: { width: 13, height: 13, radius: 13 },
+        itemMargin: { horizontal: 12, vertical: 4 },
+    };
+    options.grid = {
+        ...options.grid,
+        padding: { left: 12, right: 34, top: 4, bottom: 8 },
+    };
+    options.stroke = { curve: 'smooth', width: 4 };
+    options.markers = { size: 4, strokeColors: '#FFFFFF', strokeWidth: 2, hover: { size: 6 } };
+    options.fill = { type: 'gradient', gradient: { shadeIntensity: 0.55, opacityFrom: 0.70, opacityTo: 0.20, stops: [0, 80, 100] } };
+    options.xaxis = { categories: mock.months, labels: { style: { colors: '#0F172A', fontWeight: 700 } }, axisBorder: { show: true, color: '#475569' }, axisTicks: { show: true, color: '#475569' }, tooltip: { enabled: false } };
+    options.yaxis = { labels: { style: { colors: '#0F172A', fontWeight: 700 }, formatter: money } };
+    options.responsive = [
+        {
             breakpoint: 640,
             options: {
-                chart: { height: '250px' },
-                plotOptions: { bar: { columnWidth: '60%' } },
-                xaxis: { labels: { fontSize: '11px' } }
-            }
-        }]
+                chart: { height: 340 },
+                plotOptions: { pie: { customScale: 0.88, offsetX: 0 } },
+                legend: { position: 'bottom', horizontalAlign: 'center', floating: false, offsetX: 0, offsetY: 0 },
+            },
+        },
+    ];
+    options.tooltip = {
+        theme: 'light',
+        shared: false,
+        intersect: false,
+        fixed: { enabled: true, position: 'topRight', offsetX: -12, offsetY: 8 },
+        x: { show: true },
+        y: { formatter: (value, { seriesIndex, dataPointIndex }) => `${money(value)} ${seriesIndex === 0 ? 'deposit balance' : 'expense recorded'} on ${mock.months[dataPointIndex]} ${year}` },
+        custom({ series, seriesIndex, dataPointIndex, w }) {
+            const name = w.globals.seriesNames[seriesIndex];
+            return `<div class="px-3 py-2 text-sm text-slate-900"><div class="font-bold">${mock.months[dataPointIndex]} ${year}</div><div>${name}: <span class="font-black">${money(series[seriesIndex][dataPointIndex])}</span></div><div class="mt-1 text-xs text-slate-600">${record.recordedAt}</div></div>`;
+        },
     };
-
-    try {
-        if (chartInstances.daily) {
-            chartInstances.daily.destroy();
-        }
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.daily = chart;
-        chart.render();
-    } catch (error) {
-        console.error('Error creating daily chart:', error);
-    }
+    setText('cashflowDataStatusLabel', year);
+    animateRollingNumber('cashflowIncomeTotal', sum(record.cashInBank));
+    animateRollingNumber('cashflowExpenseTotal', sum(record.expenses));
+    updateYearButtonState(year);
+    render('moneyCashflowChart', options);
 }
 
-/**
- * Yearly Vouchers Chart (2016-2026) - Modern Design
- */
-function initYearlyVouchersChart() {
-    const chartElement = document.getElementById('yearlyVouchersChart');
-    if (!chartElement || !ApexCharts) return;
+function setupCashflowDropdown() {
+    const button = document.getElementById('cashflowDataStatus');
+    const dropdown = document.getElementById('cashflowPeriodDropdown');
+    if (!button || !dropdown || button.dataset.cashflowReady === 'true') return;
+    button.dataset.cashflowReady = 'true';
+    button.addEventListener('click', (event) => { event.stopPropagation(); dropdown.classList.toggle('hidden'); });
+    document.addEventListener('click', (event) => {
+        if (!button.contains(event.target) && !dropdown.contains(event.target)) dropdown.classList.add('hidden');
+    });
+    dropdown.querySelectorAll('[data-cashflow-year]').forEach((item) => {
+        item.addEventListener('click', () => {
+            const year = item.dataset.cashflowYear;
+            localStorage.setItem(STORAGE_KEY, year);
+            dropdown.classList.add('hidden');
+            renderCashflow(year);
+            renderSupplies();
+        });
+    });
+}
 
-    const yearlyData = [
-        { year: '2016', value: 1845 },
-        { year: '2017', value: 1923 },
-        { year: '2018', value: 2108 },
-        { year: '2019', value: 2287 },
-        { year: '2020', value: 2156 },
-        { year: '2021', value: 2345 },
-        { year: '2022', value: 2678 },
-        { year: '2023', value: 2891 },
-        { year: '2024', value: 3124 },
-        { year: '2025', value: 3456 },
-        { year: '2026', value: 3789 }
+function renderStats() {
+    animateRollingNumber('dashboardTotalIncome', mock.stats.totalBudget);
+    animateRollingNumber('dashboardYearlyIncome', mock.stats.yearlyBudget);
+    animateRollingNumber('dashboardTotalExpenses', mock.stats.totalExpenses);
+    animateRollingNumber('dashboardFundDownloadedTotal', mock.stats.fundDownloaded);
+}
+
+function renderRemainingBudget() {
+    const factor = yearFactor(remainingBudgetYear);
+    const data = scaleValues(mock.remaining, factor);
+    const options = baseChart('bar', 320);
+    options.series = [{ name: `Remaining budget ${remainingBudgetYear}`, data }];
+    options.plotOptions = { bar: { borderRadius: 3, columnWidth: '54%', distributed: true } };
+    options.colors = ['#059669', '#10B981', '#CA8A04', '#F59E0B', '#F97316', '#EA580C', '#DC2626', '#DC2626', '#B91C1C', '#991B1B', '#7F1D1D', '#7F1D1D'];
+    options.xaxis = { categories: mock.months, labels: { style: { colors: '#0F172A', fontWeight: 700 } } };
+    options.yaxis = { labels: { style: { colors: '#0F172A', fontWeight: 700 }, formatter: money } };
+    options.responsive = [
+        {
+            breakpoint: 640,
+            options: {
+                chart: { height: 340 },
+                plotOptions: { pie: { customScale: 0.88, offsetX: 0 } },
+                legend: { position: 'bottom', horizontalAlign: 'center', floating: false, offsetX: 0, offsetY: 0 },
+            },
+        },
     ];
+    options.tooltip = { theme: 'light', shared: false, intersect: false, fixed: { enabled: true, position: 'topRight', offsetX: -12, offsetY: 8 }, y: { formatter: (value, { dataPointIndex }) => `${money(value)} remaining as of ${mock.months[dataPointIndex]} ${remainingBudgetYear}` } };
+    setSelectValue('remainingBudgetYear', remainingBudgetYear);
+    render('remainingBudgetChart', options);
+}
 
-    const currentYear = yearlyData[yearlyData.length - 1];
-    const isCurrentYear = (year) => year === currentYear.year;
+function filteredSupplies() {
+    const factor = yearFactor(suppliesYear) * monthFactor(suppliesMonth);
+    return mock.supplies.map(item => ({
+        ...item,
+        y: Math.round(item.y * factor),
+        recordedAt: suppliesMonth === 'all' ? `${suppliesYear} full-year mock data` : `${suppliesMonth} ${suppliesYear} mock data`,
+    }));
+}
 
-    const options = {
-        series: [{
-            name: 'Vouchers Generated',
-            data: yearlyData.map(item => item.value)
-        }],
-        chart: {
-            type: 'bar',
-            height: 'auto',
-            fontFamily: 'inherit',
-            toolbar: { show: false },
-            animations: {
-                enabled: true,
-                easing: 'easeinout',
-                speed: 1000,
-                animateGradually: {
-                    enabled: true,
-                    delay: 100
-                }
-            }
-        },
-        colors: yearlyData.map((item, index) => {
-            if (isCurrentYear(item.year)) {
-                return colors.primary;
-            }
-            return index % 2 === 0 ? colors.primary : colors.secondary;
-        }),
-        plotOptions: {
-            bar: {
-                borderRadius: 8,
-                columnWidth: '60%',
-                distributed: true,
-                dataLabels: { position: 'top' },
-                borderRadiusApplication: 'end',
-                horizontal: false
-            }
-        },
-        dataLabels: {
-            enabled: true,
-            offsetY: -25,
-            style: {
-                fontSize: '12px',
-                fontWeight: 700,
-                fontFamily: 'inherit',
-                colors: ['#1E293B']
+function groupedSuppliesByPayment() {
+    const groups = filteredSupplies().reduce((items, item) => {
+        items[item.method] = (items[item.method] || 0) + item.y;
+        return items;
+    }, {});
+    return [
+        { name: 'Cash purchases', y: groups.Cash || 0, color: '#0F766E', recordedAt: 'Latest cash purchase: Sep 20, 2026 10:15 AM' },
+        { name: 'Cheque purchases', y: groups.Cheque || 0, color: '#2563EB', recordedAt: 'Latest cheque purchase: Sep 21, 2026 02:40 PM' },
+    ].filter(item => item.y > 0);
+}
+
+function updateSuppliesSwitcher() {
+    document.querySelectorAll('[data-supplies-view]').forEach((button) => {
+        const active = button.dataset.suppliesView === suppliesView;
+        button.classList.toggle('bg-white', active);
+        button.classList.toggle('text-slate-950', active);
+        button.classList.toggle('shadow-sm', active);
+        button.classList.toggle('text-slate-700', !active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+}
+
+function suppliesChartItems() {
+    return suppliesView === 'payment' ? groupedSuppliesByPayment() : filteredSupplies();
+}
+
+// START: Render Supplies Expense Donut Chart with Top-Left Legend and Right-Aligned Pie
+function renderSupplies() {
+    const year = activeCashflowYear();
+    const cashflow = mock.cashflow[suppliesYear] || mock.cashflow[activeCashflowYear()];
+    const currentBudget = sum(cashflow.cashInBank);
+    const chartItems = suppliesChartItems();
+    const suppliesTotal = sum(filteredSupplies().map(item => item.y));
+    const chartTotal = sum(chartItems.map(item => item.y));
+    const remainingAfterSupplies = Math.max(currentBudget - suppliesTotal, 0);
+    const budgetUsedPercent = percentage(suppliesTotal, currentBudget);
+    const options = baseChart('donut', 330);
+
+    options.series = chartItems.map(item => item.y);
+    options.labels = chartItems.map(item => item.name);
+    options.colors = chartItems.map(item => item.color);
+    options.stroke = { colors: ['#FFFFFF'], width: 3 };
+    options.dataLabels = {
+        enabled: true,
+        formatter: value => `${Number(value || 0).toFixed(1)}%`,
+        style: { fontSize: '13px', fontFamily: 'Inter, sans-serif', fontWeight: 900, colors: ['#FFFFFF'] },
+        dropShadow: { enabled: true, top: 1, left: 1, blur: 2, opacity: 0.70 },
+    };
+    options.states = {
+        hover: {
+            filter: {
+                type: 'lighten',
+                value: 0.12,
             },
-            formatter: (val) => val.toLocaleString(),
-            dropShadow: {
-                enabled: true,
-                top: 1,
-                left: 1,
-                blur: 1,
-                opacity: 0.2
-            }
         },
-        stroke: {
-            show: true,
-            width: 2,
-            colors: ['#fff']
+        active: {
+            allowMultipleDataPointsSelection: false,
+            filter: {
+                type: 'darken',
+                value: 0.15,
+            },
         },
-        grid: {
-            borderColor: colors.accent3,
-            strokeDashArray: 3,
-            xaxis: { lines: { show: false } },
-            yaxis: { lines: { show: true } },
-            padding: { top: 0, right: 0, bottom: 0, left: 0 }
-        },
-        xaxis: {
-            categories: yearlyData.map(item => item.year),
-            labels: {
-                style: {
-                    colors: yearlyData.map(item =>
-                        isCurrentYear(item.year) ? colors.primary : '#64748B'
-                    ),
-                    fontSize: '12px',
-                    fontFamily: 'inherit',
-                    fontWeight: 600
+    };
+    options.plotOptions = {
+        pie: {
+            expandOnClick: true,
+            customScale: 0.94,
+            offsetX: 114,
+            startAngle: -90,
+            endAngle: 270,
+            donut: {
+                size: '60%',
+                labels: {
+                    show: true,
+                    name: { show: true, offsetY: 18, color: '#334155', fontSize: '12px', fontFamily: 'Inter, sans-serif', fontWeight: 800 },
+                    value: { show: true, offsetY: -12, color: '#0F172A', fontSize: '28px', fontFamily: 'Inter, sans-serif', fontWeight: 900, formatter: compactMoney },
+                    total: {
+                        show: true,
+                        showAlways: true,
+                        label: suppliesView === 'payment' ? 'payment mix' : `${budgetUsedPercent.toFixed(1)}% of bank`,
+                        color: '#334155',
+                        fontSize: '12px',
+                        fontFamily: 'Inter, sans-serif',
+                        fontWeight: 800,
+                        formatter: () => compactMoney(suppliesTotal),
+                    },
                 },
-                rotate: -45,
-                rotateAlways: false
             },
-            axisBorder: { show: false },
-            axisTicks: { show: false }
         },
-        yaxis: {
-            labels: {
-                style: {
-                    colors: '#64748B',
-                    fontSize: '12px',
-                    fontFamily: 'inherit',
-                    fontWeight: 600
-                },
-                formatter: (val) => val.toLocaleString()
-            },
-            min: 0
-        },
-        fill: {
-            type: 'gradient',
-            gradient: {
-                shade: 'light',
-                type: 'vertical',
-                shadeIntensity: 0.4,
-                inverseColors: false,
-                opacityFrom: 1,
-                opacityTo: 0.9,
-                stops: [0, 50, 100]
-            }
-        },
-        tooltip: {
-            style: { fontSize: '13px', fontFamily: 'inherit' },
-            y: { formatter: (val) => val.toLocaleString() + ' vouchers' },
-            theme: 'dark',
-            fillSeriesColor: true
-        },
-        states: {
-            hover: {
-                filter: {
-                    type: 'darken',
-                    value: 0.1
-                }
-            }
-        },
-        responsive: [{
-            breakpoint: 1024,
+    };
+    options.legend = {
+        position: 'left',
+        horizontalAlign: 'left',
+        floating: true,
+        offsetX: -16,
+        offsetY: -10,
+        fontSize: '13px',
+        fontWeight: 800,
+        labels: { colors: '#0F172A' },
+        markers: { width: 13, height: 13, radius: 4 },
+        itemMargin: { horizontal: 0, vertical: 7 },
+        onItemClick: { toggleDataSeries: true },
+        onItemHover: { highlightDataSeries: true },
+        formatter: (seriesName, opts) => `${seriesName} (${percentage(opts.w.globals.series[opts.seriesIndex], chartTotal).toFixed(1)}%)`,
+    };
+    options.responsive = [
+        {
+            breakpoint: 640,
             options: {
                 chart: { height: 350 },
-                plotOptions: { bar: { columnWidth: '65%' } },
-                xaxis: { labels: { rotate: -45, fontSize: '11px' } }
-            }
-        }, {
-            breakpoint: 768,
-            options: {
-                chart: { height: 320 },
-                plotOptions: { bar: { columnWidth: '60%' } },
-                dataLabels: { offsetY: -20, fontSize: '11px' },
-                xaxis: { labels: { rotate: -45, fontSize: '10px' } }
-            }
-        }, {
-            breakpoint: 640,
-            options: {
-                chart: { height: 280 },
-                plotOptions: { bar: { columnWidth: '55%' } },
-                dataLabels: { offsetY: -18, fontSize: '10px' },
-                xaxis: { labels: { rotate: -45, fontSize: '9px' } },
-                yaxis: { labels: { fontSize: '10px' } }
-            }
-        }]
-    };
-
-    try {
-        if (chartInstances.yearly) {
-            chartInstances.yearly.destroy();
-        }
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.yearly = chart;
-        chart.render();
-    } catch (error) {
-        console.error('Error creating yearly chart:', error);
-    }
-}
-
-/**
- * Daily Transactions Line Chart
- */
-function initDailyTransactionsChart() {
-    const chartElement = document.getElementById('dailyTransactionsChart');
-    if (!chartElement || !ApexCharts) return;
-
-    const dailyData = Array.from({ length: 30 }, (_, i) => ({
-        x: `Day ${i + 1}`,
-        y: Math.floor(Math.random() * 500) + 100
-    }));
-
-    const options = {
-        series: [{ name: 'Transactions', data: dailyData.map(d => d.y) }],
-        colors: [colors.primary],
-        chart: {
-            type: 'line',
-            height: '350px',
-            fontFamily: 'inherit',
-            toolbar: { show: false },
-            animations: { enabled: true, easing: 'easeinout', speed: 800 }
-        },
-        stroke: { curve: 'smooth', width: 3 },
-        xaxis: { categories: dailyData.map(d => d.x), labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        yaxis: { labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        grid: { borderColor: '#E2E8F0', strokeDashArray: 4 },
-        tooltip: { theme: 'dark', style: { fontSize: '13px', fontFamily: 'inherit' } },
-        dataLabels: { enabled: false },
-        legend: { show: false },
-        responsive: [{
-            breakpoint: 768,
-            options: { chart: { height: 300 } }
-        }]
-    };
-
-    try {
-        if (chartInstances.dailyTransactions) chartInstances.dailyTransactions.destroy();
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.dailyTransactions = chart;
-        chart.render();
-    } catch (error) {
-        console.error('Error creating daily transactions chart:', error);
-    }
-}
-
-/**
- * Transaction Volume Chart
- */
-function initTransactionVolumeChart() {
-    const chartElement = document.getElementById('transactionVolumeChart');
-    if (!chartElement || !ApexCharts) return;
-
-    const volumeData = Array.from({ length: 30 }, () => Math.floor(Math.random() * 1000) + 200);
-
-    const options = {
-        series: [{ name: 'Volume', data: volumeData }],
-        colors: [colors.secondary],
-        chart: {
-            type: 'area',
-            height: '350px',
-            fontFamily: 'inherit',
-            toolbar: { show: false },
-            animations: { enabled: true, easing: 'easeinout', speed: 800 }
-        },
-        fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3 } },
-        stroke: { curve: 'smooth', width: 2 },
-        xaxis: { categories: Array.from({ length: 30 }, (_, i) => `Day ${i + 1}`), labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        yaxis: { labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        grid: { borderColor: '#E2E8F0', strokeDashArray: 4 },
-        tooltip: { theme: 'dark', style: { fontSize: '13px', fontFamily: 'inherit' } },
-        dataLabels: { enabled: false },
-        legend: { show: false },
-        responsive: [{
-            breakpoint: 768,
-            options: { chart: { height: 300 } }
-        }]
-    };
-
-    try {
-        if (chartInstances.transactionVolume) chartInstances.transactionVolume.destroy();
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.transactionVolume = chart;
-        chart.render();
-    } catch (error) {
-        console.error('Error creating transaction volume chart:', error);
-    }
-}
-
-/**
- * Daily Transactions Pie Chart (Flowbite style)
- */
-function initDailyTransactionsPieChart() {
-    const chartElement = document.getElementById('dailyTransactionsPieChart');
-    if (!chartElement || !ApexCharts) return;
-
-    // Synthetic breakdown for now; later will be driven by itemized data
-    const categories = ['MOOE', 'PHILHEALTH', 'SPF'];
-    const series = [52.8, 26.8, 20.4];
-
-    const options = {
-        series,
-        colors: [colors.primary, colors.accent1, colors.secondary],
-        chart: {
-            height: 320,
-            width: '100%',
-            type: 'pie',
-            fontFamily: 'inherit',
-            toolbar: { show: false }
-        },
-        stroke: {
-            colors: ['#ffffff'],
-            lineCap: ''
-        },
-        plotOptions: {
-            pie: {
-                labels: {
-                    show: true
-                },
-                size: '100%',
-                dataLabels: {
-                    offset: -25
-                }
-            }
-        },
-        labels: categories,
-        dataLabels: {
-            enabled: true,
-            style: {
-                fontFamily: 'inherit',
-                fontSize: '12px'
+                plotOptions: { pie: { customScale: 0.92, offsetX: 0 } },
+                legend: { position: 'bottom', horizontalAlign: 'center', floating: false, offsetX: 0, offsetY: 0 },
             },
-            formatter: (val, opts) => {
-                const raw = series[opts.seriesIndex] || 0;
-                return `${raw.toFixed(1)}%`;
-            }
         },
-        legend: {
-            position: 'bottom',
-            fontFamily: 'inherit',
-            fontSize: '13px'
-        },
-        yaxis: {
-            labels: {
-                formatter: (value) => `${value.toFixed(1)}%`
-            }
-        },
-        xaxis: {
-            labels: {
-                formatter: (value) => `${value.toFixed(1)}%`
-            },
-            axisTicks: { show: false },
-            axisBorder: { show: false }
-        },
-        tooltip: {
-            theme: 'dark',
-            style: { fontSize: '13px', fontFamily: 'inherit' },
-            y: {
-                formatter: (val, opts) => {
-                    const total = series.reduce((sum, v) => sum + v, 0);
-                    const amount = Math.round((val / 100) * 100000); // synthetic base, later real values
-                    const label = categories[opts.seriesIndex] || '';
-                    const percent = ((val / total) * 100).toFixed(1);
-                    return `${label}: ${formatCurrency(amount)} (${percent}%)`;
-                }
-            }
-        }
-    };
-
-    try {
-        if (chartInstances.dailyTransactionsPie) {
-            chartInstances.dailyTransactionsPie.destroy();
-        }
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.dailyTransactionsPie = chart;
-        chart.render();
-    } catch (error) {
-        console.error('Error creating daily transactions pie chart:', error);
-    }
-}
-
-/**
- * Monthly Transactions Chart
- */
-async function initMonthlyTransactionsChart() {
-    const chartElement = document.getElementById('monthlyTransactionsChart');
-    if (!chartElement || !ApexCharts) return;
-
-    const apiBase = getApiBasePath();
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    let monthlyData = new Array(12).fill(0);
-
-    const year = new Date().getFullYear();
-
-    try {
-        const res = await fetch(`${apiBase}/api/monthly-expenses/list.php?year=${year}`, { credentials: 'same-origin' });
-        const data = await res.json();
-        if (data.success && Array.isArray(data.data)) {
-            const totals = {
-                january: 0, february: 0, march: 0, april: 0,
-                may: 0, june: 0, july: 0, august: 0,
-                september: 0, october: 0, november: 0, december: 0,
-            };
-            data.data.forEach((row) => {
-                const m = row.months || {};
-                totals.january += Number(m.january || 0);
-                totals.february += Number(m.february || 0);
-                totals.march += Number(m.march || 0);
-                totals.april += Number(m.april || 0);
-                totals.may += Number(m.may || 0);
-                totals.june += Number(m.june || 0);
-                totals.july += Number(m.july || 0);
-                totals.august += Number(m.august || 0);
-                totals.september += Number(m.september || 0);
-                totals.october += Number(m.october || 0);
-                totals.november += Number(m.november || 0);
-                totals.december += Number(m.december || 0);
-            });
-            monthlyData = [
-                totals.january, totals.february, totals.march, totals.april,
-                totals.may, totals.june, totals.july, totals.august,
-                totals.september, totals.october, totals.november, totals.december,
-            ];
-        }
-    } catch (e) {
-        console.error('Failed to load monthly-expenses for monthly transactions chart:', e);
-    }
-
-    const options = {
-        series: [{ name: 'Total Expenses', data: monthlyData }],
-        colors: [colors.primary],
-        chart: {
-            type: 'bar',
-            height: '350px',
-            fontFamily: 'inherit',
-            toolbar: { show: false },
-            animations: { enabled: true, easing: 'easeinout', speed: 800 }
-        },
-        plotOptions: { bar: { borderRadius: 8, columnWidth: '60%' } },
-        xaxis: { categories: months, labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        yaxis: { labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        grid: { borderColor: '#E2E8F0', strokeDashArray: 4 },
-        tooltip: { theme: 'dark', style: { fontSize: '13px', fontFamily: 'inherit' } },
-        dataLabels: { enabled: false },
-        legend: { show: false },
-        responsive: [{
-            breakpoint: 768,
-            options: { chart: { height: 300 } }
-        }]
-    };
-
-    try {
-        if (chartInstances.monthlyTransactions) chartInstances.monthlyTransactions.destroy();
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.monthlyTransactions = chart;
-        chart.render();
-    } catch (error) {
-        console.error('Error creating monthly transactions chart:', error);
-    }
-}
-
-/**
- * Weekly Transactions Chart
- */
-function initWeeklyTransactionsChart() {
-    const chartElement = document.getElementById('weeklyTransactionsChart');
-    if (!chartElement || !ApexCharts) return;
-
-    const weeks = Array.from({ length: 12 }, (_, i) => `Week ${i + 1}`);
-    const weeklyData = weeks.map(() => Math.floor(Math.random() * 2000) + 500);
-
-    const options = {
-        series: [{ name: 'Transactions', data: weeklyData }],
-        colors: [colors.secondary],
-        chart: {
-            type: 'line',
-            height: '350px',
-            fontFamily: 'inherit',
-            toolbar: { show: false },
-            animations: { enabled: true, easing: 'easeinout', speed: 800 }
-        },
-        stroke: { curve: 'smooth', width: 3 },
-        fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.7, opacityTo: 0.3 } },
-        xaxis: { categories: weeks, labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        yaxis: { labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        grid: { borderColor: '#E2E8F0', strokeDashArray: 4 },
-        tooltip: { theme: 'dark', style: { fontSize: '13px', fontFamily: 'inherit' } },
-        dataLabels: { enabled: false },
-        legend: { show: false },
-        responsive: [{
-            breakpoint: 768,
-            options: { chart: { height: 300 } }
-        }]
-    };
-
-    try {
-        if (chartInstances.weeklyTransactions) chartInstances.weeklyTransactions.destroy();
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.weeklyTransactions = chart;
-        chart.render();
-    } catch (error) {
-        console.error('Error creating weekly transactions chart:', error);
-    }
-}
-
-/**
- * Quarterly Transactions Donut Chart
- */
-function initQuarterlyTransactionsChart() {
-    const chartElement = document.getElementById('quarterlyTransactionsChart');
-    if (!chartElement || !ApexCharts) return;
-
-    const options = {
-        series: [12500, 15200, 13800, 14500],
-        colors: [colors.primary, colors.secondary, colors.accent1, '#3B82F6'],
-        chart: {
-            height: 320,
-            width: "100%",
-            type: "donut",
-            fontFamily: "inherit",
-            toolbar: { show: false }
-        },
-        stroke: { colors: ["transparent"], lineCap: "" },
-        plotOptions: {
-            pie: {
-                donut: {
-                    labels: {
-                        show: true,
-                        name: { show: true, fontFamily: "inherit", offsetY: 20, fontSize: '14px', fontWeight: 500, color: '#64748B' },
-                        total: {
-                            showAlways: true,
-                            show: true,
-                            label: "Total Transactions",
-                            fontFamily: "inherit",
-                            fontSize: '16px',
-                            fontWeight: 600,
-                            color: '#1E293B',
-                            formatter: function (w) {
-                                const sum = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-                                return sum.toLocaleString();
-                            }
-                        },
-                        value: {
-                            show: true,
-                            fontFamily: "inherit",
-                            offsetY: -20,
-                            fontSize: '20px',
-                            fontWeight: 700,
-                            color: '#1E293B',
-                            formatter: function (value) {
-                                return value.toLocaleString();
-                            }
-                        }
-                    },
-                    size: "80%"
-                }
-            }
-        },
-        labels: ["Q1", "Q2", "Q3", "Q4"],
-        dataLabels: { enabled: false },
-        legend: {
-            position: "bottom",
-            fontFamily: "inherit",
-            fontSize: '13px',
-            fontWeight: 500,
-            labels: { colors: '#64748B' }
-        },
-        tooltip: {
-            style: { fontFamily: "inherit", fontSize: '13px' },
-            y: { formatter: function (value) { return value.toLocaleString() + " transactions"; } },
-            theme: 'dark',
-            fillSeriesColor: true
-        },
-        responsive: [{
-            breakpoint: 768,
-            options: { chart: { height: 280 }, plotOptions: { pie: { donut: { size: '70%' } } } }
-        }]
-    };
-
-    try {
-        if (chartInstances.quarterlyTransactions) chartInstances.quarterlyTransactions.destroy();
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.quarterlyTransactions = chart;
-        chart.render();
-    } catch (error) {
-        console.error('Error creating quarterly transactions chart:', error);
-    }
-}
-
-/**
- * Quarterly Comparison Chart
- */
-function initQuarterlyComparisonChart() {
-    const chartElement = document.getElementById('quarterlyComparisonChart');
-    if (!chartElement || !ApexCharts) return;
-
-    const options = {
-        series: [
-            { name: '2024', data: [12500, 15200, 13800, 14500] },
-            { name: '2023', data: [11000, 14000, 13000, 13500] }
-        ],
-        colors: [colors.primary, colors.secondary],
-        chart: {
-            type: 'bar',
-            height: '350px',
-            fontFamily: 'inherit',
-            toolbar: { show: false },
-            animations: { enabled: true, easing: 'easeinout', speed: 800 }
-        },
-        plotOptions: { bar: { borderRadius: 8, columnWidth: '60%' } },
-        xaxis: { categories: ['Q1', 'Q2', 'Q3', 'Q4'], labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        yaxis: { labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        grid: { borderColor: '#E2E8F0', strokeDashArray: 4 },
-        tooltip: { theme: 'dark', style: { fontSize: '13px', fontFamily: 'inherit' } },
-        dataLabels: { enabled: false },
-        legend: {
-            position: 'top',
-            fontFamily: 'inherit',
-            fontSize: '13px',
-            labels: { colors: '#64748B' }
-        },
-        responsive: [{
-            breakpoint: 768,
-            options: { chart: { height: 300 } }
-        }]
-    };
-
-    try {
-        if (chartInstances.quarterlyComparison) chartInstances.quarterlyComparison.destroy();
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.quarterlyComparison = chart;
-        chart.render();
-    } catch (error) {
-        console.error('Error creating quarterly comparison chart:', error);
-    }
-}
-
-/**
- * Expenses Overview Chart - now driven by real monthly_expenses data
- */
-async function initExpensesOverviewChart() {
-    const chartElement = document.getElementById('expensesOverviewChart');
-    if (!chartElement || !ApexCharts) return;
-
-    const apiBase = getApiBasePath();
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    let expensesData = new Array(12).fill(0);
-
-    const year = new Date().getFullYear();
-
-    try {
-        const res = await fetch(`${apiBase}/api/monthly-expenses/list.php?year=${year}`, { credentials: 'same-origin' });
-        const data = await res.json();
-        if (data.success && Array.isArray(data.data)) {
-            // Aggregate per-month totals across all GL codes
-            const totals = {
-                january: 0, february: 0, march: 0, april: 0,
-                may: 0, june: 0, july: 0, august: 0,
-                september: 0, october: 0, november: 0, december: 0,
-            };
-            data.data.forEach((row) => {
-                const m = row.months || {};
-                totals.january += Number(m.january || 0);
-                totals.february += Number(m.february || 0);
-                totals.march += Number(m.march || 0);
-                totals.april += Number(m.april || 0);
-                totals.may += Number(m.may || 0);
-                totals.june += Number(m.june || 0);
-                totals.july += Number(m.july || 0);
-                totals.august += Number(m.august || 0);
-                totals.september += Number(m.september || 0);
-                totals.october += Number(m.october || 0);
-                totals.november += Number(m.november || 0);
-                totals.december += Number(m.december || 0);
-            });
-            expensesData = [
-                totals.january, totals.february, totals.march, totals.april,
-                totals.may, totals.june, totals.july, totals.august,
-                totals.september, totals.october, totals.november, totals.december,
-            ];
-        }
-    } catch (e) {
-        // Fallback: keep zeros, dashboard will just show 0s
-        console.error('Failed to load monthly-expenses for dashboard:', e);
-    }
-
-    const totalExpenses = expensesData.reduce((sum, val) => sum + val, 0);
-
-    const options = {
-        series: [{ name: 'Expenses', data: expensesData }],
-        colors: ['#DC2626'],
-        chart: {
-            type: 'bar',
-            height: '350px',
-            fontFamily: 'inherit',
-            toolbar: { show: false },
-            animations: { enabled: true, easing: 'easeinout', speed: 800 }
-        },
-        plotOptions: { bar: { borderRadius: 8, columnWidth: '60%' } },
-        xaxis: { categories: months, labels: { style: { colors: '#64748B', fontSize: '12px' } } },
-        yaxis: { labels: { style: { colors: '#64748B', fontSize: '12px' }, formatter: (val) => `₱${(val / 1000).toFixed(0)}k` } },
-        grid: { borderColor: '#E2E8F0', strokeDashArray: 4 },
-        tooltip: {
-            theme: 'dark',
-            style: { fontSize: '13px', fontFamily: 'inherit' },
-            y: { formatter: (val) => `₱${val.toLocaleString()}` }
-        },
-        dataLabels: { enabled: false },
-        legend: { show: false },
-        responsive: [{
-            breakpoint: 768,
-            options: { chart: { height: 300 } }
-        }]
-    };
-
-    try {
-        if (chartInstances.expensesOverview) chartInstances.expensesOverview.destroy();
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.expensesOverview = chart;
-        chart.render();
-
-        // Update Total Expenses stat card
-        const expensesStatElement = document.getElementById('dashboardTotalExpenses');
-        if (expensesStatElement) {
-            const formatted = formatCurrency(totalExpenses);
-            expensesStatElement.textContent = formatted;
-            saveDashboardCache({ totalExpenses: formatted });
-        }
-    } catch (error) {
-        console.error('Error creating expenses overview chart:', error);
-    }
-}
-
-/**
- * Expenses by Category Donut Chart
- */
-function initExpensesCategoryChart() {
-    const chartElement = document.getElementById('expensesCategoryChart');
-    if (!chartElement || !ApexCharts) return;
-
-    const options = {
-        series: [35000, 28000, 22000, 15000, 10000],
-        colors: ['#DC2626', '#EF4444', '#F59E0B', '#F97316', '#EC4899'],
-        chart: {
-            height: 320,
-            width: "100%",
-            type: "donut",
-            fontFamily: "inherit",
-            toolbar: { show: false }
-        },
-        stroke: { colors: ["transparent"], lineCap: "" },
-        plotOptions: {
-            pie: {
-                donut: {
-                    labels: {
-                        show: true,
-                        name: { show: true, fontFamily: "inherit", offsetY: 20, fontSize: '14px', fontWeight: 500, color: '#64748B' },
-                        total: {
-                            showAlways: true,
-                            show: true,
-                            label: "Total Expenses",
-                            fontFamily: "inherit",
-                            fontSize: '16px',
-                            fontWeight: 600,
-                            color: '#1E293B',
-                            formatter: function (w) {
-                                const sum = w.globals.seriesTotals.reduce((a, b) => a + b, 0);
-                                return '₱' + (sum / 1000).toFixed(0) + 'k';
-                            }
-                        },
-                        value: {
-                            show: true,
-                            fontFamily: "inherit",
-                            offsetY: -20,
-                            fontSize: '20px',
-                            fontWeight: 700,
-                            color: '#1E293B',
-                            formatter: function (value) {
-                                return '₱' + (value / 1000).toFixed(0) + 'k';
-                            }
-                        }
-                    },
-                    size: "80%"
-                }
-            }
-        },
-        labels: ["Office Supplies", "Utilities", "Travel", "Marketing", "Other"],
-        dataLabels: { enabled: false },
-        legend: {
-            position: "bottom",
-            fontFamily: "inherit",
-            fontSize: '13px',
-            fontWeight: 500,
-            labels: { colors: '#64748B' }
-        },
-        tooltip: {
-            style: { fontFamily: "inherit", fontSize: '13px' },
-            y: { formatter: function (value) { return '₱' + value.toLocaleString(); } },
-            theme: 'dark',
-            fillSeriesColor: true
-        },
-        responsive: [{
-            breakpoint: 768,
-            options: { chart: { height: 280 }, plotOptions: { pie: { donut: { size: '70%' } } } }
-        }]
-    };
-
-    try {
-        if (chartInstances.expensesCategory) chartInstances.expensesCategory.destroy();
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.expensesCategory = chart;
-        chart.render();
-    } catch (error) {
-        console.error('Error creating expenses category chart:', error);
-    }
-}
-
-/**
- * Weekly Vouchers Line Chart - Modern Design
- */
-function initWeeklyVouchersChart() {
-    const chartElement = document.getElementById('weeklyVouchersChart');
-    if (!chartElement || !ApexCharts) return;
-
-    const weeklyData = [
-        { label: 'W1', value: 78 },
-        { label: 'W2', value: 82 },
-        { label: 'W3', value: 75 },
-        { label: 'W4', value: 89 },
-        { label: 'W5', value: 91 },
-        { label: 'W6', value: 95 },
-        { label: 'W7', value: 88 },
-        { label: 'W8', value: 102 }
     ];
+    options.tooltip = {
+        theme: 'light',
+        shared: false,
+        intersect: false,
+        fixed: { enabled: true, position: 'topRight', offsetX: -12, offsetY: 8 },
+        y: {
+            formatter: (value, { seriesIndex }) => {
+                const item = chartItems[seriesIndex];
+                const percentText = percentage(value, chartTotal).toFixed(1);
+                const paymentText = suppliesView === 'payment' ? item.recordedAt : `paid by ${item.method}`;
+                return `${money(value)} - ${percentText}% - ${paymentText}`;
+            },
+        },
+        custom({ series, seriesIndex, w }) {
+            const value = series[seriesIndex];
+            const item = chartItems[seriesIndex];
+            const paymentLine = suppliesView === 'payment' ? item.recordedAt : `Payment: ${item.method}`;
+            return `<div class="px-3 py-2 text-sm text-slate-900">
+                <div class="font-black">${w.globals.labels[seriesIndex]}</div>
+                <div>${money(value)} <span class="font-bold">(${percentage(value, chartTotal).toFixed(1)}%)</span></div>
+                <div class="mt-1 text-xs text-slate-600">${paymentLine}</div>
+                <div class="text-xs text-slate-600">Budget used: ${budgetUsedPercent.toFixed(1)}% of ${money(currentBudget)}</div>
+                <div class="text-xs text-slate-600">Remaining after supplies: ${money(remainingAfterSupplies)}</div>
+            </div>`;
+        },
+    };
+    render('suppliesExpenseChart', options);
+    bindSuppliesLegendInteractions();
+    updateSuppliesSwitcher();
+}
+// END: Render Supplies Expense Donut Chart with Top-Left Legend and Right-Aligned Pie
 
-    const options = {
-        series: [{
-            name: 'Vouchers Generated',
-            data: weeklyData.map(item => item.value)
-        }],
-        chart: {
-            type: 'area',
-            height: 'auto',
-            fontFamily: 'inherit',
-            toolbar: { show: false },
-            zoom: { enabled: false },
-            animations: {
-                enabled: true,
-                easing: 'easeinout',
-                speed: 800,
-                animateGradually: {
-                    enabled: true,
-                    delay: 150
-                }
-            },
-            sparkline: { enabled: false }
-        },
-        colors: [colors.primary],
-        stroke: {
-            curve: 'smooth',
-            width: 3,
-            lineCap: 'round'
-        },
-        markers: {
-            size: [5, 5, 5, 5, 5, 5, 5, 7],
-            colors: [colors.primary],
-            strokeColors: '#ffffff',
-            strokeWidth: 3,
-            hover: { size: 8 },
-            radius: 4
-        },
-        dataLabels: { enabled: false },
-        grid: {
-            borderColor: colors.accent3,
-            strokeDashArray: 3,
-            xaxis: { lines: { show: false } },
-            yaxis: { lines: { show: true } },
-            padding: {
-                top: 0,
-                right: 0,
-                bottom: 0,
-                left: 0
-            }
-        },
-        xaxis: {
-            categories: weeklyData.map(item => item.label),
-            labels: {
-                style: {
-                    colors: '#64748B',
-                    fontSize: '12px',
-                    fontFamily: 'inherit',
-                    fontWeight: 600
-                }
-            },
-            axisBorder: { show: false },
-            axisTicks: { show: false }
-        },
-        yaxis: {
-            labels: {
-                style: {
-                    colors: '#64748B',
-                    fontSize: '12px',
-                    fontFamily: 'inherit',
-                    fontWeight: 600
-                },
-                formatter: (val) => val.toString()
-            },
-            min: 0
-        },
-        fill: {
-            type: 'gradient',
-            gradient: {
-                shade: 'light',
-                type: 'vertical',
-                shadeIntensity: 0.4,
-                gradientToColors: [colors.primary + '30'],
-                inverseColors: false,
-                opacityFrom: 0.5,
-                opacityTo: 0.1,
-                stops: [0, 50, 100]
-            }
-        },
-        tooltip: {
-            style: { fontSize: '13px', fontFamily: 'inherit' },
-            y: { formatter: (val) => val + ' vouchers' },
-            theme: 'dark',
-            fillSeriesColor: true,
-            marker: { show: true }
-        },
-        responsive: [{
-            breakpoint: 1024,
-            options: {
-                chart: { height: 320 }
-            }
-        }, {
-            breakpoint: 768,
-            options: {
-                chart: { height: 280 },
-                markers: { size: 4 }
-            }
-        }, {
+// START: Bind Supplies Legend Hover and Click Underline Interactions
+function bindSuppliesLegendInteractions() {
+    requestAnimationFrame(() => {
+        const container = document.getElementById('suppliesExpenseChart');
+        if (!container) return;
+        const legendItems = container.querySelectorAll('.apexcharts-legend-series');
+        legendItems.forEach((item) => {
+            if (item.dataset.legendBound === 'true') return;
+            item.dataset.legendBound = 'true';
+            item.addEventListener('click', () => {
+                item.classList.toggle('is-active');
+            });
+        });
+    });
+}
+// END: Bind Supplies Legend Hover and Click Underline Interactions
+
+function setupSuppliesSwitcher() {
+    document.querySelectorAll('[data-supplies-view]').forEach((button) => {
+        if (button.dataset.suppliesReady === 'true') return;
+        button.dataset.suppliesReady = 'true';
+        button.addEventListener('click', () => {
+            suppliesView = button.dataset.suppliesView === 'payment' ? 'payment' : 'category';
+            localStorage.setItem(SUPPLIES_VIEW_KEY, suppliesView);
+            renderSupplies();
+        });
+    });
+    updateSuppliesSwitcher();
+}
+// START: Render Office Income and Expenses Area Chart with Gradient
+function renderOffice() {
+    const factor = yearFactor(officeFinancialYear);
+    const options = baseChart('area', 360);
+    options.series = mock.offices.map(item => ({ ...item, data: scaleValues(item.data, factor) }));
+    options.colors = ['#1D4ED8', '#DC2626', '#059669', '#7C3AED'];
+    options.stroke = { curve: 'smooth', width: 3.5 };
+    options.fill = { type: 'gradient', gradient: { shadeIntensity: 0.5, opacityFrom: 0.58, opacityTo: 0.12, stops: [0, 85, 100] } };
+    options.markers = { size: 4, strokeColors: '#FFFFFF', strokeWidth: 2, hover: { size: 6 } };
+    options.legend = {
+        position: 'bottom',
+        horizontalAlign: 'center',
+        floating: false,
+        fontSize: '13px',
+        fontWeight: 700,
+        labels: { colors: '#0F172A' },
+        markers: { width: 12, height: 12, radius: 12 },
+        itemMargin: { horizontal: 10, vertical: 4 },
+        onItemHover: { highlightDataSeries: true },
+    };
+    options.xaxis = {
+        categories: mock.months,
+        labels: { style: { colors: '#0F172A', fontWeight: 700 } },
+        axisBorder: { show: true, color: '#475569' },
+        axisTicks: { show: true, color: '#475569' },
+        tooltip: { enabled: false },
+    };
+    options.yaxis = { labels: { style: { colors: '#0F172A', fontWeight: 700 }, formatter: money } };
+    options.responsive = [
+        {
             breakpoint: 640,
             options: {
-                chart: { height: 250 },
-                xaxis: { labels: { fontSize: '10px' } },
-                yaxis: { labels: { fontSize: '10px' } }
-            }
-        }]
+                chart: { height: 340 },
+                legend: { position: 'bottom', horizontalAlign: 'center', floating: false },
+            },
+        },
+    ];
+    options.tooltip = {
+        theme: 'light',
+        shared: false,
+        intersect: false,
+        fixed: { enabled: true, position: 'topRight', offsetX: -12, offsetY: 8 },
+        x: { show: true },
+        y: { formatter: (value, { dataPointIndex }) => `${money(value)} recorded in ${mock.months[dataPointIndex]} ${officeFinancialYear}` },
+        custom({ series, seriesIndex, dataPointIndex, w }) {
+            const name = w.globals.seriesNames[seriesIndex];
+            const val = series[seriesIndex][dataPointIndex];
+            return `<div class="px-3 py-2 text-sm text-slate-900">
+                <div class="font-bold">${mock.months[dataPointIndex]} ${officeFinancialYear}</div>
+                <div>${name}: <span class="font-black">${money(val)}</span></div>
+                <div class="mt-1 text-xs text-slate-500">Office Financial Record</div>
+            </div>`;
+        },
     };
+    setSelectValue('officeFinancialYear', officeFinancialYear);
+    render('officeFinancialChart', options);
+}
+// END: Render Office Income and Expenses Area Chart with Gradient
 
-    try {
-        if (chartInstances.weekly) {
-            chartInstances.weekly.destroy();
-        }
-        const chart = new ApexCharts(chartElement, options);
-        chartInstances.weekly = chart;
-        chart.render();
-    } catch (error) {
-        console.error('Error creating weekly chart:', error);
+function renderPendingDvs() {
+    const body = document.getElementById('pendingDvTableBody');
+    if (!body) return;
+    body.innerHTML = mock.dv.map(([no, payee, purpose, amount, recorded, status]) => `<tr class="hover:bg-slate-50"><td class="whitespace-nowrap px-3 py-3 font-bold text-slate-900">${no}</td><td class="px-3 py-3">${payee}</td><td class="px-3 py-3">${purpose}</td><td class="whitespace-nowrap px-3 py-3 font-bold text-slate-900">${money(amount)}</td><td class="whitespace-nowrap px-3 py-3 text-xs">${recorded}</td><td class="px-3 py-3"><span class="inline-flex rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-800">${status}</span></td></tr>`).join('');
+}
+
+function setupPeriodControls() {
+    const remainingSelect = document.getElementById('remainingBudgetYear');
+    if (remainingSelect && remainingSelect.dataset.ready !== 'true') {
+        remainingSelect.dataset.ready = 'true';
+        remainingSelect.value = remainingBudgetYear;
+        remainingSelect.addEventListener('change', () => {
+            remainingBudgetYear = remainingSelect.value;
+            localStorage.setItem(REMAINING_YEAR_KEY, remainingBudgetYear);
+            renderRemainingBudget();
+        });
+    }
+
+    const suppliesYearSelect = document.getElementById('suppliesExpenseYear');
+    if (suppliesYearSelect && suppliesYearSelect.dataset.ready !== 'true') {
+        suppliesYearSelect.dataset.ready = 'true';
+        suppliesYearSelect.value = suppliesYear;
+        suppliesYearSelect.addEventListener('change', () => {
+            suppliesYear = suppliesYearSelect.value;
+            localStorage.setItem(SUPPLIES_YEAR_KEY, suppliesYear);
+            renderSupplies();
+        });
+    }
+
+    const suppliesMonthSelect = document.getElementById('suppliesExpenseMonth');
+    if (suppliesMonthSelect && suppliesMonthSelect.dataset.ready !== 'true') {
+        suppliesMonthSelect.dataset.ready = 'true';
+        suppliesMonthSelect.value = suppliesMonth;
+        suppliesMonthSelect.addEventListener('change', () => {
+            suppliesMonth = suppliesMonthSelect.value;
+            localStorage.setItem(SUPPLIES_MONTH_KEY, suppliesMonth);
+            renderSupplies();
+        });
+    }
+
+    const officeSelect = document.getElementById('officeFinancialYear');
+    if (officeSelect && officeSelect.dataset.ready !== 'true') {
+        officeSelect.dataset.ready = 'true';
+        officeSelect.value = officeFinancialYear;
+        officeSelect.addEventListener('change', () => {
+            officeFinancialYear = officeSelect.value;
+            localStorage.setItem(OFFICE_YEAR_KEY, officeFinancialYear);
+            renderOffice();
+        });
     }
 }
+function renderAll() {
+    renderStats();
+    setupSuppliesSwitcher();
+    setupPeriodControls();
+    renderCashflow();
+    renderRemainingBudget();
+    renderSupplies();
+    renderOffice();
+    renderPendingDvs();
+}
+
+export async function init() {
+    if (!document.getElementById('moneyCashflowChart')) return;
+    await new Promise(resolve => requestAnimationFrame(resolve));
+    ApexCharts = (await import('apexcharts')).default;
+    setupCashflowDropdown();
+    renderAll();
+}
+
+window.initPageCharts = () => {
+    if (ApexCharts) renderAll();
+};

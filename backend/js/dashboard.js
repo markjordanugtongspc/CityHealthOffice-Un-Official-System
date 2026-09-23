@@ -3,7 +3,6 @@
  * Handles user dropdown menu and displays current user info
  */
 
-import { loadUserInfo } from './modules/user-info.js';
 
 const SETTINGS_DROPDOWN_ACTIVE = [
     'bg-[#224796]/10',
@@ -35,8 +34,6 @@ export function syncUserDropdownSettingsActive() {
  * Initialize dashboard functionality
  */
 export function init() {
-    // Load and display user info
-    loadUserInfo();
 
     const userMenuButton = document.getElementById('userMenuButton');
     const userDropdown = document.getElementById('userDropdown');
@@ -173,4 +170,6 @@ export function init() {
             switchChartPage(e.target.value);
         });
     }
+
+
 }

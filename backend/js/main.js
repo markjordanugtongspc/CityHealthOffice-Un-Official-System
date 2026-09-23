@@ -1,9 +1,9 @@
 // Import Tailwind CSS
 import '../../frontend/style.css';
 
-// Initialize Flowbite and SweetAlert2
+// Initialize Flowbite
 import 'flowbite';
-import Swal from 'sweetalert2';
+import { Carousel, initCarousels } from 'flowbite';
 
 // Helpers
 export function getCurrentYear() {
@@ -147,121 +147,111 @@ function setFavicon() {
 
 // Import modules (each module exposes its own init function)
 import { init as initAuth } from './auth.js';
-import { init as initDashboard } from './dashboard.js';
-import { init as initCharts } from './charts.js';
-import { init as initBudget } from './budget.js';
-import { init as initSpecialFund } from './specialfund.js';
-import { init as initMonthlyExpenses } from './monthly-expenses.js';
-import { init as initItemized } from './itemized.js';
-import { init as initExport } from './modules/export.js';
-import { init as initVoucher } from './modules/voucher.js';
-import { init as initScrollToTop } from './modules/scroll-to-top.js';
-import { init as initAI } from './modules/ai.js';
-import { init as initAbout } from './about.js';
-import { init as initSettings } from './settings.js';
-import { init as initAdmin } from './admin.js';
 import { initSidebar } from './sidebar.js';
 import { initAuthCheck } from './modules/auth-check.js';
 import { loadUserInfo } from './modules/user-info.js';
+// START: Route-based module loading
+function loadPageModule(moduleLoader) {
+    return moduleLoader()
+        .then(({ init: moduleInit }) => moduleInit?.())
+        .catch((error) => console.error('Failed to load page module:', error));
+}
 
-/**
- * Remove page loader once assets are loaded
- */
-function removePageLoader() {
-    const loader = document.getElementById('page-loader');
-    if (loader) {
-        loader.style.opacity = '0';
-        loader.style.transition = 'opacity 0.3s ease-out';
-        setTimeout(() => {
-            loader.remove();
-        }, 300);
+function initializeCurrentPageModules() {
+    const pagePath = (window.location.pathname || '').toLowerCase();
+
+    if (pagePath.includes('/dashboard/')) {
+        void loadPageModule(() => import('./dashboard.js'));
+        void loadPageModule(() => import('./charts.js'));
+    } else if (pagePath.includes('/budget/')) {
+        void loadPageModule(() => import('./budget.js'));
+    } else if (pagePath.includes('/specialfund/')) {
+        void loadPageModule(() => import('./specialfund.js'));
+    } else if (pagePath.includes('/monthly-expenses/')) {
+        void loadPageModule(() => import('./monthly-expenses.js'));
+    } else if (pagePath.includes('/itemized/')) {
+        void loadPageModule(() => import('./itemized.js'));
+    } else if (pagePath.includes('/export/')) {
+        void loadPageModule(() => import('./modules/export.js'));
+    } else if (pagePath.includes('/voucher/')) {
+        void loadPageModule(() => import('./modules/voucher.js'));
+    } else if (pagePath.includes('/about/')) {
+        void loadPageModule(() => import('./about.js'));
+    } else if (pagePath.includes('/settings/')) {
+        void loadPageModule(() => import('./settings.js'));
+    } else if (pagePath.includes('/admin/')) {
+        void loadPageModule(() => import('./admin.js'));
     }
-}
 
+    void loadPageModule(() => import('./modules/scroll-to-top.js'));
+    // void loadPageModule(() => import('./modules/ai.js')); // Temporarily disabled AI chatbot module
+}
+// END: Route-based module loading
+
+// START: Remove Page Loader with Smooth Fade and Post-Login Restriction
 /**
- * Preload page assets on link hover for smoother navigation
- * Uses service worker cache for instant navigation
+ * Remove page loader once dashboard assets, charts, and modules are loaded.
+ * Only displays for a brief smooth transition directly after a successful login (flagged via sessionStorage).
+ * On subsequent refreshes, reloads, or navigation while authenticated, the overlay is removed
+ * immediately without showing, as the user is already logged in.
  */
-function initNavigationPreloading() {
-    // Import cache manager
-    import('./modules/cache-manager.js').then(({ preloadPage, isPageCached }) => {
-        // Find all internal navigation links
-        const links = document.querySelectorAll('a[href*="frontend/pages"], a[href*="index.php"]');
-        const preloadedPages = new Set();
+let pageLoaderStartTime = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
 
-        links.forEach(link => {
-            const href = link.getAttribute('href');
-            if (!href || href.startsWith('#') || href.startsWith('javascript:')) {
-                return;
-            }
+export function removePageLoader() {
+    const loader = document.getElementById('page-loader');
+    if (!loader) return;
 
-            // Skip external links
-            if (href.startsWith('http') && !href.includes(window.location.hostname)) {
-                return;
-            }
+    // Check if this is the initial arrival right after a successful login
+    const isPostLogin = sessionStorage.getItem('show_connecting_overlay') === 'true';
 
-            // Resolve relative URLs to absolute
-            const absoluteUrl = new URL(href, window.location.href).href;
+    if (!isPostLogin) {
+        // User refreshed/reloaded or navigated while already authenticated: remove instantly
+        loader.style.display = 'none';
+        loader.remove();
+        document.body && document.body.classList.add('loaded');
+        return;
+    }
 
-            // Preload on hover (mouseenter) - cache the page for instant future loads
-            link.addEventListener('mouseenter', async () => {
-                if (!preloadedPages.has(absoluteUrl)) {
-                    preloadedPages.add(absoluteUrl);
+    // Clear the post-login flag so any subsequent reload won't trigger the overlay
+    sessionStorage.removeItem('show_connecting_overlay');
 
-                    // Check if already cached
-                    try {
-                        const cached = await isPageCached(absoluteUrl);
-                        if (!cached) {
-                            // Preload into cache (non-blocking)
-                            preloadPage(absoluteUrl);
-                        }
-                    } catch (error) {
-                        // Ignore cache errors
-                    }
-                }
-            }, { once: true });
+    // First time after login: play overlay for 600ms for a snappy, smooth visual transition
+    const minDisplayTime = 600;
+    const currentTime = (typeof performance !== 'undefined' && performance.now) ? performance.now() : Date.now();
+    const elapsedTime = currentTime - pageLoaderStartTime;
+    const remainingDelay = Math.max(0, minDisplayTime - elapsedTime);
 
-            // Handle clicks - service worker will serve cached pages instantly
-            link.addEventListener('click', (e) => {
-                // Only handle internal navigation
-                if (href && !href.startsWith('http') && !href.startsWith('#')) {
-                    // Service worker will intercept and serve from cache if available
-                    // Show loader only briefly for visual feedback
-                    const loader = document.createElement('div');
-                    loader.id = 'page-loader';
-                    loader.innerHTML = `
-                        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #f4f8fb 60%, #dbeafe 100%); z-index: 9999; display: flex; align-items: center; justify-content: center; flex-direction: column;">
-                            <div style="width: 48px; height: 48px; border: 4px solid #e2e8f0; border-top-color: #224796; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-                            <p style="margin-top: 1rem; color: #223557; font-weight: 500;">Loading page...</p>
-                        </div>
-                        <style>
-                            @keyframes spin {
-                                to { transform: rotate(360deg); }
-                            }
-                        </style>
-                    `;
-                    document.body.appendChild(loader);
-
-                    // If page is cached, loader will be removed quickly by main.js init()
-                    // If not cached, normal navigation will occur
-                }
-            });
-        });
-    });
+    setTimeout(() => {
+        const activeLoader = document.getElementById('page-loader');
+        if (activeLoader) {
+            activeLoader.style.opacity = '0';
+            activeLoader.style.transition = 'opacity 0.3s ease-out';
+            setTimeout(() => {
+                activeLoader.remove();
+                document.body && document.body.classList.add('loaded');
+            }, 300);
+        }
+    }, remainingDelay);
 }
+// END: Remove Page Loader with Smooth Fade and Post-Login Restriction
 
 /**
  * Main application initialization
  * Conditionally initializes modules based on page context
  */
+// Remove legacy page-cache workers and browser caches from older builds.
+async function removeLegacyPageCaching() {
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map((registration) => registration.unregister()));
+    }
+    if (typeof window !== 'undefined' && 'caches' in window) {
+        const cacheNames = await window.caches.keys();
+        await Promise.all(cacheNames.filter((name) => name.startsWith('cho-pages-')).map((name) => window.caches.delete(name)));
+    }
+}
 export async function init() {
-    // Register service worker for page caching (must be first)
-    import('./modules/cache-manager.js').then(({ registerServiceWorker }) => {
-        registerServiceWorker();
-    });
-
-    // Remove page loader if it exists (for page transitions)
-    removePageLoader();
+    removeLegacyPageCaching().catch(() => {});
 
     // Set favicon for all pages (must be first)
     setFavicon();
@@ -278,47 +268,49 @@ export async function init() {
     // Initialize authentication if login form exists
     initAuth();
 
-    // Initialize dashboard if dashboard elements exist
-    initDashboard();
+    // START: Initialize Flowbite carousel with hover pause and smooth cycle
+    const carouselEl = document.getElementById('landing-carousel');
+    const carouselContainer = document.getElementById('landing-carousel-container') || carouselEl;
+    if (carouselEl) {
+        initCarousels();
 
-    // Initialize charts if chart containers exist (await async function)
-    await initCharts();
+        // Retrieve the Flowbite Carousel instance or instantiate it if needed
+        setTimeout(() => {
+            let carouselInstance = null;
+            if (typeof window !== 'undefined' && window.FlowbiteInstances) {
+                carouselInstance = window.FlowbiteInstances.getInstance('Carousel', 'landing-carousel');
+            }
 
-    // Initialize budget page if budget elements exist
-    await initBudget();
+            if (!carouselInstance) {
+                // Fallback: manual Carousel instantiation
+                const itemEls = carouselEl.querySelectorAll('[data-carousel-item]');
+                const items = Array.from(itemEls).map((el, position) => ({
+                    position,
+                    el
+                }));
+                if (items.length) {
+                    carouselInstance = new Carousel(carouselEl, items, {
+                        interval: 4000
+                    });
+                    carouselInstance.cycle();
+                }
+            }
 
-    // Initialize special fund page if special fund elements exist
-    initSpecialFund();
+            if (carouselInstance && carouselContainer) {
+                carouselContainer.addEventListener('mouseenter', () => {
+                    carouselInstance.pause();
+                });
+                carouselContainer.addEventListener('mouseleave', () => {
+                    carouselInstance.cycle();
+                });
+            }
+        }, 100);
+    }
+    // END: Initialize Flowbite carousel with hover pause and smooth cycle
 
-    // Initialize monthly expenses page if monthly expenses elements exist
-    await initMonthlyExpenses();
+    // Load only the modules required by the current page after core UI is ready.
+    initializeCurrentPageModules();
 
-    // Initialize itemized page if itemized elements exist
-    await initItemized();
-
-    // Initialize export page if export elements exist
-    initExport();
-
-    // Initialize voucher page if voucher app exists
-    initVoucher();
-
-    // Initialize about page if about elements exist
-    initAbout();
-
-    // Settings page (local data actions)
-    initSettings();
-
-    // Initialize admin page if admin elements exist
-    initAdmin();
-
-    // Floating scroll-to-top button (mobile/desktop)
-    initScrollToTop();
-
-    // AI Chatbot
-    initAI();
-
-    // Initialize navigation preloading for smoother page transitions
-    initNavigationPreloading();
 
     // Ensure loader is removed after all initialization
     removePageLoader();

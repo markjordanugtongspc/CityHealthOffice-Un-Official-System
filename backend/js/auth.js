@@ -3,8 +3,10 @@
  * Handles login with database authentication via API
  */
 
-import { showLoginSuccess, showIncorrectCredentials, showError } from './modules/popups.js';
+import { showLoginSuccess, showInlineFieldError, clearInlineFieldErrors, showError } from './modules/popups.js';
 import { persistLoginSnapshot } from './modules/db-manager.js';
+
+const LOGIN_REQUIRED_MESSAGE = 'You must login first before accessing the dashboard.';
 
 /**
  * Get API base path dynamically
@@ -223,6 +225,21 @@ function loadSavedCredentials() {
 /**
  * Initialize password visibility toggle on login form
  */
+function showRedirectedAuthError() {
+    const params = new URLSearchParams(window.location.search);
+
+    if (params.get('auth_error') !== 'login_required') {
+        return;
+    }
+
+    showInlineFieldError('username', LOGIN_REQUIRED_MESSAGE);
+
+    params.delete('auth_error');
+    const nextQuery = params.toString();
+    const cleanUrl = `${window.location.pathname}${nextQuery ? `?${nextQuery}` : ''}${window.location.hash}`;
+    window.history.replaceState({}, document.title, cleanUrl);
+}
+
 function initPasswordToggle() {
     const passwordInput = document.getElementById('password');
     const toggleButton = document.getElementById('passwordToggle');
@@ -267,6 +284,8 @@ export function init() {
     // Initialize password visibility toggle
     initPasswordToggle();
 
+    showRedirectedAuthError();
+
     // Handle remember me checkbox change
     const rememberMeCheckbox = document.getElementById('rememberMe');
     if (rememberMeCheckbox) {
@@ -278,6 +297,16 @@ export function init() {
         });
     }
 
+    // Clear inline error states on user input
+    const usernameInput = document.getElementById('username');
+    const passwordInput = document.getElementById('password');
+    if (usernameInput) {
+        usernameInput.addEventListener('input', () => clearInlineFieldErrors());
+    }
+    if (passwordInput) {
+        passwordInput.addEventListener('input', () => clearInlineFieldErrors());
+    }
+
     loginForm.addEventListener('submit', handleLogin);
 }
 
@@ -287,14 +316,19 @@ export function init() {
  */
 async function handleLogin(e) {
     e.preventDefault();
+    clearInlineFieldErrors();
 
     const username = document.getElementById('username').value.trim();
     const password = document.getElementById('password').value;
     const rememberMe = document.getElementById('rememberMe')?.checked || false;
 
     // Validation
-    if (!username || !password) {
-        await showError('Please enter both username and password');
+    if (!username) {
+        showInlineFieldError('username', 'Username is required');
+        return;
+    }
+    if (!password) {
+        showInlineFieldError('password', 'Password is required');
         return;
     }
 
@@ -323,15 +357,24 @@ async function handleLogin(e) {
                 clearCredentials();
             }
 
-            // Show success message with loading animation, timer, and preload assets
-            // The modal will automatically close and redirect after the timer completes
+            // Show custom success sequence (button success.gif -> 2-grid medicine overlay -> dashboard)
             await showLoginSuccess();
         } else {
-            // Show incorrect credentials error
-            await showIncorrectCredentials();
+            // Check error type or field to show targeted inline rose-red error
+            if (data.error_type === 'user_not_found') {
+                showInlineFieldError('username', data.message || 'Username not found');
+            } else if (data.error_type === 'incorrect_password') {
+                showInlineFieldError('password', data.message || 'Incorrect password');
+            } else if (data.field === 'username') {
+                showInlineFieldError('username', data.message || 'Invalid username');
+            } else if (data.field === 'password') {
+                showInlineFieldError('password', data.message || 'Incorrect password');
+            } else {
+                showInlineFieldError('both', data.message || 'Incorrect username or password');
+            }
         }
     } catch (error) {
         console.error('Login error:', error);
-        await showError('An error occurred during login. Please try again.');
+        await showError('An unexpected network error occurred. Please try again.');
     }
 }

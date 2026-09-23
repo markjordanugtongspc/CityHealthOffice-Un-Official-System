@@ -161,22 +161,22 @@
         </header>
 
         <div class="info-panel success">
-            <strong>Zero-terminal mode for your sister:</strong>
-            On your sister's laptop, she only needs XAMPP (Apache + MySQL) running and a browser. No <code>npm run dev</code>, no PHP commands, no IDE.
+            <strong>Zero-terminal mode (Production Build):</strong>
+            To run the final output, you only need Laragon (Apache + MySQL) running. No <code>npm run dev</code>, no background node servers, and no IDE are required.
         </div>
 
-        <h2><span class="step-indicator">1</span> What you must prepare (developer)</h2>
+        <h2><span class="step-indicator">1</span> What you must prepare (Production Build)</h2>
         <p><strong>Prerequisites on your machine:</strong></p>
         <pre>
-1. Install Node.js and run:
+1. Install dependencies:
    npm install
 
 2. Build production assets:
    npm run build
 
-3. Make sure these exist before you copy to another laptop:
-   - dist/            &rarr; built JS/CSS from Vite
-   - config/.env      &rarr; database credentials (not in git)
+3. Make sure these exist:
+   - dist/            &rarr; compiled & minified JS/CSS from Vite
+   - config/.env      &rarr; database credentials
         </pre>
 
         <p><strong>Create or update your <code>config/.env</code>:</strong></p>
@@ -187,22 +187,22 @@ DB_PASS=
 DB_NAME=cho_db
 DB_CHARSET=utf8mb4
         </pre>
-        <p>The PHP config <code>config/db.php</code> now reads from <code>config/.env</code>, so you never hardcode DB
-            passwords in the codebase.</p>
+        <p>The PHP config <code>config/db.php</code> reads directly from <code>config/.env</code> for secure configuration.</p>
 
-        <h2><span class="step-indicator">2</span> How your sister runs the system</h2>
-        <p><strong>On your sister's laptop (no programming tools needed):</strong></p>
+        <h2><span class="step-indicator">2</span> How to Run the System (1-Click or Manual)</h2>
+        <p><strong>Option A &mdash; 1-Click Automated Launcher:</strong></p>
         <pre>
-1. Install XAMPP and make Apache + MySQL start automatically.
-2. Create the database (import your SQL schema).
-3. Copy the project folder (including dist/) into:
-   C:\xampp\htdocs\Project
-4. Create config/.env on her machine with her DB credentials.
-5. Open a browser and go to:
+Double-click: start program.bat
+(Automatically builds assets, launches Laragon services, and opens the browser)
+        </pre>
+        <p><strong>Option B &mdash; Manual Zero-Terminal Mode:</strong></p>
+        <pre>
+1. Start Apache + MySQL in Laragon (Click "Start All").
+2. Run "npm run build" once.
+3. Open your browser and go to:
    http://localhost/Project/
         </pre>
-        <p>Because the Vite helpers check if the dev server is running, her laptop will automatically use the built
-            files from <code>dist/.vite/manifest.json</code>. She never has to run <code>npm run dev</code>.</p>
+        <p>Because the PHP Vite helper detects that the dev server is closed, it automatically and instantly loads the pre-built files from <code>dist/.vite/manifest.json</code>.</p>
 
         <h2><span class="step-indicator">3</span> Same-network access (LAN)</h2>
         <p><strong>Goal:</strong> Other devices (phone, another PC) use the system over WiFi or LAN.</p>

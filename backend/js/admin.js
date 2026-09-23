@@ -1,6 +1,6 @@
-import Swal from 'sweetalert2';
-import { showAdminCreateUserDrawer } from './modules/drawer.js';
-import { createUser, validateUserData } from './modules/user-management.js';
+﻿import Swal from 'sweetalert2';
+import { showAdminCreateUserDrawer, showAdminEditUserDrawer } from './modules/drawer.js';
+import { createUser, updateUser, validateUserData } from './modules/user-management.js';
 import {
     sweetalertActionsLeftAlignedClasses,
     sweetalertHtmlLeftAlignedClasses,
@@ -12,8 +12,10 @@ import {
 
 // State
 let currentPage = 1;
-const rowsPerPage = 10;
+let rowsPerPage = 10;
 let users = [];
+let allUsers = [];
+let adminCount = 0;
 
 /**
  * Render users table
@@ -21,83 +23,27 @@ let users = [];
 function renderTable() {
     const tbody = document.getElementById('adminUsersTableBody');
     const summaryEl = document.getElementById('adminUsersPaginationSummary');
-
     if (!tbody || !summaryEl) return;
-
     const total = users.length;
     const totalPages = total > 0 ? Math.ceil(total / rowsPerPage) : 1;
-
-    if (currentPage > totalPages) currentPage = totalPages;
-    if (currentPage < 1) currentPage = 1;
-
+    currentPage = Math.min(Math.max(currentPage, 1), totalPages);
     const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = Math.min(startIndex + rowsPerPage, total);
-    const visibleUsers = users.slice(startIndex, endIndex);
-
-    tbody.innerHTML = visibleUsers
-        .map((user, index) => {
-            const isStriped = index % 2 === 1;
-            const createdDate = user.created_at
-                ? new Date(user.created_at).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                  })
-                : '-';
-
-            return `
-                <tr class="${isStriped ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-100 transition-colors">
-                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm font-medium text-slate-900">
-                        ${user.username}
-                    </td>
-                    <td class="px-4 py-2 text-xs md:text-sm text-slate-700">
-                        ${user.full_name}
-                    </td>
-                    <td class="px-4 py-2 text-xs md:text-sm text-slate-700">
-                        ${user.email}
-                    </td>
-                    <td class="px-4 py-2 text-xs md:text-sm">
-                        <span class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                            user.role === 'Administrator'
-                                ? 'bg-purple-100 text-purple-800'
-                                : user.role === 'CEO'
-                                ? 'bg-blue-100 text-blue-800'
-                                : user.role === 'Manager'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : 'bg-slate-100 text-slate-800'
-                        }">
-                            ${user.role}
-                        </span>
-                    </td>
-                    <td class="px-4 py-2 text-xs md:text-sm text-slate-600">
-                        ${createdDate}
-                    </td>
-                    <td class="px-4 py-2 text-center">
-                        <button
-                            type="button"
-                            class="edit-user-btn inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 hover:bg-slate-100 cursor-pointer transition-colors"
-                            title="Edit user"
-                            data-username="${user.username}"
-                        >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                            </svg>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        })
-        .join('');
-
-    if (total === 0) {
-        summaryEl.textContent = 'Showing 0 to 0 of 0 entries';
-    } else {
-        summaryEl.textContent = `Showing ${startIndex + 1} to ${endIndex} of ${total} entries`;
-    }
-
+    const visibleUsers = users.slice(startIndex, startIndex + rowsPerPage);
+    tbody.innerHTML = visibleUsers.map((user, index) => {
+        const createdDate = user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : '-';
+        const roleClass = user.role === 'Administrator' ? 'bg-purple-100 text-purple-800' : user.role === 'CEO' ? 'bg-blue-100 text-blue-800' : user.role === 'Manager' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-800';
+        const roleLocked = user.role === 'Administrator' && adminCount <= 1;
+        const roleControl = `<select class="admin-role-select rounded-full border-0 px-2.5 py-1 text-xs font-medium ${roleClass}" data-username="${user.username}" ${roleLocked ? 'disabled title="The only Administrator cannot be demoted"' : ''}><option ${user.role === 'Administrator' ? 'selected' : ''}>Administrator</option><option ${user.role === 'CEO' ? 'selected' : ''}>CEO</option><option ${user.role === 'Manager' ? 'selected' : ''}>Manager</option><option ${user.role === 'Workmate' ? 'selected' : ''}>Workmate</option><option ${user.role === 'Staff' ? 'selected' : ''}>Staff</option></select>`;
+        return `<tr class="${index % 2 ? 'bg-slate-50' : 'bg-white'} hover:bg-cyan-50 transition-colors"><td class="p-4"><input type="checkbox" class="admin-user-checkbox h-4 w-4 rounded border-slate-300 text-cyan-600" value="${user.id}"></td><th scope="row" class="whitespace-nowrap px-4 py-3 font-semibold text-slate-900">${user.full_name}<div class="text-xs font-normal text-slate-500">${user.username}</div></th><td class="px-4 py-3">${user.username}</td><td class="px-4 py-3">${user.email}</td><td class="px-4 py-3">${roleControl}</td><td class="px-4 py-3">${createdDate}</td><td class="px-4 py-3"><button type="button" class="edit-user-btn font-medium text-cyan-700 hover:underline" data-username="${user.username}">Edit user</button></td></tr>`;
+    }).join('');
+    summaryEl.innerHTML = `${total ? `Showing ${startIndex + 1} to` : 'Showing 0 to'} <select id="adminUsersPageSize" class="mx-1 rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 focus:border-cyan-500 focus:ring-cyan-500" aria-label="Users per page"><option value="10" ${rowsPerPage === 10 ? 'selected' : ''}>10</option><option value="25" ${rowsPerPage === 25 ? 'selected' : ''}>25</option><option value="50" ${rowsPerPage === 50 ? 'selected' : ''}>50</option><option value="100" ${rowsPerPage === 100 ? 'selected' : ''}>100</option><option value="${Math.max(total, 1)}" ${rowsPerPage === Math.max(total, 1) && rowsPerPage !== 10 ? 'selected' : ''}>All</option></select> ${total ? `of ${total} entries` : 'of 0 entries'}`;
+    document.getElementById('adminUsersPageSize')?.addEventListener('change', (event) => {
+        rowsPerPage = Number(event.target.value) || 10;
+        currentPage = 1;
+        renderTable();
+    });
     renderPagination(total, totalPages);
 }
-
 /**
  * Render pagination
  */
@@ -166,7 +112,9 @@ async function loadUsers() {
             throw new Error('Failed to load users');
         }
         const data = await response.json();
-        users = data.users || [];
+        allUsers = data.users || [];
+        adminCount = allUsers.filter((user) => user.role === 'Administrator').length;
+        users = [...allUsers];
         renderTable();
     } catch (error) {
         console.error('Error loading users:', error);
@@ -240,11 +188,16 @@ function handleAddUserClick() {
  * Handle edit user button click
  */
 function handleEditUserClick(username) {
-    import('./modules/modal.js').then(({ showAdminEditUserModal }) => {
-        showAdminEditUserModal(username);
-    });
+    showAdminEditUserDrawer(username, async (userData) => {
+        try {
+            await updateUser(userData);
+            await loadUsers();
+            Swal.fire({ icon: 'success', title: 'User updated', text: `User "${userData.username}" has been updated.`, confirmButtonText: 'OK', customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses } });
+        } catch (error) {
+            Swal.fire({ icon: 'error', title: 'Update failed', text: error.message || 'Unable to update user.', confirmButtonText: 'OK', customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses } });
+        }
+    }).catch((error) => Swal.fire({ icon: 'error', title: 'Unable to load user', text: error.message, confirmButtonText: 'OK', customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses } }));
 }
-
 /**
  * Bind events
  */
@@ -256,6 +209,17 @@ function bindEvents() {
     if (addBtn) {
         addBtn.addEventListener('click', handleAddUserClick);
     }
+
+    document.getElementById('adminUsersSearch')?.addEventListener('input', (event) => {
+        const query = event.target.value.trim().toLowerCase();
+        const originalUsers = allUsers;
+        users = query ? originalUsers.filter((user) => [user.full_name, user.username, user.email, user.role].some((value) => String(value || '').toLowerCase().includes(query))) : originalUsers;
+        currentPage = 1;
+        renderTable();
+    });
+    document.getElementById('adminUsersSelectAll')?.addEventListener('change', (event) => {
+        document.querySelectorAll('.admin-user-checkbox').forEach((checkbox) => { checkbox.checked = event.target.checked; });
+    });
 
     if (prevBtn) {
         prevBtn.addEventListener('click', () => {
@@ -274,6 +238,19 @@ function bindEvents() {
         });
     }
 
+    document.addEventListener('change', async (event) => {
+        const roleSelect = event.target.closest('.admin-role-select');
+        if (!roleSelect) return;
+        const target = allUsers.find((user) => user.username === roleSelect.dataset.username);
+        if (!target) return;
+        try {
+            await updateUser({ username: target.username, fullName: target.full_name, email: target.email, role: roleSelect.value });
+            await loadUsers();
+        } catch (error) {
+            roleSelect.value = target.role;
+            Swal.fire({ icon: 'error', title: 'Role not updated', text: error.message, confirmButtonText: 'OK', customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses } });
+        }
+    });
     // Use event delegation for edit buttons (since they're dynamically created)
     document.addEventListener('click', (e) => {
         if (e.target.closest('.edit-user-btn')) {
@@ -301,3 +278,13 @@ export function init() {
         loadUsers();
     });
 }
+
+
+
+
+
+
+
+
+
+

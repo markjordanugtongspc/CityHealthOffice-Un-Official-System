@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Create User API Endpoint
  * Handles user creation with password hashing
@@ -66,7 +66,8 @@ try {
 
     // Hash password (default password: mjUgtong2026!)
     $defaultPassword = 'mjUgtong2026!';
-    $hashedPassword = password_hash($defaultPassword, PASSWORD_DEFAULT);
+    $password = trim((string)($input['password'] ?? '')) ?: $defaultPassword;
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     // Normalize phone number: ensure leading 0 is stored when needed
     $phoneNumber = null;
@@ -90,6 +91,9 @@ try {
             $dateOfBirth = sprintf('%s-%s-%s', $dateParts[2], $dateParts[0], $dateParts[1]);
         }
     }
+
+    // Persist feature permissions in a separate table so the users table stays compatible with existing installs.
+    $pdo->exec('CREATE TABLE IF NOT EXISTS user_permissions (id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, user_id INT UNSIGNED NOT NULL, permission_key VARCHAR(50) NOT NULL, can_read TINYINT(1) NOT NULL DEFAULT 0, can_edit TINYINT(1) NOT NULL DEFAULT 0, can_export TINYINT(1) NOT NULL DEFAULT 0, UNIQUE KEY uq_user_permission (user_id, permission_key)) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');
 
     // Insert user
     $sql = 'INSERT INTO users (
@@ -116,6 +120,10 @@ try {
 
     $userId = $pdo->lastInsertId();
 
+    $permissionStmt = $pdo->prepare('INSERT INTO user_permissions (user_id, permission_key, can_read, can_edit, can_export) VALUES (?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE can_read = VALUES(can_read), can_edit = VALUES(can_edit), can_export = VALUES(can_export)');
+    foreach (($input['permissions'] ?? []) as $key => $permission) {
+        $permissionStmt->execute([$userId, $key, !empty($permission['read']) ? 1 : 0, !empty($permission['edit']) ? 1 : 0, !empty($permission['export']) ? 1 : 0]);
+    }
     // Fetch created user
     $stmt = $pdo->prepare('SELECT id, username, full_name, email, role, created_at FROM users WHERE id = ?');
     $stmt->execute([$userId]);
@@ -133,3 +141,7 @@ try {
         'message' => $e->getMessage(),
     ]);
 }
+
+
+
+

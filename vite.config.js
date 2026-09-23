@@ -1,6 +1,46 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { defineConfig } from 'vite';
 import tailwindcss from '@tailwindcss/vite';
+
+/**
+ * Auto-increments project version on production build (`npm run build`).
+ * Rollover rule: patch increments until 9 (e.g. 2.0.9 -> 2.1.0, 2.1.9 -> 2.2.0).
+ */
+function autoVersionIncrement() {
+    return {
+        name: 'auto-version-increment',
+        apply: 'build', // Only run during build (not dev server)
+        buildStart() {
+            const pkgPath = path.resolve(process.cwd(), 'package.json');
+            try {
+                if (!fs.existsSync(pkgPath)) return;
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
+                const currentVersion = pkg.version || '2.0.0';
+                const parts = currentVersion.split('.').map(n => parseInt(n, 10));
+
+                let major = isNaN(parts[0]) ? 2 : parts[0];
+                let minor = isNaN(parts[1]) ? 0 : parts[1];
+                let patch = isNaN(parts[2]) ? 0 : parts[2];
+
+                // Increment patch; when reaching > 9 rollover to next minor
+                if (patch >= 9) {
+                    patch = 0;
+                    minor += 1;
+                } else {
+                    patch += 1;
+                }
+
+                const newVersion = `${major}.${minor}.${patch}`;
+                pkg.version = newVersion;
+                fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf-8');
+                console.log(`\n[version-control] Incremented version: ${currentVersion} -> ${newVersion}\n`);
+            } catch (err) {
+                console.warn('[version-control] Failed to auto-increment version:', err);
+            }
+        },
+    };
+}
 
 /**
  * Full page reload when PHP (or other non-Vite) files change.
@@ -42,6 +82,7 @@ function phpAndTemplateFullReload() {
 
 export default defineConfig({
     plugins: [
+        autoVersionIncrement(),
         tailwindcss(),
         phpAndTemplateFullReload(),
     ],
@@ -56,7 +97,7 @@ export default defineConfig({
         },
     },
     css: {
-        devSourcemap: true, // Enable source maps in dev for debugging
+        devSourcemap: false, // Avoid generating large CSS maps during local HMR.
     },
     build: {
         // Output directory for production build

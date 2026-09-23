@@ -46,7 +46,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
                 class="shrink-0 p-1.5 hover:bg-white/10 rounded-lg transition-all cursor-pointer hidden lg:flex lg:group-[.sidebar-collapsed]/body:rotate-180!"
                 title="Toggle Sidebar">
                 <svg id="sidebarToggleIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                    stroke-width="2" stroke="currentColor" class="w-5 h-5 text-white transition-transform duration-200">
+                    stroke-width="2" stroke="#9ca3af" class="w-5 h-5 text-gray-400 transition-transform duration-200">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
                 </svg>
             </button>
@@ -68,11 +68,13 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <li>
                 <a href="../dashboard/" data-tooltip-target="tooltip-dashboard" data-tooltip-placement="right"
                     class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border-b border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
-                    <svg class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:scale-110 lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6">
-                        </path>
+                    <svg class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:hidden group-active:hidden group-[.nav-item-active]:hidden lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6.025A7.5 7.5 0 1 0 17.975 14H10V6.025Z"/>
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 3c-.169 0-.334.014-.5.025V11h7.975c.011-.166.025-.331.025-.5A7.5 7.5 0 0 0 13.5 3Z"/>
+                    </svg>
+                    <svg class="hidden w-5 h-5 shrink-0 transition-all duration-300 group-hover:block group-active:block group-[.nav-item-active]:block lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M13.5 2c-.178 0-.356.013-.492.022l-.074.005a1 1 0 0 0-.934.998V11a1 1 0 0 0 1 1h7.975a1 1 0 0 0 .998-.934l.005-.074A7.04 7.04 0 0 0 22 10.5 8.5 8.5 0 0 0 13.5 2Z"/>
+                        <path d="M11 6.025a1 1 0 0 0-1.065-.998 8.5 8.5 0 1 0 9.038 9.039A1 1 0 0 0 17.975 13H11V6.025Z"/>
                     </svg>
                     <span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Dashboard</span>
                 </a>
@@ -82,13 +84,14 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <li id="adminNavItem" class="hidden">
                 <a href="../admin/" data-tooltip-target="tooltip-admin" data-tooltip-placement="right"
                     class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border-b border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
-                    <svg class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:scale-110 lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z">
-                        </path>
+                    <svg class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:hidden group-active:hidden group-[.nav-item-active]:hidden lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M18.063 16.563q.437-.438.437-1.063t-.437-1.062T17 14t-1.062.438T15.5 15.5t.438 1.063T17 17t1.063-.437M17 20q.775 0 1.425-.363t1.05-.962q-.55-.325-1.175-.5T17 18t-1.3.175t-1.175.5q.4.6 1.05.963T17 20m-5 2q-3.475-.875-5.738-3.988T4 11.1V5l8-3l8 3v5.675q-.475-.2-.975-.363T18 10.076V6.4l-6-2.25L6 6.4v4.7q0 1.175.313 2.35t.875 2.238T8.55 17.65t1.775 1.5q.275.8.725 1.525t1.025 1.3q-.025 0-.037.013T12 22m5 0q-2.075 0-3.537-1.463T12 17t1.463-3.537T17 12t3.538 1.463T22 17t-1.463 3.538T17 22m-5-10.35"/>
                     </svg>
-                    <span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Admin</span>
+                    <svg class="hidden w-5 h-5 shrink-0 transition-all duration-300 group-hover:block group-active:block group-[.nav-item-active]:block lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M17 11c.34 0 .67.04 1 .09V6.27L10.5 3L3 6.27v4.91c0 4.54 3.2 8.79 7.5 9.82c.55-.13 1.08-.32 1.6-.55c-.69-.98-1.1-2.17-1.1-3.45c0-3.31 2.69-6 6-6"/>
+                        <path fill="currentColor" d="M17 13c-2.21 0-4 1.79-4 4s1.79 4 4 4s4-1.79 4-4s-1.79-4-4-4m0 1.38c.62 0 1.12.51 1.12 1.12s-.51 1.12-1.12 1.12s-1.12-.51-1.12-1.12s.5-1.12 1.12-1.12m0 5.37c-.93 0-1.74-.46-2.24-1.17c.05-.72 1.51-1.08 2.24-1.08s2.19.36 2.24 1.08c-.5.71-1.31 1.17-2.24 1.17"/>
+                    </svg>
+                    <span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">User Management</span>
                 </a>
             </li>
 
@@ -97,15 +100,10 @@ require_once __DIR__ . '/../../config/image_helper.php';
                 <button type="button" data-tooltip-target="tooltip-budget-summary" data-tooltip-placement="right"
                     class="nav-item nav-dropdown-trigger flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-0! lg:group-[.sidebar-collapsed]/body:!w-10! lg:group-[.sidebar-collapsed]/body:!h-10! lg:group-[.sidebar-collapsed]/body:!mx-auto!"
                     data-dropdown="budget-dropdown">
-                    <svg class="w-5 h-5 shrink-0 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <rect x="3" y="7" width="18" height="13" rx="2" ry="2" stroke="currentColor" stroke-width="2"
-                            fill="none"></rect>
-                        <path d="M16 3v4M8 3v4M3 11h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round"></path>
-                        <path d="M7 15h.01M12 15h.01M17 15h.01" stroke="currentColor" stroke-width="2"
-                            stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
+                    <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/annual.svg')); ?>" alt="" aria-hidden="true"
+                        class="w-4.5 h-4.5 shrink-0 transition-all duration-300 group-hover:hidden group-active:hidden group-[.nav-item-active]:hidden lg:group-[.sidebar-collapsed]/body:!m-0">
+                    <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/annual1.svg')); ?>" alt="" aria-hidden="true"
+                        class="hidden w-4.5 h-4.5 shrink-0 transition-all duration-300 group-hover:block group-active:block group-[.nav-item-active]:block lg:group-[.sidebar-collapsed]/body:!m-0">
                     <span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Annual Budget Summary</span>
                     <svg class="dropdown-arrow sidebar-text w-4 h-4 transition-transform duration-300 shrink-0 opacity-60 group-hover:opacity-100 lg:group-[.sidebar-collapsed]/body:!hidden"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -144,13 +142,10 @@ require_once __DIR__ . '/../../config/image_helper.php';
                 <button type="button" data-tooltip-target="tooltip-expenses" data-tooltip-placement="right"
                     class="nav-item nav-dropdown-trigger flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-0! lg:group-[.sidebar-collapsed]/body:!w-10! lg:group-[.sidebar-collapsed]/body:!h-10! lg:group-[.sidebar-collapsed]/body:!mx-auto!"
                     data-dropdown="expenses-dropdown">
-                    <svg class="w-5 h-5 shrink-0 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
-                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <rect x="3" y="7" width="18" height="13" rx="2" ry="2" stroke="currentColor" stroke-width="2"
-                            fill="none"></rect>
-                        <path d="M16 3v4M8 3v4M3 11h18" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                            stroke-linejoin="round"></path>
-                    </svg>
+                    <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/cost.svg')); ?>" alt="" aria-hidden="true"
+                        class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:hidden group-active:hidden group-[.nav-item-active]:hidden lg:group-[.sidebar-collapsed]/body:!m-0">
+                    <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/cost1.svg')); ?>" alt="" aria-hidden="true"
+                        class="hidden w-5 h-5 shrink-0 transition-all duration-300 group-hover:block group-active:block group-[.nav-item-active]:block lg:group-[.sidebar-collapsed]/body:!m-0">
                     <span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Expenses</span>
                     <svg class="dropdown-arrow sidebar-text w-4 h-4 transition-transform duration-300 shrink-0 opacity-60 group-hover:opacity-100 lg:group-[.sidebar-collapsed]/body:!hidden"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -264,7 +259,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
 </div>
 
 <div id="tooltip-admin" role="tooltip" class="absolute z-[100] invisible inline-block px-3 py-2 text-xs font-bold text-white transition-opacity duration-300 bg-slate-900 rounded-lg shadow-sm opacity-0 tooltip dark:bg-gray-700 lg:group-[:not(.sidebar-collapsed)]/body:!hidden tracking-widest uppercase border border-white/20 backdrop-blur-md">
-    Admin
+    User Management
     <div class="tooltip-arrow" data-popper-arrow></div>
 </div>
 

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Advanced Sidebar Navigation Module
  * 
  * Handles sidebar collapse/expand, dropdowns, and state persistence
@@ -167,9 +167,12 @@ function initSidebarToggle() {
     document.body.classList.add('group/body');
 
     // Only apply collapsed state on desktop (>= 1024px)
-    if (window.innerWidth >= 1024 && NavigationState.sidebarCollapsed) {
-        document.body.classList.add('sidebar-collapsed');
-        sidebar.classList.add('collapsed');
+    if (window.innerWidth >= 1024) {
+        sidebar.removeAttribute('aria-hidden');
+        if (NavigationState.sidebarCollapsed) {
+            document.body.classList.add('sidebar-collapsed');
+            sidebar.classList.add('collapsed');
+        }
     } else if (window.innerWidth < 1024) {
         // On mobile, ensure sidebar is not collapsed and starts hidden
         document.body.classList.remove('sidebar-collapsed');
@@ -177,6 +180,7 @@ function initSidebarToggle() {
         sidebar.classList.remove('translate-x-0');
         sidebar.classList.add('-translate-x-full');
         sidebar.style.visibility = 'hidden';
+        sidebar.setAttribute('aria-hidden', 'true');
     }
 
 
@@ -323,7 +327,8 @@ function initSidebarToggle() {
         // Close mobile sidebar if switching to desktop
         if (window.innerWidth >= 1024) {
             sidebar.classList.remove('translate-x-0');
-            sidebar.classList.add('-translate-x-full');
+            sidebar.removeAttribute('aria-hidden');
+            sidebar.style.visibility = '';
             document.body.classList.remove('overflow-hidden');
             if (mobileBackdrop) {
                 mobileBackdrop.classList.remove('opacity-100', 'visible', 'pointer-events-auto');
@@ -384,9 +389,11 @@ function initDropdowns() {
         if (isActive) {
             trigger.classList.remove('active');
             dropdown.classList.remove('show');
+            trigger.setAttribute('aria-expanded', 'false');
         } else {
             trigger.classList.add('active');
             dropdown.classList.add('show');
+            trigger.setAttribute('aria-expanded', 'true');
         }
 
         saveDropdownStates();
@@ -398,14 +405,37 @@ function initDropdowns() {
             e.preventDefault();
             e.stopPropagation();
 
-            // Don't toggle dropdowns when sidebar is collapsed (they're always visible as icons)
             const sidebar = document.getElementById('sidebar');
-            if (sidebar && sidebar.classList.contains('collapsed')) {
+            const isCollapsed = sidebar && (sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-collapsed'));
+
+            if (isCollapsed) {
+                // When collapsed: Click to toggle pin open the flyout submenu so user can easily interact with links on the right
+                const parentLi = trigger.closest('li');
+                const wasOpen = parentLi && parentLi.classList.contains('flyout-open');
+
+                // Close any other open flyouts first
+                document.querySelectorAll('.group\\/dropdown.flyout-open').forEach(li => {
+                    li.classList.remove('flyout-open');
+                });
+
+                if (parentLi && !wasOpen) {
+                    parentLi.classList.add('flyout-open');
+                }
                 return;
             }
 
+            // Expanded sidebar: normal accordion dropdown
             toggleDropdown(trigger);
         });
+    });
+
+    // Close pinned flyout when clicking outside
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.group\\/dropdown')) {
+            document.querySelectorAll('.group\\/dropdown.flyout-open').forEach(li => {
+                li.classList.remove('flyout-open');
+            });
+        }
     });
 
     // Auto-open dropdown if child link is active
@@ -419,6 +449,7 @@ function initDropdowns() {
                 if (trigger) {
                     trigger.classList.add('active');
                     dropdown.classList.add('show');
+            trigger.setAttribute('aria-expanded', 'true');
                 }
             }
         }
@@ -432,6 +463,7 @@ function initDropdowns() {
             if (dropdown && trigger) {
                 trigger.classList.add('active');
                 dropdown.classList.add('show');
+            trigger.setAttribute('aria-expanded', 'true');
             }
         });
     }
@@ -485,6 +517,16 @@ function setActiveNavState() {
                 'border-transparent'
             );
             item.classList.add('text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active');
+
+            // If this active item is inside a dropdown, also highlight the parent trigger for collapsed state
+            const parentDropdown = item.closest('.dropdown-content');
+            if (parentDropdown) {
+                const parentTrigger = document.querySelector(`[data-dropdown="${parentDropdown.id}"]`);
+                if (parentTrigger) {
+                    parentTrigger.classList.remove('border-transparent');
+                    parentTrigger.classList.add('text-white', 'border-b-2', '!border-emerald-400', 'nav-item-active');
+                }
+            }
         } else {
             item.classList.remove(
                 'text-white', 'font-extrabold', 'border-b-2', '!border-emerald-400', 'nav-item-active',
