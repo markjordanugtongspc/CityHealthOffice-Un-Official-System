@@ -406,6 +406,24 @@ function initDropdowns() {
         saveDropdownStates();
     }
 
+    const setPinnedDropdownTooltip = (trigger, visible) => {
+        const tooltipId = trigger.getAttribute('data-tooltip-target');
+        const tooltip = tooltipId ? document.getElementById(tooltipId) : null;
+        if (!tooltip) return;
+        if (!visible) {
+            tooltip.classList.remove('visible', 'opacity-100');
+            tooltip.classList.add('invisible', 'opacity-0');
+            return;
+        }
+        const rect = trigger.getBoundingClientRect();
+        tooltip.style.position = 'fixed';
+        tooltip.style.left = `${Math.round(rect.right + 8)}px`;
+        tooltip.style.top = `${Math.round(rect.top + (rect.height / 2))}px`;
+        tooltip.style.transform = 'translateY(-50%)';
+        tooltip.style.zIndex = '200';
+        tooltip.classList.remove('invisible', 'opacity-0');
+        tooltip.classList.add('visible', 'opacity-100');
+    };
     // Add click handlers to all dropdown triggers
     dropdownTriggers.forEach(trigger => {
         trigger.addEventListener('click', (e) => {
@@ -420,13 +438,16 @@ function initDropdowns() {
                 const parentLi = trigger.closest('li');
                 const wasOpen = parentLi && parentLi.classList.contains('flyout-open');
 
-                // Close any other open flyouts first
-                document.querySelectorAll('.group\\/dropdown.flyout-open').forEach(li => {
+                // Close any other open flyouts first.
+                document.querySelectorAll('#sidebar > nav > ul > li.flyout-open').forEach((li) => {
                     li.classList.remove('flyout-open');
+                    const openTrigger = li.querySelector(':scope > .nav-dropdown-trigger');
+                    if (openTrigger) setPinnedDropdownTooltip(openTrigger, false);
                 });
 
                 if (parentLi && !wasOpen) {
                     parentLi.classList.add('flyout-open');
+                    setPinnedDropdownTooltip(trigger, true);
                 }
                 return;
             }
@@ -438,9 +459,11 @@ function initDropdowns() {
 
     // Close pinned flyout when clicking outside
     document.addEventListener('click', (e) => {
-        if (!e.target.closest('.group\\/dropdown')) {
-            document.querySelectorAll('.group\\/dropdown.flyout-open').forEach(li => {
+        if (!e.target.closest('#sidebar > nav > ul > li.flyout-open')) {
+            document.querySelectorAll('#sidebar > nav > ul > li.flyout-open').forEach((li) => {
                 li.classList.remove('flyout-open');
+                const openTrigger = li.querySelector(':scope > .nav-dropdown-trigger');
+                if (openTrigger) setPinnedDropdownTooltip(openTrigger, false);
             });
         }
     });
