@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Advanced Sidebar Navigation Module
  * 
  * Handles sidebar collapse/expand, dropdowns, and state persistence
@@ -125,6 +125,10 @@ function debounce(func, wait) {
  * This is now primarily handled via Tailwind classes in index.php
  * but we keep this as a secondary check if needed.
  */
+function notifyChartLayoutSettled() {
+    window.dispatchEvent(new Event('resize'));
+
+}
 function adjustContentMargin() {
     const body = document.body;
     const sidebar = document.getElementById('sidebar');
@@ -186,6 +190,7 @@ function initSidebarToggle() {
 
     // Initial margin adjustment
     adjustContentMargin();
+    requestAnimationFrame(() => notifyChartLayoutSettled());
 
     /**
      * Unified toggle sidebar function for both mobile and desktop
@@ -231,6 +236,7 @@ function initSidebarToggle() {
             // Save state
             NavigationState.sidebarCollapsed = isCollapsed;
             NavigationState.save();
+            window.setTimeout(notifyChartLayoutSettled, 350);
         }
     }
 
@@ -323,6 +329,7 @@ function initSidebarToggle() {
     const handleResize = debounce(() => {
         // Adjust content margin for desktop
         adjustContentMargin();
+
 
         // Close mobile sidebar if switching to desktop
         if (window.innerWidth >= 1024) {
@@ -592,41 +599,35 @@ function initTooltips() {
     const sidebar = document.getElementById('sidebar');
     if (!sidebar) return;
 
-    const tooltipElements = document.querySelectorAll('[data-tooltip]');
+    document.querySelectorAll('[data-tooltip-target]').forEach((element) => {
+        const targetId = element.getAttribute('data-tooltip-target');
+        const tooltip = targetId ? document.getElementById(targetId) : null;
+        if (!tooltip || element.dataset.sidebarTooltipReady === 'true') return;
 
-    tooltipElements.forEach(element => {
-        const tooltipText = element.getAttribute('data-tooltip');
-        if (!tooltipText) return;
+        element.dataset.sidebarTooltipReady = 'true';
+        const showTooltip = () => {
+            const isCollapsed = sidebar.classList.contains('collapsed') || document.body.classList.contains('sidebar-collapsed');
+            if (!isCollapsed) return;
+            const rect = element.getBoundingClientRect();
+            tooltip.style.position = 'fixed';
+            tooltip.style.left = `${Math.round(rect.right + 8)}px`;
+            tooltip.style.top = `${Math.round(rect.top + (rect.height / 2))}px`;
+            tooltip.style.transform = 'translateY(-50%)';
+            tooltip.style.zIndex = '200';
+            tooltip.classList.remove('invisible', 'opacity-0');
+            tooltip.classList.add('visible', 'opacity-100');
+        };
+        const hideTooltip = () => {
+            tooltip.classList.remove('visible', 'opacity-100');
+            tooltip.classList.add('invisible', 'opacity-0');
+        };
 
-        // Create tooltip element if it doesn't exist
-        if (!element.querySelector('.tooltip')) {
-            const tooltip = document.createElement('span');
-            tooltip.className = 'tooltip absolute left-full ml-2 px-2 py-1 bg-slate-900 text-white text-xs rounded whitespace-nowrap opacity-0 pointer-events-none transition-opacity duration-200 z-50';
-            tooltip.textContent = tooltipText;
-            element.appendChild(tooltip);
-        }
-    });
-
-    // Show/hide tooltips on hover when collapsed
-    const handleTooltip = (e) => {
-        const isCollapsed = sidebar.classList.contains('collapsed');
-        const tooltip = e.currentTarget.querySelector('.tooltip');
-
-        if (tooltip && isCollapsed) {
-            if (e.type === 'mouseenter') {
-                tooltip.style.opacity = '1';
-            } else {
-                tooltip.style.opacity = '0';
-            }
-        }
-    };
-
-    tooltipElements.forEach(element => {
-        element.addEventListener('mouseenter', handleTooltip);
-        element.addEventListener('mouseleave', handleTooltip);
+        element.addEventListener('mouseenter', showTooltip);
+        element.addEventListener('mouseleave', hideTooltip);
+        element.addEventListener('focus', showTooltip);
+        element.addEventListener('blur', hideTooltip);
     });
 }
-
 // ============================================================================
 // MAIN INITIALIZATION
 // ============================================================================

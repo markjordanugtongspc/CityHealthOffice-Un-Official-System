@@ -7,6 +7,26 @@
 // Mirror logic lives in config/vite.php (class Vite) if you use that API elsewhere.
 // ----------------------------------------------------------------------
 require_once __DIR__ . '/env.php';
+/**
+ * Returns the application version from package.json for PHP-rendered UI.
+ */
+function appVersion(): string
+{
+    static $version = null;
+    if ($version !== null) {
+        return $version;
+    }
+
+    $packagePath = __DIR__ . '/../package.json';
+    if (!is_file($packagePath)) {
+        return $version = '3.0.0';
+    }
+
+    $package = json_decode((string) file_get_contents($packagePath), true);
+    return $version = (is_string($package['version'] ?? null) && $package['version'] !== '')
+        ? $package['version']
+        : '3.0.0';
+}
 
 // Browser loads HMR from the same host as the PHP app (localhost or LAN); `npm run dev -- --host` binds 0.0.0.0
 $requestHost = $_SERVER['HTTP_HOST'] ?? 'localhost';

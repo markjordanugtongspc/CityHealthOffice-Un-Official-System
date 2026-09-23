@@ -16,10 +16,10 @@ function autoVersionIncrement() {
             try {
                 if (!fs.existsSync(pkgPath)) return;
                 const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'));
-                const currentVersion = pkg.version || '2.0.0';
+                const currentVersion = pkg.version || '3.0.0';
                 const parts = currentVersion.split('.').map(n => parseInt(n, 10));
 
-                let major = isNaN(parts[0]) ? 2 : parts[0];
+                let major = isNaN(parts[0]) ? 3 : parts[0];
                 let minor = isNaN(parts[1]) ? 0 : parts[1];
                 let patch = isNaN(parts[2]) ? 0 : parts[2];
 

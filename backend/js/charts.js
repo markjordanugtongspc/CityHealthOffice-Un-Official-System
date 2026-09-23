@@ -622,6 +622,7 @@ export async function init() {
     await new Promise(resolve => requestAnimationFrame(resolve));
     ApexCharts = (await import('apexcharts')).default;
     setupCashflowDropdown();
+
     renderAll();
 }
 

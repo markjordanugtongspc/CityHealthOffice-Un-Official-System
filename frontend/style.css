@@ -147,7 +147,108 @@ h2,
    ============================================================================ */
 
 /* Sidebar Base Styles managed by Tailwind classes in sidebar.php */
+#sidebar .toggle-icon {
+    display: none;
+    color: #9ca3af;
+}
 
+#sidebar .toggle-expanded-static {
+    display: block;
+}
+
+#sidebarToggleDesktop:hover .toggle-expanded-static,
+#sidebarToggleDesktop:active .toggle-expanded-static {
+    display: none;
+}
+
+#sidebarToggleDesktop:hover .toggle-expanded-active,
+#sidebarToggleDesktop:active .toggle-expanded-active {
+    display: block;
+}
+
+body.sidebar-collapsed #sidebar .toggle-expanded-static,
+body.sidebar-collapsed #sidebar .toggle-expanded-active {
+    display: none;
+}
+
+body.sidebar-collapsed #sidebar .toggle-collapsed-static {
+    display: block;
+}
+
+body.sidebar-collapsed #sidebarToggleDesktop:hover .toggle-collapsed-static,
+body.sidebar-collapsed #sidebarToggleDesktop:active .toggle-collapsed-static {
+    display: none;
+}
+
+body.sidebar-collapsed #sidebarToggleDesktop:hover .toggle-collapsed-active,
+body.sidebar-collapsed #sidebarToggleDesktop:active .toggle-collapsed-active {
+    display: block;
+}
+
+/* Collapsed rail: keep every navigation icon centered in one fixed, non-scrolling column. */
+body.sidebar-collapsed #sidebar > nav {
+    overflow-y: hidden;
+    overflow-x: visible;
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+}
+
+body.sidebar-collapsed #sidebar > nav .nav-item {
+    min-height: 2.25rem !important;
+    height: 2.25rem !important;
+    padding-top: 0.375rem !important;
+    padding-bottom: 0.375rem !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    justify-content: center !important;
+}
+
+body.sidebar-collapsed #sidebar > nav .nav-separator {
+    height: 1.25rem;
+}
+
+body.sidebar-collapsed #sidebar > nav .nav-separator > div {
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+body.sidebar-collapsed #sidebar > nav .nav-item > svg,
+body.sidebar-collapsed #sidebar > nav .nav-item > img {
+    flex: 0 0 auto;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+/* Deterministic collapsed icon states: never leave an empty slot in the rail. */
+body.sidebar-collapsed #sidebar > nav .nav-item > svg:first-of-type,
+body.sidebar-collapsed #sidebar > nav .nav-item > img:first-of-type {
+    display: block !important;
+}
+
+body.sidebar-collapsed #sidebar > nav .nav-item > svg:nth-of-type(2),
+body.sidebar-collapsed #sidebar > nav .nav-item > img:nth-of-type(2) {
+    display: none !important;
+}
+
+body.sidebar-collapsed #sidebar > nav .nav-item:hover > svg:first-of-type,
+body.sidebar-collapsed #sidebar > nav .nav-item:hover > img:first-of-type,
+body.sidebar-collapsed #sidebar > nav .nav-item:active > svg:first-of-type,
+body.sidebar-collapsed #sidebar > nav .nav-item:active > img:first-of-type,
+body.sidebar-collapsed #sidebar > nav .nav-item.nav-item-active > svg:first-of-type,
+body.sidebar-collapsed #sidebar > nav .nav-item.nav-item-active > img:first-of-type {
+    display: none !important;
+}
+
+body.sidebar-collapsed #sidebar > nav .nav-item:hover > svg:nth-of-type(2),
+body.sidebar-collapsed #sidebar > nav .nav-item:hover > img:nth-of-type(2),
+body.sidebar-collapsed #sidebar > nav .nav-item:active > svg:nth-of-type(2),
+body.sidebar-collapsed #sidebar > nav .nav-item:active > img:nth-of-type(2),
+body.sidebar-collapsed #sidebar > nav .nav-item.nav-item-active > svg:nth-of-type(2),
+body.sidebar-collapsed #sidebar > nav .nav-item.nav-item-active > img:nth-of-type(2) {
+    display: block !important;
+}
 /* Dropdown animations */
 .dropdown-content {
     transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1),

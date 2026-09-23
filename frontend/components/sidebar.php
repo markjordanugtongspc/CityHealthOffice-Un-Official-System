@@ -16,11 +16,11 @@ require_once __DIR__ . '/../../config/image_helper.php';
 
 <!-- Sidebar Navigation -->
 <aside id="sidebar" aria-hidden="true"
-    class="fixed left-0 top-0 z-[60] h-dvh lg:h-screen w-[75vw] max-w-[320px] lg:w-80! lg:group-[.sidebar-collapsed]/body:!w-[4.5rem] bg-linear-to-b from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl flex flex-col shadow-[10px_0_50px_rgba(0,0,0,0.3)] transition-all duration-300 ease-in-out transform -translate-x-full lg:translate-x-0! print:hidden border-r border-white/5 overflow-x-hidden!"
+    class="fixed left-0 top-0 z-[60] h-dvh lg:h-screen w-[75vw] max-w-[320px] lg:w-80! lg:group-[.sidebar-collapsed]/body:!w-[4.5rem] bg-linear-to-b from-slate-900/95 via-slate-800/95 to-slate-900/95 backdrop-blur-xl flex flex-col shadow-[10px_0_50px_rgba(0,0,0,0.3)] transition-all duration-300 ease-in-out transform -translate-x-full lg:translate-x-0! print:hidden border-r border-white/5 overflow-visible!"
     aria-label="Sidebar">
     <!-- Logo & Brand Section -->
-    <div class="p-4! border-b border-white/10 flex flex-col shrink-0 lg:group-[.sidebar-collapsed]/body:!p-3! overflow-hidden!">
-        <div class="flex items-center justify-between lg:group-[.sidebar-collapsed]/body:!flex-col lg:group-[.sidebar-collapsed]/body:!gap-3! lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!w-full! overflow-hidden!">
+    <div class="p-4! border-b border-white/10 flex flex-col shrink-0 lg:group-[.sidebar-collapsed]/body:!p-3! overflow-visible!">
+        <div class="flex items-center justify-between lg:group-[.sidebar-collapsed]/body:!flex-col lg:group-[.sidebar-collapsed]/body:!gap-3! lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!w-full! overflow-visible!">
             <div class="flex items-center gap-3! overflow-hidden! lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!w-full! lg:group-[.sidebar-collapsed]/body:!gap-0! transition-all duration-300">
             <!-- Logo (shrinks when collapsed) -->
                 <div class="sidebar-logo w-12 h-12 
@@ -42,12 +42,26 @@ require_once __DIR__ . '/../../config/image_helper.php';
             </div>
 
             <!-- Toggle Button (Desktop - Always visible for state management) -->
-            <button id="sidebarToggleDesktop"
-                class="shrink-0 p-1.5 hover:bg-white/10 rounded-lg transition-all cursor-pointer hidden lg:flex lg:group-[.sidebar-collapsed]/body:rotate-180!"
-                title="Toggle Sidebar">
-                <svg id="sidebarToggleIcon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
-                    stroke-width="2" stroke="#9ca3af" class="w-5 h-5 text-gray-400 transition-transform duration-200">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            <button id="sidebarToggleDesktop" type="button"
+                class="group absolute cursor-pointer -right-3.5 top-3.5 z-[70] hidden h-8 w-8 items-center justify-center rounded-full border border-white/20 bg-slate-800/95 text-gray-400 shadow-md transition-all hover:bg-slate-700 hover:text-white hover:scale-105 active:scale-95 lg:flex"
+                title="Toggle Sidebar" aria-label="Toggle Sidebar" aria-expanded="true">
+                <!-- Expanded State: Static (Collapse action) -->
+                <svg class="toggle-icon toggle-expanded-static h-5 w-5 text-gray-400 group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.99994 10 7 11.9999l1.99994 2M12 5v14M5 4h14c.5523 0 1 .44772 1 1v14c0 .5523-.4477 1-1 1H5c-.55228 0-1-.4477-1-1V5c0-.55228.44772-1 1-1Z"/>
+                </svg>
+                <!-- Expanded State: Hover / Active (Collapse action) -->
+                <svg class="toggle-icon toggle-expanded-active h-5 w-5 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M13 21h6c1.1046 0 2-.8954 2-2V5c0-1.10457-.8954-2-2-2h-6v18Z"/>
+                    <path fill-rule="evenodd" d="M11 3H5c-1.10457 0-2 .89543-2 2v14c0 1.1046.89543 2 2 2h6V3Zm-2.29295 7.7071c.39052-.3905.39052-1.02368 0-1.41421-.39053-.39052-1.02369-.39052-1.41421 0L5.29289 11.2928c-.39052.3906-.39052 1.0237 0 1.4142l1.99995 2c.39052.3905 1.02368 0 1.41421 0 .39052-.3905.39052-1.0237 0-1.4142l-1.29284-1.2929 1.29284-1.2928Z" clip-rule="evenodd"/>
+                </svg>
+                <!-- Collapsed State: Static (Expand action) -->
+                <svg class="toggle-icon toggle-collapsed-static h-5 w-5 text-gray-400 group-hover:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m7 10 1.99994 1.9999-1.99994 2M12 5v14M5 4h14c.5523 0 1 .44772 1 1v14c0 .5523-.4477 1-1 1H5c-.55228 0-1-.44772-1-1V5c0-.55228.44772-1 1-1Z"/>
+                </svg>
+                <!-- Collapsed State: Hover / Active (Expand action) -->
+                <svg class="toggle-icon toggle-collapsed-active h-5 w-5 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M13 21h6c1.1046 0 2-.8954 2-2V5c0-1.10457-.8954-2-2-2h-6v18Z"/>
+                    <path fill-rule="evenodd" d="M11 3H5c-1.10457 0-2 .89543-2 2v14c0 1.1046.89543 2 2 2h6V3Zm-5.70711 7.7071c-.39052-.3905-.39052-1.02368 0-1.41421.39053-.39052 1.02369-.39052 1.41422 0l1.99994 1.99991c.39052.3906.39052 1.0237 0 1.4142l-1.99994 2c-.39053.3905-1.02369.3905-1.41422 0-.39052-.3905-.39052-1.0237 0-1.4142l1.29284-1.2929-1.29284-1.2928Z" clip-rule="evenodd"/>
                 </svg>
             </button>
 
@@ -104,8 +118,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
                         class="w-4.5 h-4.5 shrink-0 transition-all duration-300 group-hover:hidden group-active:hidden group-[.nav-item-active]:hidden lg:group-[.sidebar-collapsed]/body:!m-0">
                     <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/annual1.svg')); ?>" alt="" aria-hidden="true"
                         class="hidden w-4.5 h-4.5 shrink-0 transition-all duration-300 group-hover:block group-active:block group-[.nav-item-active]:block lg:group-[.sidebar-collapsed]/body:!m-0">
-                    <span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Annual Budget Summary</span>
-                    <svg class="dropdown-arrow sidebar-text w-4 h-4 transition-transform duration-300 shrink-0 opacity-60 group-hover:opacity-100 lg:group-[.sidebar-collapsed]/body:!hidden"
+                    <span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Annual Budget Summary</span>                    <svg class="dropdown-arrow sidebar-text w-4 h-4 transition-transform duration-300 shrink-0 opacity-60 group-hover:opacity-100 lg:group-[.sidebar-collapsed]/body:!hidden"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
@@ -146,8 +159,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
                         class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:hidden group-active:hidden group-[.nav-item-active]:hidden lg:group-[.sidebar-collapsed]/body:!m-0">
                     <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/cost1.svg')); ?>" alt="" aria-hidden="true"
                         class="hidden w-5 h-5 shrink-0 transition-all duration-300 group-hover:block group-active:block group-[.nav-item-active]:block lg:group-[.sidebar-collapsed]/body:!m-0">
-                    <span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Expenses</span>
-                    <svg class="dropdown-arrow sidebar-text w-4 h-4 transition-transform duration-300 shrink-0 opacity-60 group-hover:opacity-100 lg:group-[.sidebar-collapsed]/body:!hidden"
+                    <span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Expenses</span>                    <svg class="dropdown-arrow sidebar-text w-4 h-4 transition-transform duration-300 shrink-0 opacity-60 group-hover:opacity-100 lg:group-[.sidebar-collapsed]/body:!hidden"
                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
                     </svg>
@@ -186,13 +198,14 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <li>
                 <a href="../export/" data-tooltip-target="tooltip-export" data-tooltip-placement="right"
                     class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border-b border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-3 lg:group-[.sidebar-collapsed]/body:!gap-0">
-                    <svg class="w-5 h-5 shrink-0 transition-all duration-300 group-hover:scale-110 lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
+                                        <svg class="w-6 h-6 shrink-0 transition-all duration-300 group-hover:hidden group-active:hidden group-[.nav-item-active]:hidden lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
                         xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
-                        </path>
+                        <path stroke="currentColor" stroke-linejoin="round" stroke-width="2" d="M16.444 18H19a1 1 0 0 0 1-1v-5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v5a1 1 0 0 0 1 1h2.556M17 11V5a1 1 0 0 0-1-1H8a1 1 0 0 0-1 1v6h10ZM7 15h10v4a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1v-4Z"/>
                     </svg>
-                    <span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Export</span>
+                    <svg class="hidden w-6 h-6 shrink-0 transition-all duration-300 group-hover:block group-active:block group-[.nav-item-active]:block lg:group-[.sidebar-collapsed]/body:!m-0" aria-hidden="true"
+                        xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M8 3a2 2 0 0 0-2 2v3h12V5a2 2 0 0 0-2-2H8Zm-3 7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1v-4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v4h1a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5Zm4 11a1 1 0 0 1-1-1v-4h8v4a1 1 0 0 1-1 1H9Z" clip-rule="evenodd"/>
+                    </svg><span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Export</span>
                 </a>
             </li>
         </ul>
@@ -245,7 +258,7 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <!-- Version -->
             <li>
                 <div class="sidebar-version text-xs text-white/50 text-center px-2 py-1.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">
-                    <p>Version 1.0.17</p>
+                    <p>Version <?php echo htmlspecialchars(function_exists('appVersion') ? appVersion() : '3.0.0', ENT_QUOTES, 'UTF-8'); ?></p>
                 </div>
             </li>
         </ul>
