@@ -235,10 +235,10 @@ if (!function_exists('getImagePath')) {
                                 </td>
                                 <td class="border border-slate-300 w-28 px-2 py-1 bg-slate-50/50 align-top">
                                     <div class="flex items-center gap-1 justify-end">
-                                        <span class="text-sm font-bold">₱</span>
+                                        <span class="text-sm font-bold font-money">₱</span>
                                         <input type="text" id="voucherAmountInput" inputmode="decimal"
                                             placeholder="0.00"
-                                            class="flex-1 text-right text-sm font-bold border-0 bg-transparent focus:ring-0 focus:outline-none focus:bg-white rounded px-1 min-h-[28px]">
+                                            class="flex-1 text-right text-sm font-bold font-money border-0 bg-transparent focus:ring-0 focus:outline-none focus:bg-white rounded px-1 min-h-[28px]">
                                     </div>
                                 </td>
                             </tr>
@@ -250,9 +250,9 @@ if (!function_exists('getImagePath')) {
                 <div class="border border-slate-300 rounded mb-3 overflow-hidden">
                     <div class="flex justify-end items-center gap-2 px-3 py-2 bg-slate-50/50">
                         <span class="text-sm font-bold text-slate-700">Amount Due</span>
-                        <span class="text-sm font-bold border-l border-slate-400 pl-2">₱</span>
+                        <span class="text-sm font-bold font-money border-l border-slate-400 pl-2">₱</span>
                         <span id="voucherAmountDue"
-                            class="text-sm font-bold text-slate-900 min-w-[100px] text-right">0.00</span>
+                            class="text-sm font-bold font-money text-slate-900 min-w-[100px] text-right">0.00</span>
                     </div>
                 </div>
 

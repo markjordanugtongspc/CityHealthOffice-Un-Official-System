@@ -8,18 +8,23 @@ import {
     sweetalertPrimaryConfirmClasses,
     sweetalertSecondaryCancelClasses,
 } from './modules/modal.js';
-import { showBudgetCreateDrawer } from './modules/drawer.js';
+import { showBudgetCreateDrawer, showBudgetEditDrawer, showBudgetCalculateDrawer } from './modules/drawer.js';
+import { showStackedToast } from './modules/toast.js';
+import { renderSmartPagination } from './modules/pagination.js';
 
 // Budget data model (will be loaded from database)
 let budgetRows = [];
 
 // State
 let currentPage = 1;
-const rowsPerPage = 10;
+let rowsPerPage = 10;
 let sortField = '';
-let sortDirection = 'desc';
+let sortDirection = 'asc'; // 'asc' = lowest first (accordion down default), 'desc' = highest first (accordion up)
 let searchTerm = '';
 let selectedYear = new Date().getFullYear();
+
+// Active animations map for cell rolling counters
+const activeBudgetAnimations = new Map();
 
 // Formatters
 const currencyFormatter = new Intl.NumberFormat('en-PH', {
@@ -34,19 +39,24 @@ const percentFormatter = new Intl.NumberFormat('en-PH', {
     maximumFractionDigits: 2,
 });
 
+// START: getApiBasePath - Calculate the base API path from current window pathname
 function getApiBasePath() {
-    const path = window.location.pathname || '/';
+    const path = window.location.pathname || '';
     const idx = path.indexOf('/frontend/');
     return idx !== -1 ? path.substring(0, idx) : path.substring(0, path.lastIndexOf('/')) || '';
 }
+// END: getApiBasePath
 
+// START: getCurrentYearFromGlobal - Resolve current system year from window or calendar
 function getCurrentYearFromGlobal() {
     if (typeof window !== 'undefined' && typeof window.appCurrentYear === 'number') {
         return window.appCurrentYear;
     }
     return new Date().getFullYear();
 }
+// END: getCurrentYearFromGlobal
 
+// START: getFilteredAndSortedRows - Filter and sort rows based on search term, sortField, and sortDirection
 function getFilteredAndSortedRows() {
     const trimmed = searchTerm.trim().toLowerCase();
 
@@ -59,12 +69,15 @@ function getFilteredAndSortedRows() {
         });
     }
 
-    // Default sort: always by G/L Code ascending (numeric) when no explicit sort is chosen
+    // Default sort: if no explicit sort field chosen, sort by G/L Code using sortDirection
     if (!sortField) {
         return [...filtered].sort((a, b) => {
-            const aGl = Number(a.glCode) || 0;
-            const bGl = Number(b.glCode) || 0;
-            return aGl - bGl;
+            const aGl = String(a.glCode || '');
+            const bGl = String(b.glCode || '');
+            if (sortDirection === 'asc') {
+                return aGl.localeCompare(bGl, undefined, { numeric: true });
+            }
+            return bGl.localeCompare(aGl, undefined, { numeric: true });
         });
     }
 
@@ -73,107 +86,250 @@ function getFilteredAndSortedRows() {
         const bVal = Number(b[sortField]) || 0;
 
         if (sortDirection === 'asc') {
-            return aVal - bVal;
+            return aVal - bVal; // Lowest first
         }
-        return bVal - aVal;
+        return bVal - aVal; // Highest first
     });
 
     return sorted;
 }
+// END: getFilteredAndSortedRows
 
+// START: formatCurrency - Format numeric values into PHP currency string
 function formatCurrency(value) {
     return currencyFormatter.format(value || 0);
 }
+// END: formatCurrency
 
+// START: formatPercent - Format numeric values into signed percentage string
 function formatPercent(value) {
     const sign = value < 0 ? '-' : '';
     const abs = Math.abs(value || 0);
     return `${sign}${percentFormatter.format(abs)}%`;
 }
+// END: formatPercent
 
+// START: renderSkeletonTable - Render Flowbite skeleton loading state inside table body
+function renderSkeletonTable(rowsCount = 5) {
+    const tbody = document.getElementById('budgetTableBody');
+    if (!tbody) return;
+
+    const count = Math.min(Math.max(rowsCount, 3), 10);
+    const skeletonRows = Array.from({ length: count }, (_, index) => `
+        <tr class="${index % 2 === 1 ? 'bg-slate-50' : 'bg-white'} animate-pulse" role="status">
+            <td class="whitespace-nowrap px-4 py-3">
+                <div class="h-2.5 bg-slate-200 rounded-full w-20"></div>
+            </td>
+            <td class="px-4 py-3">
+                <div class="h-2.5 bg-slate-200 rounded-full w-48 md:w-60 mb-2"></div>
+                <div class="w-32 h-2 bg-slate-200 rounded-full"></div>
+            </td>
+            <td class="whitespace-nowrap px-4 py-3 text-right">
+                <div class="h-2.5 bg-slate-200 rounded-full w-16 ml-auto"></div>
+            </td>
+            <td class="whitespace-nowrap px-4 py-3 text-right">
+                <div class="h-2.5 bg-slate-200 rounded-full w-20 ml-auto"></div>
+            </td>
+            <td class="whitespace-nowrap px-4 py-3 text-right">
+                <div class="h-2.5 bg-slate-200 rounded-full w-20 ml-auto"></div>
+            </td>
+            <td class="whitespace-nowrap px-4 py-3 text-right">
+                <div class="h-2.5 bg-slate-200 rounded-full w-12 ml-auto"></div>
+            </td>
+            <td class="whitespace-nowrap px-4 py-3 text-center">
+                <div class="h-7 w-7 bg-slate-200 rounded-lg mx-auto"></div>
+            </td>
+        </tr>
+    `).join('');
+
+    tbody.innerHTML = `
+        ${skeletonRows}
+        <tr class="sr-only"><td colspan="7"><span role="status">Loading...</span></td></tr>
+    `;
+}
+// END: renderSkeletonTable
+
+// START: cancelAllBudgetAnimations - Cancel all ongoing number rolling animations
+function cancelAllBudgetAnimations() {
+    activeBudgetAnimations.forEach((frameId) => {
+        cancelAnimationFrame(frameId);
+    });
+    activeBudgetAnimations.clear();
+}
+// END: cancelAllBudgetAnimations
+
+// START: animateRollingElement - Animate rolling counter for numeric and percent table cells
+function animateRollingElement(el, targetValue, formatType = 'currency', duration = 800) {
+    if (!el) return;
+    const finalNumeric = Number(targetValue);
+    if (!Number.isFinite(finalNumeric)) return;
+
+    if (activeBudgetAnimations.has(el)) {
+        cancelAnimationFrame(activeBudgetAnimations.get(el));
+        activeBudgetAnimations.delete(el);
+    }
+
+    const start = performance.now();
+    const startValue = 0;
+
+    const step = (currentTime) => {
+        const elapsed = currentTime - start;
+        const progress = Math.min(elapsed / duration, 1);
+        // easeOutExpo easing matching charts.js counter
+        const ease = progress === 1 ? 1 : 1 - Math.pow(2, -10 * progress);
+        const currentVal = startValue + (finalNumeric - startValue) * ease;
+
+        if (formatType === 'currency') {
+            el.textContent = formatCurrency(currentVal);
+        } else if (formatType === 'percent') {
+            el.textContent = formatPercent(currentVal);
+        } else {
+            el.textContent = String(Math.round(currentVal));
+        }
+
+        if (progress < 1) {
+            const frameId = requestAnimationFrame(step);
+            activeBudgetAnimations.set(el, frameId);
+        } else {
+            if (formatType === 'currency') {
+                el.textContent = formatCurrency(finalNumeric);
+            } else if (formatType === 'percent') {
+                el.textContent = formatPercent(finalNumeric);
+            }
+            activeBudgetAnimations.delete(el);
+        }
+    };
+
+    const initialFrame = requestAnimationFrame(step);
+    activeBudgetAnimations.set(el, initialFrame);
+}
+// END: animateRollingElement
+
+// START: updateSortDirectionUI - Update sort direction button icon, title, and aria label
+function updateSortDirectionUI() {
+    const sortDirectionBtn = document.getElementById('budgetSortDirection');
+    const sortDirectionIcon = document.getElementById('budgetSortDirectionIcon');
+    if (!sortDirectionBtn || !sortDirectionIcon) return;
+
+    if (sortDirection === 'asc') {
+        // Accordion down = Lowest budget / Ascending
+        sortDirectionIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>';
+        sortDirectionBtn.title = 'Lowest first (Click for Highest)';
+        sortDirectionBtn.setAttribute('aria-label', 'Lowest first (Click for Highest)');
+    } else {
+        // Accordion up = Highest budget / Descending
+        sortDirectionIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/>';
+        sortDirectionBtn.title = 'Highest first (Click for Lowest)';
+        sortDirectionBtn.setAttribute('aria-label', 'Highest first (Click for Lowest)');
+    }
+}
+// END: updateSortDirectionUI
+
+// START: renderTable - Render budget table rows, rolling numbers, and entries per page pagination
 function renderTable() {
     const tbody = document.getElementById('budgetTableBody');
     const summaryEl = document.getElementById('budgetPaginationSummary');
 
     if (!tbody || !summaryEl) return;
 
+    cancelAllBudgetAnimations();
+
     const rows = getFilteredAndSortedRows();
     const total = rows.length;
-    const totalPages = total > 0 ? Math.ceil(total / rowsPerPage) : 1;
+    const effectiveRowsPerPage = rowsPerPage > 0 ? rowsPerPage : 10;
+    const totalPages = total > 0 ? Math.ceil(total / effectiveRowsPerPage) : 1;
 
     if (currentPage > totalPages) currentPage = totalPages;
     if (currentPage < 1) currentPage = 1;
 
-    const startIndex = (currentPage - 1) * rowsPerPage;
-    const endIndex = Math.min(startIndex + rowsPerPage, total);
+    const startIndex = (currentPage - 1) * effectiveRowsPerPage;
+    const endIndex = Math.min(startIndex + effectiveRowsPerPage, total);
     const visibleRows = rows.slice(startIndex, endIndex);
 
-    tbody.innerHTML = visibleRows
-        .map((row, index) => {
-            const isStriped = index % 2 === 1;
-            const actual = Number(row.actual) || 0;
-            const budget = Number(row.budget) || 0;
-
-            // Treat rows with no budget as "no inputs" for Remaining
-            const hasBudget = budget > 0;
-            const remainingRaw = Number(row.remainingAmount);
-            const remainingAmount = hasBudget
-                ? (Number.isFinite(remainingRaw) ? remainingRaw : budget - actual)
-                : 0;
-
-            const remainingClass = !hasBudget
-                ? 'text-slate-400'
-                : remainingAmount < 0
-                    ? 'text-red-600'
-                    : remainingAmount > 0
-                        ? 'text-emerald-600'
-                        : 'text-slate-700';
-
-            const remainingAmountDisplay = hasBudget ? formatCurrency(remainingAmount) : '-';
-            const remainingPercentDisplay = hasBudget ? formatPercent(row.remainingPercent || 0) : '-';
-
-            return `
-                <tr class="${isStriped ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-100 transition-colors" data-row-index="${index}" data-gl-code="${row.glCode}" data-row-id="${row.id ?? ''}">
-                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm font-medium text-slate-900">
-                        ${row.glCode}
-                    </td>
-                    <td class="px-4 py-2 text-xs md:text-sm text-slate-700" data-editable="accountTitle" data-type="text" data-value="${row.accountTitle}">
-                        ${row.accountTitle}
-                    </td>
-                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right text-slate-700">
-                        ${formatCurrency(row.actual)}
-                    </td>
-                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right text-slate-700">
-                        ${formatCurrency(row.budget)}
-                    </td>
-                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right font-semibold ${remainingClass}">
-                        ${remainingAmountDisplay}
-                    </td>
-                    <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right font-semibold ${remainingClass}">
-                        ${remainingPercentDisplay}
-                    </td>
-                    <td class="whitespace-nowrap px-4 py-2 text-center">
-                        <button
-                            type="button"
-                            class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 cursor-pointer"
-                            data-action="edit-row"
-                            data-row-id="${row.id ?? ''}"
-                        >
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M16.5 3.5a2.121 2.121 0 113 3L13 13l-4 1 1-4 6.5-6.5z" />
-                            </svg>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        })
-        .join('');
-
-    if (total === 0) {
-        summaryEl.textContent = 'Showing 0 to 0 of 0 entries';
+    if (visibleRows.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="px-4 py-8 text-center text-sm text-slate-500">
+                    No budget entries found.
+                </td>
+            </tr>
+        `;
     } else {
-        summaryEl.textContent = `Showing ${startIndex + 1} to ${endIndex} of ${total} entries`;
+        tbody.innerHTML = visibleRows
+            .map((row, index) => {
+                const isStriped = index % 2 === 1;
+                const actual = Number(row.actual) || 0;
+                const budget = Number(row.budget) || 0;
+
+                // Treat rows with no budget as "no inputs" for Remaining
+                const hasBudget = budget > 0;
+                const remainingRaw = Number(row.remainingAmount);
+                const remainingAmount = hasBudget
+                    ? (Number.isFinite(remainingRaw) ? remainingRaw : budget - actual)
+                    : 0;
+
+                const remainingClass = !hasBudget
+                    ? 'text-slate-400'
+                    : remainingAmount < 0
+                        ? 'text-red-600'
+                        : remainingAmount > 0
+                            ? 'text-emerald-600'
+                            : 'text-slate-700';
+
+                return `
+                    <tr class="${isStriped ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-100 transition-colors" data-row-index="${index}" data-gl-code="${row.glCode}" data-row-id="${row.id ?? ''}">
+                        <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm font-medium text-slate-900">
+                            ${row.glCode}
+                        </td>
+                        <td class="px-4 py-2 text-xs md:text-sm text-slate-700" data-editable="accountTitle" data-type="text" data-value="${row.accountTitle}">
+                            ${row.accountTitle}
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right font-money font-medium text-slate-700">
+                            ${formatCurrency(row.actual)}
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right font-money font-semibold text-slate-900">
+                            <span data-animate="currency" data-value="${budget}">${formatCurrency(0)}</span>
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right font-money font-semibold ${remainingClass}">
+                            ${hasBudget ? `<span data-animate="currency" data-value="${remainingAmount}">${formatCurrency(0)}</span>` : '-'}
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right font-money font-semibold ${remainingClass}">
+                            ${hasBudget ? `<span data-animate="percent" data-value="${row.remainingPercent || 0}">${formatPercent(0)}</span>` : '-'}
+                        </td>
+                        <td class="whitespace-nowrap px-4 py-2 text-center">
+                            <button
+                                type="button"
+                                class="inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-600 hover:bg-slate-50 hover:text-slate-900 cursor-pointer transition-colors"
+                                data-action="edit-row"
+                                data-row-id="${row.id ?? ''}"
+                                title="Edit entry"
+                            >
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M16.5 3.5a2.121 2.121 0 113 3L13 13l-4 1 1-4 6.5-6.5z" />
+                                </svg>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            })
+            .join('');
+
+        // Trigger rolling counter animations on rendered cells
+        tbody.querySelectorAll('[data-animate]').forEach((cell) => {
+            const type = cell.getAttribute('data-animate');
+            const val = cell.getAttribute('data-value');
+            animateRollingElement(cell, val, type, 700);
+        });
     }
+
+    // Render pagination summary with entries per page dropdown matching admin page
+    summaryEl.innerHTML = `${total ? `Showing ${startIndex + 1} to ${endIndex}` : 'Showing 0 to 0'} <select id="budgetPageSize" class="mx-1 cursor-pointer rounded-md border border-slate-300 bg-white px-2 py-1 text-xs font-medium text-slate-700 focus:border-cyan-500 focus:ring-cyan-500" aria-label="Entries per page"><option value="10" ${rowsPerPage === 10 ? 'selected' : ''}>10</option><option value="25" ${rowsPerPage === 25 ? 'selected' : ''}>25</option><option value="50" ${rowsPerPage === 50 ? 'selected' : ''}>50</option><option value="100" ${rowsPerPage === 100 ? 'selected' : ''}>100</option><option value="${Math.max(total, 1)}" ${rowsPerPage === Math.max(total, 1) && rowsPerPage !== 10 && rowsPerPage !== 25 && rowsPerPage !== 50 && rowsPerPage !== 100 ? 'selected' : ''}>All</option></select> ${total ? `of ${total} entries` : 'of 0 entries'}`;
+
+    document.getElementById('budgetPageSize')?.addEventListener('change', (event) => {
+        rowsPerPage = Number(event.target.value) || 10;
+        currentPage = 1;
+        renderTable();
+    });
 
     renderPagination(total, totalPages);
 
@@ -181,188 +337,136 @@ function renderTable() {
     tbody.querySelectorAll('button[data-action="edit-row"]').forEach((btn) => {
         btn.addEventListener('click', () => {
             const rowId = btn.getAttribute('data-row-id');
-            const rowData = budgetRows.find(r => String(r.id) === String(rowId));
+            const rowData = budgetRows.find((r) => String(r.id) === String(rowId));
             if (rowData) {
-                openBudgetEditModal(rowData);
+                openBudgetEditDrawer(rowData);
             }
         });
     });
 }
+// END: renderTable
 
+// START: parseCurrencyInput - Extract float numeric value from user currency input string
 function parseCurrencyInput(raw) {
     if (!raw) return 0;
     const cleaned = String(raw).replace(/[^0-9.-]/g, '').replace(/,/g, '');
     const num = parseFloat(cleaned);
     return Number.isNaN(num) ? 0 : num;
 }
+// END: parseCurrencyInput
 
+// START: formatPlainCurrencyNumber - Format plain number with commas and 2 decimals for input fields
 function formatPlainCurrencyNumber(value) {
     const num = parseFloat(value || 0);
     return num.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
+// END: formatPlainCurrencyNumber
 
-function openBudgetEditModal(row) {
-    const year = selectedYear || getCurrentYearFromGlobal();
+// START: openBudgetEditDrawer - Open budget drawer for editing budget entry
+function openBudgetEditDrawer(row) {
+    const previousState = {
+        id: row.id,
+        glCode: row.glCode,
+        accountTitle: row.accountTitle,
+        actual: row.actual,
+        budget: row.budget,
+    };
 
-    Swal.fire({
-        title: `Edit Budget Entry (${row.glCode})`,
-        html: `
-            <div class="space-y-4 text-left">
-                <div>
-                    <label class="block text-xs font-medium text-slate-500 mb-1">Account Title</label>
-                    <input
-                        id="swal-edit-accountTitle"
-                        type="text"
-                        class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796]"
-                        value="${row.accountTitle || ''}"
-                    />
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <p class="block text-xs font-medium text-slate-500 mb-1">Actual (₱)</p>
-                        <p class="w-full rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-sm font-semibold text-slate-900">
-                            ${formatPlainCurrencyNumber(row.actual)}
-                        </p>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-500 mb-1">Budget (₱)</label>
-                        <input
-                            id="swal-edit-budget"
-                            type="text"
-                            inputmode="decimal"
-                            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                            value="${formatPlainCurrencyNumber(row.budget)}"
-                        />
-                    </div>
-                </div>
-            </div>
-        `,
-        width: '28rem',
-        showCancelButton: true,
-        confirmButtonText: 'Save',
-        cancelButtonText: 'Cancel',
-        customClass: {
-            popup: sweetalertPopupBaseClasses,
-            htmlContainer: sweetalertHtmlLeftAlignedClasses,
-            confirmButton: sweetalertPrimaryConfirmClasses,
-            cancelButton: sweetalertSecondaryCancelClasses,
-            actions: sweetalertActionsLeftAlignedClasses,
-        },
-        focusConfirm: false,
-        didOpen: () => {
-            const accountTitleInput = document.getElementById('swal-edit-accountTitle');
-            const budgetInput = document.getElementById('swal-edit-budget');
-            const attachBlurFormatter = (input) => {
-                if (!input) return;
-                input.addEventListener('blur', () => {
-                    const parsed = parseCurrencyInput(input.value);
-                    input.value = formatPlainCurrencyNumber(parsed);
+    showBudgetEditDrawer(row, {
+        onConfirm: async ({ id, glCode, accountTitle, actual, budget }) => {
+            const apiBase = getApiBasePath();
+            try {
+                const res = await fetch(`${apiBase}/api/budget/update.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        id: id || row.id,
+                        glCode: glCode || row.glCode,
+                        accountTitle: accountTitle || row.accountTitle,
+                        actual: actual,
+                        budget: budget,
+                    }),
                 });
-            };
-            attachBlurFormatter(budgetInput);
-            if (accountTitleInput) {
-                accountTitleInput.focus();
-                accountTitleInput.selectionStart = accountTitleInput.value.length;
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || 'Failed to update entry');
+
+                // Update local row
+                row.glCode = glCode || row.glCode;
+                row.accountTitle = accountTitle || row.accountTitle;
+                row.actual = actual;
+                row.budget = budget;
+                const remaining = calculateRemaining(row.actual, row.budget);
+                row.remainingAmount = remaining.remainingAmount;
+                row.remainingPercent = remaining.remainingPercent;
+
+                await loadBudgetData();
+                renderTable();
+
+                showStackedToast({
+                    title: 'Budget entry updated successfully.',
+                    type: 'success',
+                    cachePayload: previousState,
+                    duration: 5000,
+                    onUndo: async () => {
+                        try {
+                            const rollbackRes = await fetch(`${apiBase}/api/budget/update.php`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                credentials: 'same-origin',
+                                body: JSON.stringify(previousState),
+                            });
+                            const rollbackData = await rollbackRes.json();
+                            if (rollbackData.success) {
+                                row.glCode = previousState.glCode;
+                                row.accountTitle = previousState.accountTitle;
+                                row.actual = previousState.actual;
+                                row.budget = previousState.budget;
+                                const rollRem = calculateRemaining(row.actual, row.budget);
+                                row.remainingAmount = rollRem.remainingAmount;
+                                row.remainingPercent = rollRem.remainingPercent;
+                                await loadBudgetData();
+                                renderTable();
+                            }
+                        } catch (revertErr) {
+                            console.error('Failed to revert budget edit:', revertErr);
+                        }
+                    },
+                });
+            } catch (err) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: err.message || 'Failed to save changes',
+                    confirmButtonText: 'OK',
+                    customClass: { confirmButton: `${sweetalertNeutralConfirmBlueClasses} cursor-pointer` },
+                });
             }
-        },
-        preConfirm: () => {
-            const accountTitle = document.getElementById('swal-edit-accountTitle')?.value?.trim() ?? '';
-            const budgetStr = document.getElementById('swal-edit-budget')?.value ?? '';
-            const budget = parseCurrencyInput(budgetStr);
-
-            if (!accountTitle) {
-                Swal.showValidationMessage('Account Title is required');
-                return false;
-            }
-
-            // Allow budget to be 0. Only disallow negative values.
-            if (budget < 0) {
-                Swal.showValidationMessage('Budget cannot be negative');
-                return false;
-            }
-
-            return { accountTitle, budget };
-        },
-    }).then(async (result) => {
-        if (!result.isConfirmed || !result.value) return;
-
-        const apiBase = getApiBasePath();
-        try {
-            const res = await fetch(`${apiBase}/api/budget/update.php`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'same-origin',
-                body: JSON.stringify({
-                    id: row.id,
-                    accountTitle: result.value.accountTitle,
-                    budget: result.value.budget,
-                }),
-            });
-            const data = await res.json();
-            if (!data.success) throw new Error(data.message || 'Failed to update entry');
-
-            // Update local row
-            row.accountTitle = result.value.accountTitle;
-            row.budget = result.value.budget;
-            const remaining = calculateRemaining(row.actual, row.budget);
-            row.remainingAmount = remaining.remainingAmount;
-            row.remainingPercent = remaining.remainingPercent;
-
-            renderTable();
-        } catch (err) {
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: err.message || 'Failed to save changes',
-                confirmButtonText: 'OK',
-                customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses },
-            });
         }
     });
 }
+// END: openBudgetEditDrawer
 
+// START: renderPagination - Render pagination buttons, jump input, and navigation controls
 function renderPagination(total, totalPages) {
     const prevBtn = document.getElementById('budgetPrevPage');
     const nextBtn = document.getElementById('budgetNextPage');
     const numbersContainer = document.getElementById('budgetPageNumbers');
 
-    if (!prevBtn || !nextBtn || !numbersContainer) return;
-
-    prevBtn.disabled = currentPage <= 1 || total === 0;
-    nextBtn.disabled = currentPage >= totalPages || total === 0;
-
-    numbersContainer.innerHTML = '';
-
-    const maxButtons = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-    let endPage = startPage + maxButtons - 1;
-
-    if (endPage > totalPages) {
-        endPage = totalPages;
-        startPage = Math.max(1, endPage - maxButtons + 1);
-    }
-
-    for (let page = startPage; page <= endPage; page += 1) {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.textContent = String(page);
-        button.className = [
-            'inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium md:px-2.5 md:py-1 md:text-xs',
-            'cursor-pointer transition-colors',
-            page === currentPage
-                ? 'bg-[#224796] text-white border border-[#224796]'
-                : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100',
-        ].join(' ');
-
-        button.addEventListener('click', () => {
-            if (page === currentPage) return;
-            currentPage = page;
+    renderSmartPagination({
+        container: numbersContainer,
+        prevBtn,
+        nextBtn,
+        currentPage,
+        totalPages,
+        total,
+        onPageChange: (newPage) => {
+            currentPage = newPage;
             renderTable();
-        });
-
-        numbersContainer.appendChild(button);
-    }
+        },
+    });
 }
+// END: renderPagination
 
 // Realistic Mock Budget Data matching City Health Office chart allocations and master accounts
 const MOCK_BUDGET_DATA = [
@@ -386,13 +490,15 @@ const MOCK_BUDGET_DATA = [
     { id: 18, glCode: '1-07-05-010', accountTitle: 'Medical Equipment Outlay', actual: 12500000, budget: 35000000, remainingAmount: 22500000, remainingPercent: 64.29 }
 ];
 
+// START: loadBudgetData - Fetch budget entries from API or mock figures with skeleton loading
 async function loadBudgetData() {
+    renderSkeletonTable(rowsPerPage || 10);
     const apiBase = getApiBasePath();
     try {
         const res = await fetch(`${apiBase}/api/budget/list.php?year=${selectedYear || getCurrentYearFromGlobal()}`, { credentials: 'same-origin' });
         const data = await res.json();
         if (data.success && Array.isArray(data.data) && data.data.length > 0) {
-            const mapped = data.data.map(r => ({
+            budgetRows = data.data.map((r) => ({
                 id: r.id,
                 glCode: r.gl_code || r.glCode,
                 accountTitle: r.account_title || r.accountTitle,
@@ -401,34 +507,30 @@ async function loadBudgetData() {
                 remainingAmount: Number(r.remainingAmount ?? r.remaining_amount ?? 0),
                 remainingPercent: Number(r.remainingPercent ?? r.remaining_percent ?? 0),
             }));
-
-            // If database returns only empty rows (budget === 0 and actual === 0), populate with realistic mock figures
-            const hasData = mapped.some(r => r.budget > 0 || r.actual > 0);
-            if (hasData) {
-                budgetRows = mapped;
-            } else {
-                budgetRows = MOCK_BUDGET_DATA.map(item => ({ ...item }));
-            }
         } else {
-            budgetRows = MOCK_BUDGET_DATA.map(item => ({ ...item }));
+            budgetRows = MOCK_BUDGET_DATA.map((item) => ({ ...item }));
         }
     } catch {
-        budgetRows = MOCK_BUDGET_DATA.map(item => ({ ...item }));
+        budgetRows = MOCK_BUDGET_DATA.map((item) => ({ ...item }));
     }
 }
+// END: loadBudgetData
 
+// START: calculateRemaining - Calculate remaining budget amount and percentage
 function calculateRemaining(actual, budget) {
     const remainingAmount = budget - actual;
     const remainingPercent = budget !== 0 ? (remainingAmount / budget) * 100 : 0;
     return { remainingAmount, remainingPercent };
 }
+// END: calculateRemaining
 
+// START: handleAddClick - Open drawer to add a new budget entry
 function handleAddClick() {
     const year = selectedYear || getCurrentYearFromGlobal();
 
     showBudgetCreateDrawer({
         year,
-        onConfirm: async ({ glCode, accountTitle, budget }) => {
+        onConfirm: async ({ glCode, accountTitle, actual, budget }) => {
             const apiBase = getApiBasePath();
             try {
                 const res = await fetch(`${apiBase}/api/budget/create.php`, {
@@ -439,7 +541,7 @@ function handleAddClick() {
                         year: selectedYear || getCurrentYearFromGlobal(),
                         glCode,
                         accountTitle,
-                        actual: 0,
+                        actual: actual || 0,
                         budget,
                     }),
                 });
@@ -453,7 +555,7 @@ function handleAddClick() {
                     title: 'Entry added',
                     text: 'Budget entry has been added successfully.',
                     confirmButtonText: 'OK',
-                    customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses },
+                    customClass: { confirmButton: `${sweetalertNeutralConfirmBlueClasses} cursor-pointer` },
                 });
             } catch (err) {
                 Swal.fire({
@@ -461,113 +563,32 @@ function handleAddClick() {
                     title: 'Error',
                     text: err.message || 'Failed to create entry',
                     confirmButtonText: 'OK',
-                    customClass: { confirmButton: sweetalertNeutralConfirmBlueClasses },
+                    customClass: { confirmButton: `${sweetalertNeutralConfirmBlueClasses} cursor-pointer` },
                 });
             }
         },
     });
 }
+// END: handleAddClick
 
+// START: handleCalculateClick - Calculate overall totals, preview CSV, and open calculation drawer
 function handleCalculateClick() {
     const year = selectedYear || getCurrentYearFromGlobal();
     const { csvString, totals } = buildCsvAndTotals();
 
-    const html = `
-        <div class="space-y-4 text-left text-sm">
-            <div class="grid gap-3 rounded-lg bg-slate-50 p-3 md:grid-cols-4">
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Total Actual</p>
-                    <p class="text-sm font-semibold text-slate-900">${formatCurrency(totals.totalActual)}</p>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Total Budget</p>
-                    <p class="text-sm font-semibold text-slate-900">${formatCurrency(totals.totalBudget)}</p>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Remaining ₱</p>
-                    <p class="text-sm font-semibold ${totals.totalRemaining < 0
-            ? 'text-red-600'
-            : totals.totalRemaining > 0
-                ? 'text-emerald-600'
-                : 'text-slate-900'
-        }">
-                        ${formatCurrency(totals.totalRemaining)}
-                    </p>
-                </div>
-                <div>
-                    <p class="text-xs font-medium text-slate-500">Remaining %</p>
-                    <p class="text-sm font-semibold ${totals.overallRemainingPercent < 0
-            ? 'text-red-600'
-            : totals.overallRemainingPercent > 0
-                ? 'text-emerald-600'
-                : 'text-slate-900'
-        }">
-                        ${formatPercent(totals.overallRemainingPercent)}
-                    </p>
-                </div>
-            </div>
-            <div>
-                <p class="mb-1 text-xs font-medium text-slate-500">
-                    CSV Preview (all rows)
-                </p>
-                <div class="max-h-64 overflow-y-auto rounded-lg border border-slate-200 bg-slate-50">
-                    <pre class="whitespace-pre text-xs p-3 text-slate-800">${csvString
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')}</pre>
-                </div>
-            </div>
-        </div>
-    `;
-
-    Swal.fire({
-        title: `Budget Summary (${year})`,
-        html,
-        width: '60rem',
-        confirmButtonText: 'Copy CSV',
-        showCancelButton: true,
-        cancelButtonText: 'Close',
-        focusConfirm: false,
-        customClass: {
-            popup: sweetalertPopupBaseClasses,
-            confirmButton: sweetalertNeutralConfirmBlueClasses,
-            cancelButton: sweetalertSecondaryCancelClasses,
-        },
-        didOpen: () => {
-            const popup = Swal.getPopup();
-            if (popup) {
-                popup.classList.add('!p-0', 'md:!p-0');
-            }
-        },
-        preConfirm: async () => {
-            try {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    await navigator.clipboard.writeText(csvString);
-                }
-                return true;
-            } catch {
-                return false;
-            }
-        },
-    }).then((result) => {
-        if (result.isConfirmed) {
-            Swal.fire({
-                icon: 'success',
-                title: 'CSV copied',
-                text: 'Budget data has been copied to your clipboard.',
-                confirmButtonText: 'OK',
-                customClass: {
-                    confirmButton: sweetalertNeutralConfirmBlueClasses,
-                },
-            });
-        }
+    showBudgetCalculateDrawer({
+        year,
+        csvString,
+        totals,
     });
 }
+// END: handleCalculateClick
 
+// START: bindEvents - Bind input search, sorting, sort direction toggles, and buttons
 function bindEvents() {
     const searchInput = document.getElementById('budgetSearch');
     const sortSelect = document.getElementById('budgetSort');
     const sortDirectionBtn = document.getElementById('budgetSortDirection');
-    const sortDirectionIcon = document.getElementById('budgetSortDirectionIcon');
     const prevBtn = document.getElementById('budgetPrevPage');
     const nextBtn = document.getElementById('budgetNextPage');
     const calculateBtn = document.getElementById('budgetCalculateBtn');
@@ -591,10 +612,11 @@ function bindEvents() {
         });
     }
 
-    if (sortDirectionBtn && sortDirectionIcon) {
+    if (sortDirectionBtn) {
         sortDirectionBtn.addEventListener('click', () => {
+            // Toggle between asc (lowest first / accordion down) and desc (highest first / accordion up)
             sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
-            sortDirectionIcon.style.transform = sortDirection === 'asc' ? 'rotate(180deg)' : 'rotate(0deg)';
+            updateSortDirectionUI();
             currentPage = 1;
             renderTable();
         });
@@ -611,7 +633,8 @@ function bindEvents() {
     if (nextBtn) {
         nextBtn.addEventListener('click', () => {
             const rows = getFilteredAndSortedRows();
-            const totalPages = rows.length > 0 ? Math.ceil(rows.length / rowsPerPage) : 1;
+            const effectiveRowsPerPage = rowsPerPage > 0 ? rowsPerPage : 10;
+            const totalPages = rows.length > 0 ? Math.ceil(rows.length / effectiveRowsPerPage) : 1;
             if (currentPage >= totalPages) return;
             currentPage += 1;
             renderTable();
@@ -626,7 +649,9 @@ function bindEvents() {
         addBtn.addEventListener('click', handleAddClick);
     }
 }
+// END: bindEvents
 
+// START: buildCsvAndTotals - Build CSV text representation and compute summary totals
 function buildCsvAndTotals() {
     let totalActual = 0;
     let totalBudget = 0;
@@ -681,7 +706,9 @@ function buildCsvAndTotals() {
         },
     };
 }
+// END: buildCsvAndTotals
 
+// START: renderYearSelector - Populate and handle year dropdown options
 function renderYearSelector() {
     const yearSelect = document.getElementById('budgetYear');
     if (!yearSelect) return;
@@ -709,7 +736,9 @@ function renderYearSelector() {
         renderTable();
     });
 }
+// END: renderYearSelector
 
+// START: applyYearBindings - Bind current year values to header & inline labels
 function applyYearBindings() {
     const year = getCurrentYearFromGlobal();
     selectedYear = year;
@@ -724,21 +753,20 @@ function applyYearBindings() {
         inlineYear.textContent = String(year);
     }
 }
+// END: applyYearBindings
 
-/**
- * Initialize inline editing for table cells
- */
+// START: initInlineEditing - Initialize inline editing support for editable table cells
 function initInlineEditing() {
     const editableCells = document.querySelectorAll('#budgetTableBody [data-editable]');
 
-    editableCells.forEach(cell => {
+    editableCells.forEach((cell) => {
         const row = cell.closest('tr');
         const rowId = row?.getAttribute('data-row-id');
         const glCode = row?.getAttribute('data-gl-code') || '';
         const fieldName = cell.getAttribute('data-editable');
         const fieldType = cell.getAttribute('data-type') || 'text';
 
-        const rowData = budgetRows.find(r => (r.id && String(r.id) === rowId) || r.glCode === glCode);
+        const rowData = budgetRows.find((r) => (r.id && String(r.id) === rowId) || r.glCode === glCode);
         if (!rowData) return;
 
         initInlineEdit(cell, {
@@ -746,6 +774,7 @@ function initInlineEditing() {
             rowData: rowData,
             fieldName: fieldName,
             onSave: async (newValue, oldValue, rowData, fieldName) => {
+                const previousVal = oldValue;
                 if (fieldName === 'accountTitle') {
                     rowData.accountTitle = newValue;
                 } else if (fieldName === 'budget') {
@@ -767,19 +796,55 @@ function initInlineEditing() {
                     const data = await res.json();
                     if (!data.success) throw new Error(data.message);
                     await loadBudgetData();
+                    renderTable();
+
+                    showStackedToast({
+                        title: 'Budget entry updated successfully.',
+                        type: 'success',
+                        cachePayload: { id: rowData.id, fieldName, previousVal },
+                        duration: 5000,
+                        onUndo: async () => {
+                            try {
+                                const revertBody = fieldName === 'accountTitle' ? { id: rowData.id, accountTitle: previousVal } : { id: rowData.id, budget: parseFloat(previousVal) || 0 };
+                                const rollbackRes = await fetch(`${apiBase}/api/budget/update.php`, {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    credentials: 'same-origin',
+                                    body: JSON.stringify(revertBody),
+                                });
+                                const rollbackData = await rollbackRes.json();
+                                if (rollbackData.success) {
+                                    if (fieldName === 'accountTitle') {
+                                        rowData.accountTitle = previousVal;
+                                    } else {
+                                        rowData.budget = parseFloat(previousVal) || 0;
+                                        const rollRem = calculateRemaining(rowData.actual, rowData.budget);
+                                        rowData.remainingAmount = rollRem.remainingAmount;
+                                        rowData.remainingPercent = rollRem.remainingPercent;
+                                    }
+                                    await loadBudgetData();
+                                    renderTable();
+                                }
+                            } catch (revertErr) {
+                                console.error('Failed to undo inline edit:', revertErr);
+                            }
+                        },
+                    });
                 } catch (err) {
                     rowData.accountTitle = fieldName === 'accountTitle' ? oldValue : rowData.accountTitle;
                     rowData.budget = fieldName === 'budget' ? (parseFloat(oldValue) || 0) : rowData.budget;
                     rowData.remainingAmount = rowData.budget - rowData.actual;
                     rowData.remainingPercent = rowData.budget !== 0 ? (rowData.remainingAmount / rowData.budget) * 100 : 0;
+                    renderTable();
                 }
-                renderTable();
             },
             onCancel: () => {}
         });
     });
 }
+// END: initInlineEditing
 
+// START: init - Entry point for initializing budget page logic and event listeners
 export async function init() {
     const table = document.getElementById('budgetTable');
     if (!table) return;
@@ -790,12 +855,16 @@ export async function init() {
 
     applyYearBindings();
     renderYearSelector();
+    updateSortDirectionUI();
     bindEvents();
+    renderSkeletonTable(rowsPerPage || 10);
     await loadBudgetData();
     renderTable();
 }
+// END: init
 
-// Export getter function for accessing budget data
+// START: getBudgetData - Export getter function for accessing current budget dataset
 export function getBudgetData() {
     return budgetRows;
 }
+// END: getBudgetData

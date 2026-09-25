@@ -1,4 +1,5 @@
 import { Drawer } from 'flowbite';
+import { attachNumberFormatter, formatWithCommas, parseFormattedNumber } from './number-input.js';
 
 const DEFAULT_PASSWORD = 'mjUgtong2026!';
 
@@ -7,6 +8,8 @@ let adminDrawerOnConfirm = null;
 let adminDrawerValidationError = null;
 let budgetDrawerInstance = null;
 let budgetDrawerOnConfirm = null;
+let budgetCalculateDrawerInstance = null;
+let budgetCalculateCachedCsv = "";
 let monthlyDrawerInstance = null;
 let monthlyDrawerOnConfirm = null;
 
@@ -112,125 +115,111 @@ function field(id, name, label, placeholder, type) {
 function permissionSwitch(name, checked) {
     return `<label class="inline-flex items-center gap-2 cursor-pointer"><input type="checkbox" name="${name}" class="sr-only peer" ${checked ? 'checked' : ''}><span class="relative h-5 w-9 rounded-full bg-slate-200 peer-checked:bg-cyan-600 after:absolute after:left-0.5 after:top-0.5 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-all peer-checked:after:translate-x-full"></span><span class="text-xs text-slate-500">Active</span></label>`;
 }
+
+// START: ensureBudgetDrawer - Initialize and mount budget entry create/edit drawer
 function ensureBudgetDrawer() {
     if (document.getElementById('budgetCreateDrawer')) return;
 
     const drawerHTML = `
-        <!-- Budget Create Drawer -->
+        <!-- Budget Create/Edit Drawer -->
         <div id="budgetCreateDrawer"
-             class="fixed top-0 right-0 z-50 h-screen w-full max-w-3xl p-4 sm:p-6 lg:p-8 overflow-y-auto bg-white shadow-[-20px_0_60px_rgba(15,23,42,0.28)] border-l border-slate-200/80 transform translate-x-full transition-transform"
+             class="fixed top-0 right-0 z-[80] h-screen w-full max-w-xl p-6 sm:p-8 lg:p-10 overflow-y-auto bg-white shadow-[-20px_0_60px_rgba(15,23,42,0.28)] border-l border-slate-200/80 transform translate-x-full transition-transform flex flex-col justify-between"
              tabindex="-1"
              aria-labelledby="budgetCreateDrawerLabel">
-            <div class="flex items-center justify-between border-b border-slate-200 pb-4 mb-4">
-                <div>
-                    <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-600 mb-1">Budget</p>
-                    <h2 id="budgetCreateDrawerLabel" class="text-2xl font-bold text-slate-900 leading-tight">Initialize Budget Entry</h2>
+            
+            <div class="flex-1 flex flex-col">
+                <!-- Header -->
+                <div class="flex items-start justify-between border-b-dashed-medium pb-5 mb-7">
+                    <div>
+                        <h2 id="budgetCreateDrawerLabel" class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">Initialize Budget Entry</h2>
+                        <p id="budgetCreateDrawerSublabel" class="mt-1.5 text-sm sm:text-base text-slate-500 leading-relaxed">Configure account allocation and financial details for the selected fiscal year.</p>
+                    </div>
+                    <button type="button"
+                            id="budgetDrawerCloseBtn"
+                            aria-controls="budgetCreateDrawer"
+                            class="inline-flex items-center justify-center w-10 h-10 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer transition-colors shrink-0 ml-3">
+                        <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/>
+                        </svg>
+                        <span class="sr-only">Close panel</span>
+                    </button>
                 </div>
-                <button type="button"
-                        id="budgetDrawerCloseBtn"
-                        aria-controls="budgetCreateDrawer"
-                        class="inline-flex items-center justify-center w-9 h-9 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 cursor-pointer transition-colors">
-                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/>
-                    </svg>
-                    <span class="sr-only">Close panel</span>
-                </button>
+
+                <div id="budgetDrawerValidationError"
+                     class="hidden mb-5 p-3.5 text-sm text-rose-800 bg-rose-50 rounded-xl border border-rose-200"></div>
+
+                <form id="budgetCreateDrawerForm" class="flex flex-col flex-1 gap-6">
+                    <input type="hidden" id="budget-id" name="id" value="" />
+
+                    <!-- Single Column Vertical Form Fields with generous sizing and line-height -->
+                    <div class="space-y-2">
+                        <label for="budget-glCode" class="block text-sm sm:text-base font-semibold text-slate-800">
+                            G/L Account Code <span class="text-rose-500">*</span>
+                        </label>
+                        <input type="text" id="budget-glCode" name="gl_code" placeholder="e.g. 1011" required
+                               class="w-full px-4 py-3.5 bg-white border border-slate-300 rounded-xl text-base sm:text-lg font-mono text-slate-900 focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] outline-hidden transition-all shadow-xs" />
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <label for="budget-accountTitle" class="block text-sm sm:text-base font-semibold text-slate-800">
+                                Account Title <span class="text-xs sm:text-sm font-normal text-slate-400 ml-1">(optional)</span>
+                            </label>
+                        </div>
+                        <div class="relative">
+                            <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                            </span>
+                            <input type="text" id="budget-accountTitle" placeholder="Type to search (e.g. Travel Expenses...)"
+                                   autocomplete="off"
+                                   class="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-sm sm:text-base text-slate-900 focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] outline-hidden transition-all shadow-xs" />
+                            <div id="budget-accountTitle-suggestions"
+                                 class="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl hidden"></div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="budget-actual" class="block text-sm sm:text-base font-semibold text-slate-800">
+                            Actual (₱)
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-base sm:text-lg font-bold">₱</span>
+                            <input type="text" inputmode="decimal" id="budget-actual" placeholder="0.00"
+                                   class="w-full pl-9 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-base sm:text-lg font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-hidden text-[#224796] font-money transition-all shadow-xs" />
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label for="budget-budget" class="block text-sm sm:text-base font-semibold text-slate-800">
+                            Budget (₱) <span class="text-rose-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-base sm:text-lg font-bold">₱</span>
+                            <input type="text" inputmode="decimal" id="budget-budget" placeholder="0.00" required
+                                   class="w-full pl-9 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-base sm:text-lg font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-hidden text-[#224796] font-money transition-all shadow-xs" />
+                        </div>
+                    </div>
+
+                    <!-- Footer actions -->
+                    <div class="mt-8 border-t-dashed-medium pt-5 pb-2 bg-white sticky bottom-0">
+                        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5">
+                            <button type="button"
+                                    id="budgetDrawerCancelBtn"
+                                    class="inline-flex items-center justify-center rounded-xl border border-rose-600 bg-transparent px-6 py-3.5 text-sm sm:text-base font-semibold text-rose-600 shadow-xs hover:bg-rose-600 hover:border-rose-600 hover:text-white active:bg-rose-700 active:border-rose-700 active:text-white focus:outline-none focus:ring-4 focus:ring-rose-200 cursor-pointer w-full sm:w-[48%] transition-all duration-200">
+                                Cancel
+                            </button>
+                            <button type="submit"
+                                    id="budgetDrawerSubmitBtn"
+                                    class="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-6 py-3.5 text-sm sm:text-base font-semibold text-white shadow-xs hover:bg-emerald-600 active:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 cursor-pointer w-full sm:w-[48%] transition-all duration-200">
+                                <svg id="budgetDrawerSubmitIcon" class="mr-2 h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"/>
+                                </svg>
+                                <span id="budgetDrawerSubmitText">Add Entry</span>
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
-
-            <div id="budgetDrawerValidationError"
-                 class="hidden mb-4 p-3 text-xs md:text-sm text-rose-800 bg-rose-50 rounded-lg border border-rose-200"></div>
-
-            <form id="budgetCreateDrawerForm" class="flex flex-col gap-6 pb-28">
-                <!-- Account Identification -->
-                <section class="space-y-4">
-                    <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
-                        <div class="w-2 h-6 bg-[#224796] rounded-full"></div>
-                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Account Identification</h3>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">
-                                G/L Account Code <span class="text-rose-500">*</span>
-                            </label>
-                            <input type="text" id="budget-glCode" placeholder="e.g. 1011"
-                                   class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] outline-hidden font-mono" />
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">
-                                Account Title <span class="text-slate-400">(optional)</span>
-                            </label>
-                            <div class="relative">
-                                <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
-                                </span>
-                                <input type="text" id="budget-accountTitle" placeholder="Type to search (e.g. Trave...)"
-                                       autocomplete="off"
-                                       class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] outline-hidden" />
-                                <div id="budget-accountTitle-suggestions"
-                                     class="absolute z-50 left-0 right-0 mt-1 max-h-40 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-lg hidden"></div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Financial Allocation -->
-                <section class="space-y-4">
-                    <div class="flex items-center gap-2 pb-2 border-b border-slate-100">
-                        <div class="w-2 h-6 bg-emerald-500 rounded-full"></div>
-                        <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest">Financial Allocation</h3>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="space-y-1.5 md:col-span-2">
-                            <p class="text-[10px] text-slate-500">Actual is computed from Monthly Expenses</p>
-                        </div>
-                        <div class="space-y-1.5">
-                            <label class="text-[10px] font-bold text-slate-500 uppercase tracking-wider ml-1">
-                                Budget Allocation (₱) <span class="text-rose-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <span class="absolute left-4 top-2.5 text-slate-400 text-sm font-bold">₱</span>
-                                <input type="number" step="0.01" id="budget-budget" placeholder="0.00"
-                                       class="w-full pl-8 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-hidden text-[#224796]" />
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Live Summary -->
-                <section>
-                    <div class="bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 p-6 rounded-2xl space-y-4 shadow-xl border border-white/5">
-                        <div class="flex items-center gap-2">
-                            <div class="w-1.5 h-4 bg-emerald-400 rounded-full animate-pulse"></div>
-                            <h3 class="text-[10px] font-black text-white/40 uppercase tracking-[0.2em]">Real-time Utilization Summary</h3>
-                        </div>
-                        <div class="grid grid-cols-2 gap-8">
-                            <div class="space-y-1">
-                                <p class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest opacity-80">Remaining Balance</p>
-                                <p id="budget-remaining-amount" class="text-2xl font-black text-white tracking-tight">₱0.00</p>
-                            </div>
-                            <div class="space-y-1">
-                                <p class="text-[9px] font-bold text-emerald-400 uppercase tracking-widest opacity-80">Utilization Efficiency</p>
-                                <p id="budget-remaining-percent" class="text-2xl font-black text-white tracking-tight">0.00%</p>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Footer actions -->
-                <div class="mt-4 border-t border-slate-200 pt-3 pb-3 bg-white md:sticky md:bottom-0 md:left-0 md:right-0">
-                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <button type="submit"
-                                class="inline-flex items-center justify-center rounded-lg bg-emerald-500 px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-semibold text-white shadow-sm hover:bg-emerald-600 focus:outline-none focus:ring-4 focus:ring-emerald-500/40 cursor-pointer w-full sm:w-[48%] md:w-[48%]">
-                            Add Entry
-                        </button>
-                        <button type="button"
-                                id="budgetDrawerCancelBtn"
-                                class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-medium text-slate-800 hover:bg-slate-50 hover:text-slate-900 hover:border-red-300 focus:outline-none focus:ring-4 focus:ring-slate-200 cursor-pointer w-full sm:w-[48%] md:w-[48%]">
-                            Cancel
-                        </button>
-                    </div>
-                </div>
-            </form>
         </div>
     `;
 
@@ -241,43 +230,22 @@ function ensureBudgetDrawer() {
     const closeBtn = document.getElementById('budgetDrawerCloseBtn');
     const form = document.getElementById('budgetCreateDrawerForm');
     const budgetInput = document.getElementById('budget-budget');
-    const remainingAmountEl = document.getElementById('budget-remaining-amount');
-    const remainingPercentEl = document.getElementById('budget-remaining-percent');
+    const actualInput = document.getElementById('budget-actual');
     const glCodeInput = document.getElementById('budget-glCode');
     const accountTitleInput = document.getElementById('budget-accountTitle');
+    const idInput = document.getElementById('budget-id');
     const suggestionsEl = document.getElementById('budget-accountTitle-suggestions');
 
     if (!drawerEl) return;
 
+    if (budgetInput) attachNumberFormatter(budgetInput);
+    if (actualInput) attachNumberFormatter(actualInput);
+
     budgetDrawerInstance = new Drawer(drawerEl, {
         placement: 'right',
         backdrop: 'dynamic',
-        backdropClasses: 'bg-slate-900/30 fixed inset-0 z-40'
+        backdropClasses: 'bg-slate-900/40 backdrop-blur-sm fixed inset-0 z-[70]'
     });
-
-    const calculateRemaining = (actual, budget) => {
-        const remainingAmount = budget - actual;
-        const remainingPercent = budget !== 0 ? (remainingAmount / budget) * 100 : 0;
-        return { remainingAmount, remainingPercent };
-    };
-
-    const formatCurrency = (val) =>
-        new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(val || 0);
-    const formatPercent = (val) =>
-        `${new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val || 0)}%`;
-
-    const updateRemaining = () => {
-        const actual = 0;
-        const budget = parseFloat(budgetInput?.value) || 0;
-        const { remainingAmount, remainingPercent } = calculateRemaining(actual, budget);
-        remainingAmountEl.textContent = formatCurrency(remainingAmount);
-        remainingPercentEl.textContent = formatPercent(remainingPercent);
-        const cls = remainingAmount < 0 ? 'text-2xl font-black text-rose-400 tracking-tight'
-                                        : 'text-2xl font-black text-white tracking-tight';
-        remainingAmountEl.className = cls;
-        remainingPercentEl.className = cls;
-    };
-    budgetInput?.addEventListener('input', updateRemaining);
 
     const getApiBasePath = () => {
         const path = window.location.pathname || '/';
@@ -296,7 +264,7 @@ function ensureBudgetDrawer() {
                     const gl = String(item.gl_code || '');
                     const title = String(item.account_title || '');
                     const esc = (s) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-                    return `<div class="px-4 py-2.5 hover:bg-slate-100 cursor-pointer text-sm text-slate-700 border-b border-slate-100 last:border-b-0 transition-colors flex items-center gap-2" data-gl="${esc(gl)}" data-title="${esc(title)}">
+                    return `<div class="px-4 py-3 hover:bg-slate-100 cursor-pointer text-sm sm:text-base text-slate-700 border-b border-slate-100 last:border-b-0 transition-colors flex items-center gap-2.5" data-gl="${esc(gl)}" data-title="${esc(title)}">
                                 <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
                                 <span>${gl} - ${esc(title)}</span>
                             </div>`;
@@ -333,6 +301,7 @@ function ensureBudgetDrawer() {
     const hideDrawer = () => {
         budgetDrawerInstance?.hide();
         budgetDrawerOnConfirm = null;
+        showFloatingUI();
     };
 
     cancelBtn?.addEventListener('click', hideDrawer);
@@ -343,10 +312,11 @@ function ensureBudgetDrawer() {
 
     form?.addEventListener('submit', (e) => {
         e.preventDefault();
+        const id = idInput?.value || null;
         const glCode = glCodeInput?.value?.trim();
         const accountTitle = accountTitleInput?.value?.trim();
-        const budgetRaw = budgetInput?.value;
-        const parsed = parseFloat(budgetRaw || '0') || 0;
+        const actualParsed = parseFormattedNumber(actualInput?.value);
+        const parsed = parseFormattedNumber(budgetInput?.value);
 
         if (!glCode) {
             const err = document.getElementById('budgetDrawerValidationError');
@@ -368,23 +338,60 @@ function ensureBudgetDrawer() {
         const err = document.getElementById('budgetDrawerValidationError');
         if (err) err.classList.add('hidden');
 
+        const confirmCallback = budgetDrawerOnConfirm;
         hideDrawer();
-        if (budgetDrawerOnConfirm) {
-            budgetDrawerOnConfirm({
+        if (typeof confirmCallback === 'function') {
+            confirmCallback({
+                id: id ? Number(id) : null,
                 glCode,
                 accountTitle: accountTitle || glCode,
+                actual: actualParsed,
                 budget: parsed,
             });
         }
     });
 }
+// END: ensureBudgetDrawer
 
+// START: showBudgetCreateDrawer - Displays the budget entry creation drawer
 export function showBudgetCreateDrawer({ year, onConfirm }) {
     ensureBudgetDrawer();
     budgetDrawerOnConfirm = onConfirm;
 
     const label = document.getElementById('budgetCreateDrawerLabel');
-    if (label) label.textContent = `Initialize Budget Entry [${year}]`;
+    if (label) label.textContent = 'Initialize Budget Entry';
+
+    const sublabel = document.getElementById('budgetCreateDrawerSublabel');
+    if (sublabel) sublabel.textContent = 'Configure account allocation and financial details for the selected fiscal year.';
+
+    const idInput = document.getElementById('budget-id');
+    if (idInput) idInput.value = '';
+
+    const glCodeInput = document.getElementById('budget-glCode');
+    if (glCodeInput) {
+        glCodeInput.value = '';
+        glCodeInput.readOnly = false;
+        glCodeInput.classList.remove('bg-slate-50', 'text-slate-500', 'cursor-not-allowed');
+        glCodeInput.classList.add('bg-white', 'text-slate-900');
+    }
+
+    const actualInput = document.getElementById('budget-actual');
+    if (actualInput) {
+        actualInput.value = '';
+    }
+
+    const budgetInput = document.getElementById('budget-budget');
+    if (budgetInput) {
+        budgetInput.value = '';
+    }
+
+    const submitText = document.getElementById('budgetDrawerSubmitText');
+    if (submitText) submitText.textContent = 'Add Entry';
+
+    const submitIcon = document.getElementById('budgetDrawerSubmitIcon');
+    if (submitIcon) {
+        submitIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"/>`;
+    }
 
     const form = document.getElementById('budgetCreateDrawerForm');
     const err = document.getElementById('budgetDrawerValidationError');
@@ -394,13 +401,296 @@ export function showBudgetCreateDrawer({ year, onConfirm }) {
     hideFloatingUI();
     budgetDrawerInstance?.show();
 
-    const glCodeInput = document.getElementById('budget-glCode');
     if (glCodeInput) {
-        glCodeInput.focus();
-        glCodeInput.select();
+        setTimeout(() => {
+            glCodeInput.focus();
+            glCodeInput.select();
+        }, 50);
     }
 }
+// END: showBudgetCreateDrawer
 
+// START: showBudgetEditDrawer - Displays the budget entry edit drawer
+export function showBudgetEditDrawer(row, { onConfirm }) {
+    ensureBudgetDrawer();
+    budgetDrawerOnConfirm = onConfirm;
+
+    const label = document.getElementById('budgetCreateDrawerLabel');
+    if (label) label.textContent = 'Edit Budget Entry';
+
+    const sublabel = document.getElementById('budgetCreateDrawerSublabel');
+    if (sublabel) sublabel.textContent = `Update account allocation and financial details for G/L Account ${row.glCode || ''}.`;
+
+    const idInput = document.getElementById('budget-id');
+    if (idInput) idInput.value = row.id || '';
+
+    const glCodeInput = document.getElementById('budget-glCode');
+    if (glCodeInput) {
+        glCodeInput.value = row.glCode || '';
+        glCodeInput.readOnly = false;
+        glCodeInput.classList.remove('bg-slate-50', 'text-slate-500', 'cursor-not-allowed');
+        glCodeInput.classList.add('bg-white', 'text-slate-900');
+    }
+
+    const accountTitleInput = document.getElementById('budget-accountTitle');
+    if (accountTitleInput) {
+        accountTitleInput.value = row.accountTitle || '';
+    }
+
+    const actualInput = document.getElementById('budget-actual');
+    if (actualInput) {
+        actualInput.value = row.actual !== undefined && row.actual !== null ? formatWithCommas(row.actual) : '';
+    }
+
+    const budgetInput = document.getElementById('budget-budget');
+    if (budgetInput) {
+        budgetInput.value = row.budget !== undefined && row.budget !== null ? formatWithCommas(row.budget) : '';
+    }
+
+    const submitText = document.getElementById('budgetDrawerSubmitText');
+    if (submitText) submitText.textContent = 'Save Changes';
+
+    const submitIcon = document.getElementById('budgetDrawerSubmitIcon');
+    if (submitIcon) {
+        submitIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>`;
+    }
+
+    const err = document.getElementById('budgetDrawerValidationError');
+    if (err) err.classList.add('hidden');
+
+    hideFloatingUI();
+    budgetDrawerInstance?.show();
+
+    if (glCodeInput) {
+        setTimeout(() => {
+            glCodeInput.focus();
+            glCodeInput.select();
+        }, 50);
+    }
+}
+// END: showBudgetEditDrawer
+
+
+// START: ensureBudgetCalculateDrawer - Initialize and mount budget summary calculation drawer
+function ensureBudgetCalculateDrawer() {
+    if (document.getElementById('budgetCalculateDrawer')) return;
+
+    const drawerHTML = `
+        <!-- Budget Summary Calculation Drawer -->
+        <div id="budgetCalculateDrawer"
+             class="fixed top-0 right-0 z-[80] h-screen w-full max-w-lg p-5 sm:p-6 overflow-y-auto bg-white shadow-[-20px_0_60px_rgba(15,23,42,0.28)] border-l border-slate-200/80 transform translate-x-full transition-transform flex flex-col justify-between"
+             tabindex="-1"
+             aria-labelledby="budgetCalculateDrawerLabel">
+            
+            <div class="flex-1 flex flex-col">
+                <!-- Header -->
+                <div class="flex items-start justify-between border-b-dashed-medium pb-4 mb-4">
+                    <div>
+                        <h2 id="budgetCalculateDrawerLabel" class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">Budget Summary Calculation</h2>
+                        <p id="budgetCalculateDrawerSubtitle" class="mt-1 text-xs sm:text-sm text-slate-500 leading-normal">Comprehensive totals and allocation efficiency for the fiscal year.</p>
+                    </div>
+                    <button type="button"
+                            id="budgetCalculateDrawerCloseBtn"
+                            aria-controls="budgetCalculateDrawer"
+                            class="inline-flex items-center justify-center w-8 h-8 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer transition-colors shrink-0 ml-2">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/>
+                        </svg>
+                        <span class="sr-only">Close panel</span>
+                    </button>
+                </div>
+
+                <!-- Financial Calculation Items -->
+                <div class="space-y-2.5 mb-5">
+                    <!-- Total Actual -->
+                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100">
+                        <span class="text-xs sm:text-sm font-semibold text-slate-600">Total Actual</span>
+                        <span id="budgetCalcTotalActual" class="text-sm sm:text-base font-bold text-slate-900 font-money">₱0.00</span>
+                    </div>
+
+                    <!-- Total Budget -->
+                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100">
+                        <span class="text-xs sm:text-sm font-semibold text-slate-600">Total Budget</span>
+                        <span id="budgetCalcTotalBudget" class="text-sm sm:text-base font-bold text-[#224796] font-money">₱0.00</span>
+                    </div>
+
+                    <!-- Remaining Balance -->
+                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100">
+                        <span class="text-xs sm:text-sm font-semibold text-slate-600">Remaining Balance</span>
+                        <span id="budgetCalcTotalRemaining" class="text-sm sm:text-base font-bold text-emerald-600 font-money">₱0.00</span>
+                    </div>
+
+                    <!-- Utilization Efficiency -->
+                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100">
+                        <span class="text-xs sm:text-sm font-semibold text-slate-600">Remaining %</span>
+                        <span id="budgetCalcRemainingPercent" class="text-sm sm:text-base font-bold text-emerald-600 font-money">0.00%</span>
+                    </div>
+                </div>
+
+                <!-- CSV Preview Card with Copy Action -->
+                <div class="space-y-2 flex-1 flex flex-col mb-4">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs sm:text-sm font-semibold text-slate-800">
+                            CSV Data Preview
+                        </label>
+                        <button type="button"
+                                id="budgetCalcCopyCsvBtn"
+                                class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 active:bg-slate-200 cursor-pointer transition-all shadow-xs">
+                            <svg id="budgetCalcCopyIcon" class="w-3.5 h-3.5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                            <span id="budgetCalcCopyText">Copy CSV</span>
+                        </button>
+                    </div>
+
+                    <!-- Compact height card with medium broken line container -->
+                    <div class="relative flex-1 min-h-[160px] max-h-[220px] overflow-hidden rounded-xl border border-dashed-medium border-slate-300 bg-slate-50/80 p-3 shadow-xs">
+                        <pre id="budgetCalcCsvPreview"
+                             class="h-full w-full overflow-auto text-[11px] sm:text-xs font-mono text-slate-800 leading-relaxed pr-1"></pre>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Contains all account entries and financial metrics for export.</p>
+                </div>
+
+                <!-- Footer actions -->
+                <div class="mt-auto border-t-dashed-medium pt-4 pb-1 bg-white sticky bottom-0">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <button type="button"
+                                id="budgetCalcCloseFooterBtn"
+                                class="inline-flex items-center justify-center rounded-xl border border-rose-600 bg-transparent px-5 py-2.5 text-xs sm:text-sm font-semibold text-rose-600 shadow-xs hover:bg-rose-600 hover:border-rose-600 hover:text-white active:bg-rose-700 active:border-rose-700 active:text-white focus:outline-none focus:ring-4 focus:ring-rose-200 cursor-pointer w-full sm:w-[48%] transition-all duration-200">
+                            Cancel
+                        </button>
+                        <button type="button"
+                                id="budgetCalcCopyMainBtn"
+                                class="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-xs hover:bg-emerald-600 active:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 cursor-pointer w-full sm:w-[48%] transition-all duration-200">
+                            <svg class="mr-1.5 h-4 w-4 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                            Copy CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', drawerHTML);
+
+    const drawerEl = document.getElementById('budgetCalculateDrawer');
+    const closeBtn = document.getElementById('budgetCalculateDrawerCloseBtn');
+    const cancelBtn = document.getElementById('budgetCalcCloseFooterBtn');
+    const copySmallBtn = document.getElementById('budgetCalcCopyCsvBtn');
+    const copyMainBtn = document.getElementById('budgetCalcCopyMainBtn');
+
+    if (!drawerEl) return;
+
+    budgetCalculateDrawerInstance = new Drawer(drawerEl, {
+        placement: 'right',
+        backdrop: 'dynamic',
+        backdropClasses: 'bg-slate-900/40 backdrop-blur-sm fixed inset-0 z-[70]'
+    });
+
+    const hideDrawer = () => {
+        budgetCalculateDrawerInstance?.hide();
+        showFloatingUI();
+    };
+
+    closeBtn?.addEventListener('click', hideDrawer);
+    cancelBtn?.addEventListener('click', hideDrawer);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && budgetCalculateDrawerInstance) hideDrawer();
+    });
+
+    const handleCopy = async () => {
+        if (!budgetCalculateCachedCsv) return;
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(budgetCalculateCachedCsv);
+            }
+            const copyText = document.getElementById('budgetCalcCopyText');
+            const copyIcon = document.getElementById('budgetCalcCopyIcon');
+            if (copyText) copyText.textContent = 'Copied!';
+            if (copyIcon) {
+                copyIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
+            }
+            setTimeout(() => {
+                if (copyText) copyText.textContent = 'Copy CSV';
+                if (copyIcon) {
+                    copyIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>';
+                }
+            }, 2500);
+        } catch {
+            /* ignore */
+        }
+    };
+
+    copySmallBtn?.addEventListener('click', handleCopy);
+    copyMainBtn?.addEventListener('click', handleCopy);
+}
+// END: ensureBudgetCalculateDrawer
+
+// START: showBudgetCalculateDrawer - Opens budget calculation summary drawer
+export function showBudgetCalculateDrawer({ year, csvString, totals }) {
+    ensureBudgetCalculateDrawer();
+    budgetCalculateCachedCsv = csvString || '';
+
+    const formatCurrency = (val) =>
+        new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(val || 0);
+    const formatPercent = (val) =>
+        `${new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val || 0)}%`;
+
+    const subtitle = document.getElementById('budgetCalculateDrawerSubtitle');
+    if (subtitle) {
+        subtitle.textContent = `Comprehensive totals and allocation efficiency for fiscal year ${year}.`;
+    }
+
+    const totalActualEl = document.getElementById('budgetCalcTotalActual');
+    const totalBudgetEl = document.getElementById('budgetCalcTotalBudget');
+    const totalRemainingEl = document.getElementById('budgetCalcTotalRemaining');
+    const remainingPercentEl = document.getElementById('budgetCalcRemainingPercent');
+    const csvPreviewEl = document.getElementById('budgetCalcCsvPreview');
+
+    if (totalActualEl) totalActualEl.textContent = formatCurrency(totals?.totalActual);
+    if (totalBudgetEl) totalBudgetEl.textContent = formatCurrency(totals?.totalBudget);
+
+    if (totalRemainingEl) {
+        const rem = Number(totals?.totalRemaining) || 0;
+        totalRemainingEl.textContent = formatCurrency(rem);
+        totalRemainingEl.className = rem < 0
+            ? 'text-sm sm:text-base font-bold text-rose-600 font-money'
+            : rem > 0
+                ? 'text-sm sm:text-base font-bold text-emerald-600 font-money'
+                : 'text-sm sm:text-base font-bold text-slate-900 font-money';
+    }
+
+    if (remainingPercentEl) {
+        const pct = Number(totals?.overallRemainingPercent) || 0;
+        remainingPercentEl.textContent = formatPercent(pct);
+        remainingPercentEl.className = pct < 0
+            ? 'text-sm sm:text-base font-bold text-rose-600 font-money'
+            : pct > 0
+                ? 'text-sm sm:text-base font-bold text-emerald-600 font-money'
+                : 'text-sm sm:text-base font-bold text-slate-900 font-money';
+    }
+
+    if (csvPreviewEl) {
+        csvPreviewEl.textContent = csvString || '';
+    }
+
+    hideFloatingUI();
+    budgetCalculateDrawerInstance?.show();
+}
+// END: showBudgetCalculateDrawer
+
+// START: hideBudgetCalculateDrawer - Closes budget calculation summary drawer
+export function hideBudgetCalculateDrawer() {
+    if (budgetCalculateDrawerInstance) {
+        budgetCalculateDrawerInstance.hide();
+    }
+    showFloatingUI();
+}
+// END: hideBudgetCalculateDrawer
+
+// START: hideBudgetCreateDrawer - Dismisses and resets the budget creation drawer
 export function hideBudgetCreateDrawer() {
     if (budgetDrawerInstance) {
         budgetDrawerInstance.hide();
@@ -408,6 +698,8 @@ export function hideBudgetCreateDrawer() {
     budgetDrawerOnConfirm = null;
     showFloatingUI();
 }
+// END: hideBudgetCreateDrawer
+// END: hideBudgetCreateDrawer
 
 function ensureMonthlyDrawer() {
     if (document.getElementById('monthlyExpensesDrawer')) return;
@@ -515,9 +807,9 @@ function ensureMonthlyDrawer() {
             <label class="mb-1.5 block text-xs font-medium text-slate-600">${monthNames[index]}</label>
             <input
                 id="monthly-${key}"
-                type="number"
-                step="0.01"
-                min="0"
+                type="text" inputmode="decimal"
+
+
                 placeholder="0.00"
                 class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] transition-colors"
             />
@@ -537,14 +829,17 @@ function ensureMonthlyDrawer() {
         let total = 0;
         monthKeys.forEach((key) => {
             const input = document.getElementById(`monthly-${key}`);
-            if (input) total += parseFloat(input.value) || 0;
+            if (input) total += parseFormattedNumber(input.value) || 0;
         });
         totalAmountEl.textContent = formatCurrency(total);
     };
 
     monthKeys.forEach((key) => {
         const input = document.getElementById(`monthly-${key}`);
-        if (input) input.addEventListener('input', updateTotal);
+        if (input) {
+            attachNumberFormatter(input);
+            input.addEventListener('input', updateTotal);
+        }
     });
 
     const getApiBasePath = () => {
@@ -615,7 +910,7 @@ function ensureMonthlyDrawer() {
         const months = {};
         monthKeys.forEach((key) => {
             const input = document.getElementById(`monthly-${key}`);
-            months[key] = parseFloat(input?.value) || 0;
+            months[key] = parseFormattedNumber(input?.value);
         });
 
         if (!glCode || !accountTitle) {

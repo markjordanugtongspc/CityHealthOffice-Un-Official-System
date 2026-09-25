@@ -147,8 +147,7 @@ requireAuth();
                 </div>
 
                 <!-- Stats Card 4: FUND DOWNLOADED (Deep Crimson/Rose) -->
-                <a href="#pendingDvTitle"
-                    class="relative overflow-hidden bg-rose-700 text-white p-4 pt-3.5 sm:p-5 sm:pt-4 shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between block">
+                <a class="relative overflow-hidden bg-rose-700 text-white p-4 pt-3.5 sm:p-5 sm:pt-4 shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between block">
                     <!-- Background Watermark Icon: Balance Scale (Tilted, Scaled Large, Translucent) -->
                     <div class="absolute -right-6 -bottom-6 w-36 h-36 opacity-15 pointer-events-none transform -rotate-12 select-none">
                         <svg class="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -335,6 +334,14 @@ requireAuth();
                                 </thead>
                                 <tbody id="pendingDvTableBody" class="divide-y divide-slate-200"></tbody>
                             </table>
+                        </div>
+                        <div class="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 md:flex-row md:items-center md:justify-between">
+                            <p class="text-xs text-slate-500" id="pendingDvPaginationSummary">Showing 1 to 6 of 6 entries</p>
+                            <div class="flex items-center justify-end gap-2">
+                                <button id="pendingDvPrevPage" type="button" class="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50">Prev</button>
+                                <div id="pendingDvPageNumbers" class="flex items-center gap-1"></div>
+                                <button id="pendingDvNextPage" type="button" class="cursor-pointer rounded-lg border border-slate-300 bg-white px-3 py-2 text-xs font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-50">Next</button>
+                            </div>
                         </div>
                     </section>
                 </div>

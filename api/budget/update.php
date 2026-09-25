@@ -19,54 +19,55 @@ try {
     $id = (int)($input['id'] ?? $_GET['id'] ?? 0);
     if (!$id) throw new Exception('Entry ID is required');
 
-    $updates = [];
-    $params = [];
-
-    if (isset($input['accountTitle']) || isset($input['account_title'])) {
-        $v = trim($input['accountTitle'] ?? $input['account_title'] ?? '');
-        $updates[] = 'account_title = ?';
-        $params[] = $v;
-    }
-    // We no longer accept manual "actual" updates here; Actual is derived from monthly_expenses.
-    if (array_key_exists('budget', $input)) {
-        $v = (float)$input['budget'];
-        $updates[] = 'budget = ?';
-        $params[] = $v;
-    }
-    if (isset($input['glCode']) || isset($input['gl_code'])) {
-        $v = trim($input['glCode'] ?? $input['gl_code'] ?? '');
-        $updates[] = 'gl_code = ?';
-        $params[] = $v;
-    }
-
-    if (empty($updates)) {
-        throw new Exception('No fields to update');
-    }
-
-    $stmt = $pdo->prepare('SELECT budget, actual FROM budget_entries WHERE id = ?');
+    $stmt = $pdo->prepare('SELECT id, gl_code, account_title, actual, budget FROM budget_entries WHERE id = ?');
     $stmt->execute([$id]);
     $row = $stmt->fetch();
     if (!$row) throw new Exception('Entry not found');
 
-    // Keep remaining_* fields loosely in sync based on stored actual (for completeness),
-    // but the API consumers recompute from monthly_expenses on read, so this is secondary.
-    $budget = array_key_exists('budget', $input) ? (float)$input['budget'] : (float)$row['budget'];
-    $actual = (float)$row['actual'];
+    $glCode = isset($input['glCode']) || isset($input['gl_code'])
+        ? trim($input['glCode'] ?? $input['gl_code'] ?? '')
+        : $row['gl_code'];
+
+    $accountTitle = isset($input['accountTitle']) || isset($input['account_title'])
+        ? trim($input['accountTitle'] ?? $input['account_title'] ?? '')
+        : $row['account_title'];
+
+    $actual = array_key_exists('actual', $input)
+        ? (float)$input['actual']
+        : (float)$row['actual'];
+
+    $budget = array_key_exists('budget', $input)
+        ? (float)$input['budget']
+        : (float)$row['budget'];
+
+    if (empty($glCode)) {
+        throw new Exception('G/L Code is required');
+    }
+
     $remainingAmount = $budget - $actual;
-    $remainingPercent = $budget != 0 ? ($remainingAmount / $budget) * 100 : 0;
 
-    $updates[] = 'remaining_amount = ?';
-    $params[] = $remainingAmount;
-    $updates[] = 'remaining_percent = ?';
-    $params[] = $remainingPercent;
-    $params[] = $id;
+    $stmt = $pdo->prepare('
+        UPDATE budget_entries
+        SET gl_code = ?, account_title = ?, actual = ?, budget = ?, remaining_amount = ?
+        WHERE id = ?
+    ');
+    $stmt->execute([$glCode, $accountTitle ?: $glCode, $actual, $budget, $remainingAmount, $id]);
 
-    $sql = 'UPDATE budget_entries SET ' . implode(', ', $updates) . ' WHERE id = ?';
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute($params);
-
-    echo json_encode(['success' => true, 'message' => 'Entry updated']);
+    echo json_encode([
+        'success' => true,
+        'message' => 'Entry updated',
+        'data' => [
+            'id' => $id,
+            'glCode' => $glCode,
+            'accountTitle' => $accountTitle ?: $glCode,
+            'actual' => $actual,
+            'budget' => $budget,
+            'remainingAmount' => $remainingAmount,
+            'remainingPercent' => $budget != 0 ? ($remainingAmount / $budget) * 100 : 0,
+        ]
+    ]);
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
+

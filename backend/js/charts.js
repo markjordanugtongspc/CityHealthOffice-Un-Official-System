@@ -1,3 +1,5 @@
+import { renderSmartPagination } from './modules/pagination.js';
+
 /** Dashboard financial charts: mock data placeholders until API endpoints are connected. */
 let ApexCharts = null;
 
@@ -175,6 +177,12 @@ function baseChart(type, height = 320) {
         dataLabels: { enabled: false },
         grid: { show: true, borderColor: '#9CA3AF', strokeDashArray: 5, xaxis: { lines: { show: false } }, yaxis: { lines: { show: true } } },
         legend: { labels: { colors: '#0F172A' }, fontWeight: 700 },
+        yaxis: {
+            labels: {
+                style: { colors: '#0F172A', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" },
+                formatter: money,
+            },
+        },
         tooltip: {
             theme: 'light',
             shared: false,
@@ -230,7 +238,7 @@ function renderCashflow(year = activeCashflowYear()) {
     options.markers = { size: 4, strokeColors: '#FFFFFF', strokeWidth: 2, hover: { size: 6 } };
     options.fill = { type: 'gradient', gradient: { shadeIntensity: 0.55, opacityFrom: 0.70, opacityTo: 0.20, stops: [0, 80, 100] } };
     options.xaxis = { categories: mock.months, labels: { style: { colors: '#0F172A', fontWeight: 700 } }, axisBorder: { show: true, color: '#475569' }, axisTicks: { show: true, color: '#475569' }, tooltip: { enabled: false } };
-    options.yaxis = { labels: { style: { colors: '#0F172A', fontWeight: 700 }, formatter: money } };
+    options.yaxis = { labels: { style: { colors: '#0F172A', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }, formatter: money } };
     options.responsive = [
         {
             breakpoint: 640,
@@ -250,7 +258,7 @@ function renderCashflow(year = activeCashflowYear()) {
         y: { formatter: (value, { seriesIndex, dataPointIndex }) => `${money(value)} ${seriesIndex === 0 ? 'deposit balance' : 'expense recorded'} on ${mock.months[dataPointIndex]} ${year}` },
         custom({ series, seriesIndex, dataPointIndex, w }) {
             const name = w.globals.seriesNames[seriesIndex];
-            return `<div class="px-3 py-2 text-sm text-slate-900"><div class="font-bold">${mock.months[dataPointIndex]} ${year}</div><div>${name}: <span class="font-black">${money(series[seriesIndex][dataPointIndex])}</span></div><div class="mt-1 text-xs text-slate-600">${record.recordedAt}</div></div>`;
+            return `<div class="px-3 py-2 text-sm text-slate-900 font-sans"><div class="font-bold text-slate-800">${mock.months[dataPointIndex]} ${year}</div><div class="mt-0.5 text-xs text-slate-700">${name}: <span class="font-money font-black text-slate-950 text-sm">${money(series[seriesIndex][dataPointIndex])}</span></div><div class="mt-1 text-[11px] text-slate-500">${record.recordedAt}</div></div>`;
         },
     };
     setText('cashflowDataStatusLabel', year);
@@ -295,7 +303,7 @@ function renderRemainingBudget() {
     options.plotOptions = { bar: { borderRadius: 3, columnWidth: '54%', distributed: true } };
     options.colors = ['#059669', '#10B981', '#CA8A04', '#F59E0B', '#F97316', '#EA580C', '#DC2626', '#DC2626', '#B91C1C', '#991B1B', '#7F1D1D', '#7F1D1D'];
     options.xaxis = { categories: mock.months, labels: { style: { colors: '#0F172A', fontWeight: 700 } } };
-    options.yaxis = { labels: { style: { colors: '#0F172A', fontWeight: 700 }, formatter: money } };
+    options.yaxis = { labels: { style: { colors: '#0F172A', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }, formatter: money } };
     options.responsive = [
         {
             breakpoint: 640,
@@ -306,7 +314,16 @@ function renderRemainingBudget() {
             },
         },
     ];
-    options.tooltip = { theme: 'light', shared: false, intersect: false, fixed: { enabled: true, position: 'topRight', offsetX: -12, offsetY: 8 }, y: { formatter: (value, { dataPointIndex }) => `${money(value)} remaining as of ${mock.months[dataPointIndex]} ${remainingBudgetYear}` } };
+    options.tooltip = {
+        theme: 'light',
+        shared: false,
+        intersect: false,
+        fixed: { enabled: true, position: 'topRight', offsetX: -12, offsetY: 8 },
+        custom({ series, seriesIndex, dataPointIndex }) {
+            const val = series[seriesIndex][dataPointIndex];
+            return `<div class="px-3 py-2 text-sm text-slate-900 font-sans"><div class="font-bold text-slate-800">${mock.months[dataPointIndex]} ${remainingBudgetYear}</div><div class="mt-0.5 text-xs text-slate-700">Remaining: <span class="font-money font-black text-slate-950 text-sm">${money(val)}</span></div><div class="mt-1 text-[11px] text-slate-500">Monthly program allocation balance</div></div>`;
+        },
+    };
     setSelectValue('remainingBudgetYear', remainingBudgetYear);
     render('remainingBudgetChart', options);
 }
@@ -390,19 +407,19 @@ function renderSupplies() {
             offsetX: 114,
             startAngle: -90,
             endAngle: 270,
-            donut: {
+                donut: {
                 size: '60%',
                 labels: {
                     show: true,
-                    name: { show: true, offsetY: 18, color: '#334155', fontSize: '12px', fontFamily: 'Inter, sans-serif', fontWeight: 800 },
-                    value: { show: true, offsetY: -12, color: '#0F172A', fontSize: '28px', fontFamily: 'Inter, sans-serif', fontWeight: 900, formatter: compactMoney },
+                    name: { show: true, offsetY: 18, color: '#334155', fontSize: '12px', fontFamily: "'Inter', sans-serif", fontWeight: 800 },
+                    value: { show: true, offsetY: -12, color: '#0F172A', fontSize: '26px', fontFamily: "'JetBrains Mono', monospace", fontWeight: 800, formatter: compactMoney },
                     total: {
                         show: true,
                         showAlways: true,
                         label: suppliesView === 'payment' ? 'payment mix' : `${budgetUsedPercent.toFixed(1)}% of bank`,
                         color: '#334155',
                         fontSize: '12px',
-                        fontFamily: 'Inter, sans-serif',
+                        fontFamily: "'Inter', sans-serif",
                         fontWeight: 800,
                         formatter: () => compactMoney(suppliesTotal),
                     },
@@ -452,12 +469,12 @@ function renderSupplies() {
             const value = series[seriesIndex];
             const item = chartItems[seriesIndex];
             const paymentLine = suppliesView === 'payment' ? item.recordedAt : `Payment: ${item.method}`;
-            return `<div class="px-3 py-2 text-sm text-slate-900">
-                <div class="font-black">${w.globals.labels[seriesIndex]}</div>
-                <div>${money(value)} <span class="font-bold">(${percentage(value, chartTotal).toFixed(1)}%)</span></div>
+            return `<div class="px-3 py-2 text-sm text-slate-900 font-sans">
+                <div class="font-bold text-slate-800">${w.globals.labels[seriesIndex]}</div>
+                <div class="mt-0.5"><span class="font-money font-bold text-slate-950 text-sm">${money(value)}</span> <span class="font-bold font-money text-xs text-slate-700">(${percentage(value, chartTotal).toFixed(1)}%)</span></div>
                 <div class="mt-1 text-xs text-slate-600">${paymentLine}</div>
-                <div class="text-xs text-slate-600">Budget used: ${budgetUsedPercent.toFixed(1)}% of ${money(currentBudget)}</div>
-                <div class="text-xs text-slate-600">Remaining after supplies: ${money(remainingAfterSupplies)}</div>
+                <div class="text-xs text-slate-600">Budget used: <span class="font-money font-semibold">${budgetUsedPercent.toFixed(1)}%</span> of <span class="font-money font-semibold">${money(currentBudget)}</span></div>
+                <div class="text-xs text-slate-600">Remaining after supplies: <span class="font-money font-semibold">${money(remainingAfterSupplies)}</span></div>
             </div>`;
         },
     };
@@ -523,7 +540,7 @@ function renderOffice() {
         axisTicks: { show: true, color: '#475569' },
         tooltip: { enabled: false },
     };
-    options.yaxis = { labels: { style: { colors: '#0F172A', fontWeight: 700 }, formatter: money } };
+    options.yaxis = { labels: { style: { colors: '#0F172A', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }, formatter: money } };
     options.responsive = [
         {
             breakpoint: 640,
@@ -543,9 +560,9 @@ function renderOffice() {
         custom({ series, seriesIndex, dataPointIndex, w }) {
             const name = w.globals.seriesNames[seriesIndex];
             const val = series[seriesIndex][dataPointIndex];
-            return `<div class="px-3 py-2 text-sm text-slate-900">
-                <div class="font-bold">${mock.months[dataPointIndex]} ${officeFinancialYear}</div>
-                <div>${name}: <span class="font-black">${money(val)}</span></div>
+            return `<div class="px-3 py-2 text-sm text-slate-900 font-sans">
+                <div class="font-bold text-slate-800">${mock.months[dataPointIndex]} ${officeFinancialYear}</div>
+                <div class="mt-0.5 text-xs text-slate-700">${name}: <span class="font-money font-black text-slate-950 text-sm">${money(val)}</span></div>
                 <div class="mt-1 text-xs text-slate-500">Office Financial Record</div>
             </div>`;
         },
@@ -555,11 +572,43 @@ function renderOffice() {
 }
 // END: Render Office Income and Expenses Area Chart with Gradient
 
+let pendingDvPage = 1;
+const pendingDvPerPage = 5;
+
+// START: renderPendingDvs - Render pending disbursement vouchers table with pagination
 function renderPendingDvs() {
     const body = document.getElementById('pendingDvTableBody');
     if (!body) return;
-    body.innerHTML = mock.dv.map(([no, payee, purpose, amount, recorded, status]) => `<tr class="hover:bg-slate-50"><td class="whitespace-nowrap px-3 py-3 font-bold text-slate-900">${no}</td><td class="px-3 py-3">${payee}</td><td class="px-3 py-3">${purpose}</td><td class="whitespace-nowrap px-3 py-3 font-bold text-slate-900">${money(amount)}</td><td class="whitespace-nowrap px-3 py-3 text-xs">${recorded}</td><td class="px-3 py-3"><span class="inline-flex rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-800">${status}</span></td></tr>`).join('');
+
+    const total = mock.dv.length;
+    const totalPages = Math.ceil(total / pendingDvPerPage) || 1;
+    if (pendingDvPage > totalPages) pendingDvPage = totalPages;
+    if (pendingDvPage < 1) pendingDvPage = 1;
+
+    const start = (pendingDvPage - 1) * pendingDvPerPage;
+    const visibleDvs = mock.dv.slice(start, start + pendingDvPerPage);
+
+    body.innerHTML = visibleDvs.map(([no, payee, purpose, amount, recorded, status]) => `<tr class="hover:bg-slate-50"><td class="whitespace-nowrap px-3 py-3 font-bold text-slate-900">${no}</td><td class="px-3 py-3">${payee}</td><td class="px-3 py-3">${purpose}</td><td class="whitespace-nowrap px-3 py-3 font-bold font-money text-slate-900">${money(amount)}</td><td class="whitespace-nowrap px-3 py-3 text-xs">${recorded}</td><td class="px-3 py-3"><span class="inline-flex rounded-md border border-amber-300 bg-amber-50 px-2 py-1 text-xs font-bold text-amber-800">${status}</span></td></tr>`).join('');
+
+    const summary = document.getElementById('pendingDvPaginationSummary');
+    if (summary) {
+        summary.textContent = total ? `Showing ${start + 1} to ${Math.min(start + pendingDvPerPage, total)} of ${total} entries` : 'Showing 0 to 0 of 0 entries';
+    }
+
+    renderSmartPagination({
+        container: document.getElementById('pendingDvPageNumbers'),
+        prevBtn: document.getElementById('pendingDvPrevPage'),
+        nextBtn: document.getElementById('pendingDvNextPage'),
+        currentPage: pendingDvPage,
+        totalPages,
+        total,
+        onPageChange: (newPage) => {
+            pendingDvPage = newPage;
+            renderPendingDvs();
+        },
+    });
 }
+// END: renderPendingDvs
 
 function setupPeriodControls() {
     const remainingSelect = document.getElementById('remainingBudgetYear');

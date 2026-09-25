@@ -1,5 +1,6 @@
 import Swal from 'sweetalert2';
 import { showMonthlyExpensesDrawer } from './modules/drawer.js';
+import { renderSmartPagination } from './modules/pagination.js';
 import { initInlineEdit } from './modules/inline-edit.js';
 import {
     sweetalertActionsLeftAlignedClasses,
@@ -178,7 +179,7 @@ function renderTable() {
                     ${monthKeys.map(month => {
                         const value = row.months[month] || 0;
                         return `
-                            <td class="whitespace-nowrap px-3 py-2 text-xs md:text-sm text-right text-slate-700" data-editable="month" data-month="${month}" data-type="currency" data-value="${value}">
+                            <td class="whitespace-nowrap px-3 py-2 text-xs md:text-sm text-right font-money text-slate-700" data-editable="month" data-month="${month}" data-type="currency" data-value="${value}">
                                 ${value > 0 ? formatCurrency(value) : '-'}
                             </td>
                         `;
@@ -203,48 +204,26 @@ function renderTable() {
     initInlineEditing();
 }
 
+// START: renderPagination - Render pagination buttons, jump input, and navigation controls
 function renderPagination(total, totalPages) {
     const prevBtn = document.getElementById('monthlyExpensesPrevPage');
     const nextBtn = document.getElementById('monthlyExpensesNextPage');
     const numbersContainer = document.getElementById('monthlyExpensesPageNumbers');
 
-    if (!prevBtn || !nextBtn || !numbersContainer) return;
-
-    prevBtn.disabled = currentPage <= 1 || total === 0;
-    nextBtn.disabled = currentPage >= totalPages || total === 0;
-
-    numbersContainer.innerHTML = '';
-
-    const maxButtons = 5;
-    let startPage = Math.max(1, currentPage - Math.floor(maxButtons / 2));
-    let endPage = startPage + maxButtons - 1;
-
-    if (endPage > totalPages) {
-        endPage = totalPages;
-        startPage = Math.max(1, endPage - maxButtons + 1);
-    }
-
-    for (let page = startPage; page <= endPage; page += 1) {
-        const button = document.createElement('button');
-        button.type = 'button';
-        button.textContent = String(page);
-        button.className = [
-            'inline-flex items-center justify-center rounded-lg px-3 py-2 text-sm font-medium md:px-2.5 md:py-1 md:text-xs',
-            'cursor-pointer transition-colors',
-            page === currentPage
-                ? 'bg-[#224796] text-white border border-[#224796]'
-                : 'bg-white text-slate-700 border border-slate-300 hover:bg-slate-100',
-        ].join(' ');
-
-        button.addEventListener('click', () => {
-            if (page === currentPage) return;
-            currentPage = page;
+    renderSmartPagination({
+        container: numbersContainer,
+        prevBtn,
+        nextBtn,
+        currentPage,
+        totalPages,
+        total,
+        onPageChange: (newPage) => {
+            currentPage = newPage;
             renderTable();
-        });
-
-        numbersContainer.appendChild(button);
-    }
+        },
+    });
 }
+// END: renderPagination
 
 function renderAccountTitleFilters() {
     const container = document.getElementById('accountTitleFilters');
@@ -445,13 +424,13 @@ function handleCalculateClick() {
                                     return `
                                         <tr class="hover:bg-slate-50">
                                             <td class="px-3 py-2 text-sm font-medium text-slate-900">${month}</td>
-                                            <td class="px-3 py-2 text-sm text-right text-slate-700">${value > 0 ? formatCurrency(value) : '-'}</td>
+                                            <td class="px-3 py-2 text-sm text-right font-money text-slate-700">${value > 0 ? formatCurrency(value) : '-'}</td>
                                         </tr>
                                     `;
                                 }).join('')}
                                 <tr class="bg-slate-100 font-semibold">
                                     <td class="px-3 py-2 text-sm font-bold text-slate-900">TOTAL</td>
-                                    <td class="px-3 py-2 text-sm text-right font-bold text-slate-900">${formatCurrency(grandTotal)}</td>
+                                    <td class="px-3 py-2 text-sm text-right font-money font-bold text-slate-900">${formatCurrency(grandTotal)}</td>
                                 </tr>
                             </tbody>
                         </table>

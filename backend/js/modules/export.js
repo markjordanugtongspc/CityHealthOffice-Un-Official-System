@@ -308,7 +308,7 @@ function generateTableRow(row, columns) {
         const isRemaining = colId.toLowerCase().includes('remaining');
         const isGL = colId.toLowerCase().includes('g/l') || colId.toLowerCase().includes('code');
 
-        let cellClass = `border border-slate-300 px-2 py-2 text-[10px] font-medium leading-tight ${isAmount || isRemaining ? 'text-right font-mono' : 'text-left text-slate-800'}`;
+        let cellClass = `border border-slate-300 px-2 py-2 text-[10px] font-medium leading-tight ${isAmount || isRemaining ? 'text-right font-money font-semibold' : 'text-left text-slate-800'}`;
 
         if (isGL) cellClass += " whitespace-nowrap w-[110px]";
         else if (colId.toLowerCase().includes('account title') || colId.toLowerCase().includes('program')) cellClass += " w-auto break-words";

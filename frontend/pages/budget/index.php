@@ -62,8 +62,8 @@ requireAuth();
                             <option value="remainingAmount">Remaining</option>
                             <option value="remainingPercent">Remaining %</option>
                         </select>
-                        <button id="budgetSortDirection" type="button" title="Toggle sort direction" class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white p-2 text-slate-600 hover:bg-slate-100" aria-label="Toggle sort direction">
-                            <svg id="budgetSortDirectionIcon" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7"/></svg>
+                        <button id="budgetSortDirection" type="button" title="Lowest first (Click for Highest)" class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-slate-300 bg-white p-2 text-slate-600 hover:bg-slate-100 transition-colors" aria-label="Toggle sort direction">
+                            <svg id="budgetSortDirectionIcon" class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                         </button>
                     </div>
                 </div>
@@ -76,12 +76,43 @@ requireAuth();
                                 <th class="px-4 py-3 font-medium">Account Title</th>
                                 <th class="px-4 py-3 text-right font-medium">Actual</th>
                                 <th class="px-4 py-3 text-right font-medium">Budget</th>
-                                <th class="px-4 py-3 text-right font-medium">Remaining ?</th>
+                                <th class="px-4 py-3 text-right font-medium">Remaining #</th>
                                 <th class="px-4 py-3 text-right font-medium">Remaining %</th>
                                 <th class="px-4 py-3 text-center font-medium">Action</th>
                             </tr>
                         </thead>
-                        <tbody id="budgetTableBody" class="divide-y divide-slate-100 bg-white"></tbody>
+                        <tbody id="budgetTableBody" class="divide-y divide-slate-100 bg-white">
+                            <!-- Flowbite Loading Skeleton Rows -->
+                            <?php for ($i = 0; $i < 5; $i++): ?>
+                            <tr class="<?php echo $i % 2 === 1 ? 'bg-slate-50' : 'bg-white'; ?> animate-pulse" role="status">
+                                <td class="whitespace-nowrap px-4 py-3">
+                                    <div class="h-2.5 bg-slate-200 rounded-full w-20"></div>
+                                </td>
+                                <td class="px-4 py-3">
+                                    <div class="h-2.5 bg-slate-200 rounded-full w-48 md:w-60 mb-2"></div>
+                                    <div class="w-32 h-2 bg-slate-200 rounded-full"></div>
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-3 text-right">
+                                    <div class="h-2.5 bg-slate-200 rounded-full w-16 ml-auto"></div>
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-3 text-right">
+                                    <div class="h-2.5 bg-slate-200 rounded-full w-20 ml-auto"></div>
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-3 text-right">
+                                    <div class="h-2.5 bg-slate-200 rounded-full w-20 ml-auto"></div>
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-3 text-right">
+                                    <div class="h-2.5 bg-slate-200 rounded-full w-12 ml-auto"></div>
+                                </td>
+                                <td class="whitespace-nowrap px-4 py-3 text-center">
+                                    <div class="h-7 w-7 bg-slate-200 rounded-lg mx-auto"></div>
+                                </td>
+                            </tr>
+                            <?php endfor; ?>
+                            <tr class="sr-only">
+                                <td colspan="7"><span role="status">Loading...</span></td>
+                            </tr>
+                        </tbody>
                     </table>
                 </div>
                 <div class="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 md:flex-row md:items-center md:justify-between">

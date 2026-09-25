@@ -36,8 +36,8 @@ try {
 
         if ($titles) {
             $insert = $pdo->prepare('
-                INSERT INTO budget_entries (year_id, gl_code, account_title, actual, budget, remaining_amount, remaining_percent)
-                VALUES (?, ?, ?, 0, 0, 0, 0)
+                INSERT INTO budget_entries (year_id, gl_code, account_title, actual, budget, remaining_amount)
+                VALUES (?, ?, ?, 0, 0, 0)
             ');
             foreach ($titles as $t) {
                 $insert->execute([$yearId, $t['gl_code'], $t['account_title']]);
@@ -45,15 +45,9 @@ try {
         }
     }
 
-    // Find matching monthly_expenses year (if any) for this calendar year
-    $stmt = $pdo->prepare('SELECT id FROM monthly_expenses_years WHERE year = ?');
-    $stmt->execute([$year]);
-    $my = $stmt->fetch();
-    $monthlyYearId = $my['id'] ?? null;
-
-    // Load all budget rows for this year; Actual will be computed from monthly_expenses
+    // Load all budget rows for this year directly from budget_entries
     $stmt = $pdo->prepare('
-        SELECT id, gl_code, account_title, budget
+        SELECT id, gl_code, account_title, actual, budget, remaining_amount
         FROM budget_entries
         WHERE year_id = ?
         ORDER BY gl_code
@@ -62,26 +56,13 @@ try {
     $rows = $stmt->fetchAll();
 
     foreach ($rows as &$r) {
-        $actual = 0.0;
-        if ($monthlyYearId) {
-            $stmt2 = $pdo->prepare('
-                SELECT
-                    january + february + march + april + may + june +
-                    july + august + september + october + november + december AS tot
-                FROM monthly_expenses_entries
-                WHERE year_id = ? AND gl_code = ?
-            ');
-            $stmt2->execute([$monthlyYearId, $r['gl_code']]);
-            $me = $stmt2->fetch();
-            $actual = (float)($me['tot'] ?? 0);
-        }
-
+        $actual = (float)($r['actual'] ?? 0);
         $budget = (float)($r['budget'] ?? 0);
         $remainingAmount = $budget - $actual;
         $remainingPercent = $budget != 0 ? ($remainingAmount / $budget) * 100 : 0;
 
-        // expose computed values; ignore stored actual/remaining_* in DB
         $r['actual'] = $actual;
+        $r['budget'] = $budget;
         $r['remainingAmount'] = $remainingAmount;
         $r['remainingPercent'] = $remainingPercent;
     }
@@ -91,3 +72,4 @@ try {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
+

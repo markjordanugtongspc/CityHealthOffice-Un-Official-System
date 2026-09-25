@@ -25,9 +25,6 @@ try {
     if (empty($glCode)) {
         throw new Exception('G/L Code is required');
     }
-    if ($budget <= 0) {
-        throw new Exception('Budget must be greater than 0');
-    }
 
     $stmt = $pdo->prepare('SELECT id FROM budget_years WHERE year = ?');
     $stmt->execute([$year]);
@@ -42,8 +39,8 @@ try {
     $remainingAmount = $budget - $actual;
     $remainingPercent = $budget != 0 ? ($remainingAmount / $budget) * 100 : 0;
 
-    $stmt = $pdo->prepare('INSERT INTO budget_entries (year_id, gl_code, account_title, actual, budget, remaining_amount, remaining_percent) VALUES (?, ?, ?, ?, ?, ?, ?)');
-    $stmt->execute([$yearId, $glCode, $accountTitle ?: $glCode, $actual, $budget, $remainingAmount, $remainingPercent]);
+    $stmt = $pdo->prepare('INSERT INTO budget_entries (year_id, gl_code, account_title, actual, budget, remaining_amount) VALUES (?, ?, ?, ?, ?, ?)');
+    $stmt->execute([$yearId, $glCode, $accountTitle ?: $glCode, $actual, $budget, $remainingAmount]);
     $id = $pdo->lastInsertId();
 
     echo json_encode([
@@ -63,3 +60,4 @@ try {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
+
