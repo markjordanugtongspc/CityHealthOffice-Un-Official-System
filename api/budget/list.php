@@ -36,7 +36,7 @@ try {
 
         if ($titles) {
             $insert = $pdo->prepare('
-                INSERT INTO budget_entries (year_id, gl_code, account_title, actual, budget, remaining_amount)
+                INSERT IGNORE INTO budget_entries (year_id, gl_code, account_title, actual, budget, remaining_amount)
                 VALUES (?, ?, ?, 0, 0, 0)
             ');
             foreach ($titles as $t) {

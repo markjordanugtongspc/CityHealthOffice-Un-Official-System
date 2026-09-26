@@ -101,7 +101,17 @@ requireAuth();
                             <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
                             </svg>
-                            <span>Disbursed</span>
+                            <div class="group relative inline-flex items-center gap-0.5 cursor-help">
+                                <span>Disbursed</span>
+                                <svg class="h-2.5 w-2.5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20A10 10 0 0112 2z" />
+                                </svg>
+                                <div class="pointer-events-none absolute bottom-full right-0 z-50 mb-2 hidden w-max max-w-[140px] rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg group-hover:block text-center normal-case">
+                                    MOOE Allocation
+                                    <div class="absolute right-2 top-full h-2 w-2 rotate-45 bg-slate-900"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -130,24 +140,31 @@ requireAuth();
 
                     <!-- Card Body: Label & Value -->
                     <div class="relative z-10 -mt-2.5 mb-2.5">
-                        <p class="text-xs font-extrabold uppercase tracking-wider text-amber-100">TOTAL EXPENSES</p>
+                        <p class="text-xs font-extrabold uppercase tracking-wider text-amber-100">
+                            TOTAL EXPENSES
+                            <span class="text-[9px] font-semibold normal-case tracking-normal text-amber-300">(DISBURSED)</span>
+                        </p>
                         <h3 class="financial-amount financial-amount-hover text-2xl sm:text-3xl font-bold group-hover:font-black text-white mt-0.5 block origin-left truncate tabular-nums transition-[font-weight,transform,opacity] duration-200" id="dashboardTotalExpenses">PHP 0</h3>
                     </div>
 
                     <!-- Footer Row -->
                     <div class="relative z-10 flex items-center justify-between text-[11px] font-bold text-white/80 pt-2 border-t border-white/15">
-                        <span class="text-amber-200">Current Spent</span>
-                        <div class="flex items-center gap-1">
-                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="2 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l2 2" />
-                            </svg>
-                            <span>Processing</span>
-                        </div>
+                        <span class="text-amber-200">Category</span>
+                        <select id="expenseCategorySelect"
+                            class="rounded border border-amber-300/60 bg-amber-800/90 px-2 py-0.5 text-xs font-bold text-white hover:bg-amber-800 focus:outline-none focus:ring-1 focus:ring-white cursor-pointer"
+                            aria-label="Filter expense category">
+                            <option value="all" class="bg-white text-slate-900">All Expenses</option>
+                            <option value="mooe" class="bg-white text-slate-900">MOOE</option>
+                            <option value="sp-philhealth" class="bg-white text-slate-900">PhilHealth</option>
+                            <option value="sp-ntp" class="bg-white text-slate-900">SPF NTP</option>
+                            <option value="sp-mcp" class="bg-white text-slate-900">MCP Facility</option>
+                            <option value="sp-konsulta" class="bg-white text-slate-900">Konsulta</option>
+                        </select>
                     </div>
                 </div>
 
                 <!-- Stats Card 4: FUND DOWNLOADED (Deep Crimson/Rose) -->
-                <a class="relative overflow-hidden bg-rose-700 text-white p-4 pt-3.5 sm:p-5 sm:pt-4 shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between block">
+                <div class="relative overflow-hidden bg-rose-700 text-white p-4 pt-3.5 sm:p-5 sm:pt-4 shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between">
                     <!-- Background Watermark Icon: Balance Scale (Tilted, Scaled Large, Translucent) -->
                     <div class="absolute -right-6 -bottom-6 w-36 h-36 opacity-15 pointer-events-none transform -rotate-12 select-none">
                         <svg class="w-full h-full text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -169,15 +186,19 @@ requireAuth();
 
                     <!-- Footer Row -->
                     <div class="relative z-10 flex items-center justify-between text-[11px] font-bold text-white/80 pt-2 border-t border-white/15">
-                        <span class="text-rose-200">Remaining</span>
-                        <div class="flex items-center gap-1">
-                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 14l-7 7-7-7" />
-                            </svg>
-                            <span>Balance</span>
-                        </div>
+                        <span class="text-rose-200">Category</span>
+                        <select id="fundCategorySelect"
+                            class="rounded border border-rose-300/60 bg-rose-800/90 px-2 py-0.5 text-xs font-bold text-white hover:bg-rose-800 focus:outline-none focus:ring-1 focus:ring-white cursor-pointer"
+                            aria-label="Filter fund category">
+                            <option value="all" class="bg-white text-slate-900">All Funds</option>
+                            <option value="mooe" class="bg-white text-slate-900">MOOE</option>
+                            <option value="sp-philhealth" class="bg-white text-slate-900">PhilHealth</option>
+                            <option value="sp-ntp" class="bg-white text-slate-900">SPF NTP</option>
+                            <option value="sp-mcp" class="bg-white text-slate-900">MCP Facility</option>
+                            <option value="sp-konsulta" class="bg-white text-slate-900">Konsulta</option>
+                        </select>
                     </div>
-                </a>
+                </div>
             </div>
 
             <!-- Charts Section -->
@@ -237,17 +258,36 @@ requireAuth();
                         </div>
                         <div id="moneyCashflowChart" class="cashflow-chart-surface rounded-lg min-h-[18rem] w-full"></div>
                     </div>
-                    <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6" aria-labelledby="remainingBudgetTitle">
+                    <section class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6"
+                        aria-labelledby="remainingBudgetTitle">
                         <div class="mb-4 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                             <div>
                                 <h3 id="remainingBudgetTitle" class="text-xl font-black text-slate-900">REMAINING BUDGET</h3>
                                 <p class="text-sm text-slate-600">Monthly balance monitoring by program.</p>
                             </div>
-                            <select id="remainingBudgetYear" class="w-32 border border-slate-500 bg-white px-3 py-2 text-xs font-black text-slate-800 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400">
-                                <option value="2026">2026</option>
-                                <option value="2025">2025</option>
-                                <option value="2024">2024</option>
-                            </select>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <!-- Existing year select -->
+                                <select id="remainingBudgetYear"
+                                    class="w-24 border border-slate-500 bg-white px-3 py-2 text-xs font-black text-slate-800 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 cursor-pointer">
+                                    <option value="2026">2026</option>
+                                    <option value="2025">2025</option>
+                                    <option value="2024">2024</option>
+                                </select>
+                                <!-- Program/Category dropdown -->
+                                <select id="remainingBudgetProgram"
+                                    class="w-44 border border-slate-500 bg-white px-3 py-2 text-xs font-black text-slate-800 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-400 cursor-pointer">
+                                    <option value="all">All Programs (Global)</option>
+                                    <optgroup label="MOOE">
+                                        <option value="mooe">MOOE (All Accounts)</option>
+                                    </optgroup>
+                                    <optgroup label="Special Programs">
+                                        <option value="sp-philhealth">PhilHealth Konsulta/Yakap/MCP</option>
+                                        <option value="sp-ntp">SPF NTP Program</option>
+                                        <option value="sp-mcp">MCP Facility</option>
+                                        <option value="sp-konsulta">Konsulta Facility</option>
+                                    </optgroup>
+                                </select>
+                            </div>
                         </div>
                         <div id="remainingBudgetChart" class="min-h-[18rem] w-full"></div>
                     </section>

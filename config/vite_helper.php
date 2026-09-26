@@ -37,6 +37,14 @@ if ($vitePort < 1 || $vitePort > 65535) {
 }
 define('VITE_PORT', $vitePort);
 define('VITE_HOST', 'http://' . $cleanHost . ':' . VITE_PORT);
+$isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+    || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+    || (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on');
+
+$isRemoteTunnel = str_contains($cleanHost, 'trycloudflare.com')
+    || str_contains($cleanHost, 'localtunnel.me')
+    || str_contains($cleanHost, 'ngrok')
+    || ($cleanHost !== 'localhost' && $cleanHost !== '127.0.0.1' && !str_starts_with($cleanHost, '192.168.') && !str_starts_with($cleanHost, '10.'));
 
 /**
  * Vite Asset Loader
@@ -45,11 +53,16 @@ define('VITE_HOST', 'http://' . $cleanHost . ':' . VITE_PORT);
  */
 function vite($entry, $preloadOnly = false)
 {
-    // Check dev server on loopback — reliable when the site is opened via LAN IP or hostname
-    $handle = @fsockopen('127.0.0.1', VITE_PORT, $errno, $errstr, 0.15);
-    $isDev = $handle !== false;
-    if ($handle) {
-        fclose($handle);
+    global $isHttps, $isRemoteTunnel;
+
+    // Check dev server on loopback ONLY if not accessed via external tunnel/HTTPS to prevent Mixed Content blocking
+    $isDev = false;
+    if (!$isRemoteTunnel && !$isHttps) {
+        $handle = @fsockopen('127.0.0.1', VITE_PORT, $errno, $errstr, 0.15);
+        $isDev = $handle !== false;
+        if ($handle) {
+            fclose($handle);
+        }
     }
 
     if ($isDev) {

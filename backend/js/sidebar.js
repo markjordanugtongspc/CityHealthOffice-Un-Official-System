@@ -448,10 +448,12 @@ function setActiveNavState() {
 
         if (normalizedHref.includes('dashboard')) {
             isActive = currentPathNormalized.includes('dashboard') || currentPathNormalized === '' || currentPathNormalized === '/';
-        } else if (normalizedHref.includes('budget')) {
-            isActive = currentPathNormalized.includes('budget');
         } else if (normalizedHref.includes('specialfund')) {
             isActive = currentPathNormalized.includes('specialfund');
+        } else if (normalizedHref.includes('fund-downloaded')) {
+            isActive = currentPathNormalized.includes('fund-downloaded');
+        } else if (normalizedHref.includes('budget')) {
+            isActive = currentPathNormalized.includes('budget') && !currentPathNormalized.includes('fund-downloaded');
         } else if (normalizedHref.includes('monthly-expenses')) {
             isActive = currentPathNormalized.includes('monthly-expenses');
         } else if (normalizedHref.includes('itemized')) {

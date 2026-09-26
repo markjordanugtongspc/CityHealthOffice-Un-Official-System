@@ -110,6 +110,34 @@ try {
         $updated++;
     }
 
+    // === AUTO-CHAIN: Push monthly totals to budget_entries.actual ===
+    $stmtBudgetYr = $pdo->prepare('SELECT id FROM budget_years WHERE year = ?');
+    $stmtBudgetYr->execute([$year]);
+    $budgetYr = $stmtBudgetYr->fetch();
+    if ($budgetYr) {
+        $budgetYearId = $budgetYr['id'];
+        $stmtMTotals = $pdo->prepare('SELECT gl_code, total FROM monthly_expenses_entries WHERE year_id = ?');
+        $stmtMTotals->execute([$monthlyYearId]);
+        $mTotals = $stmtMTotals->fetchAll(PDO::FETCH_KEY_PAIR);
+        foreach ($mTotals as $glCode => $total) {
+            $actual = (float)$total;
+            $stmtBe = $pdo->prepare('SELECT id, budget FROM budget_entries WHERE year_id = ? AND gl_code = ?');
+            $stmtBe->execute([$budgetYearId, $glCode]);
+            $be = $stmtBe->fetch();
+            if ($be) {
+                $budget = (float)$be['budget'];
+                $remaining = $budget - $actual;
+                $remainingPct = $budget != 0 ? ($remaining / $budget) * 100 : 0;
+                $pdo->prepare('
+                    UPDATE budget_entries
+                    SET actual=?, remaining_amount=?, remaining_percent=?, updated_at=NOW()
+                    WHERE id=?
+                ')->execute([$actual, $remaining, $remainingPct, $be['id']]);
+            }
+        }
+    }
+    // === END AUTO-CHAIN ===
+
     echo json_encode(['success' => true, 'message' => 'Sync completed', 'updated' => $updated]);
 } catch (Exception $e) {
     http_response_code(500);

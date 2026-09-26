@@ -268,10 +268,11 @@ function renderTable() {
                     ? (Number.isFinite(remainingRaw) ? remainingRaw : budget - actual)
                     : 0;
 
+                const isOverspent = hasBudget && remainingAmount < 0;
                 const remainingClass = !hasBudget
                     ? 'text-slate-400'
-                    : remainingAmount < 0
-                        ? 'text-red-600'
+                    : isOverspent
+                        ? 'text-red-600 font-black'
                         : remainingAmount > 0
                             ? 'text-emerald-600'
                             : 'text-slate-700';
@@ -291,7 +292,9 @@ function renderTable() {
                             <span data-animate="currency" data-value="${budget}">${formatCurrency(0)}</span>
                         </td>
                         <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right font-money font-semibold ${remainingClass}">
-                            ${hasBudget ? `<span data-animate="currency" data-value="${remainingAmount}">${formatCurrency(0)}</span>` : '-'}
+                            ${hasBudget
+                                ? `<span data-animate="currency" data-value="${remainingAmount}" ${isOverspent ? 'class="cursor-help underline decoration-red-400 decoration-dotted underline-offset-4" title="Overspent: Disbursed amount exceeds allocation"' : ''}>${formatCurrency(0)}</span>`
+                                : '-'}
                         </td>
                         <td class="whitespace-nowrap px-4 py-2 text-xs md:text-sm text-right font-money font-semibold ${remainingClass}">
                             ${hasBudget ? `<span data-animate="percent" data-value="${row.remainingPercent || 0}">${formatPercent(0)}</span>` : '-'}

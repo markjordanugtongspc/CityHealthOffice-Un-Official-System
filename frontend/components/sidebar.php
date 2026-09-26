@@ -131,6 +131,10 @@ require_once __DIR__ . '/../../config/image_helper.php';
                         class="nav-item nav-subitem flex items-center gap-3 px-4 py-2 ml-8 rounded-lg text-white/50 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all duration-200 cursor-pointer touch-manipulation group/sub relative">
                         <span class="sidebar-text text-sm font-medium whitespace-nowrap nav-text tracking-wide">Special Program Fund</span>
                     </a>
+                    <a href="../fund-downloaded/"
+                        class="nav-item nav-subitem flex items-center gap-3 px-4 py-2 ml-8 rounded-lg text-white/50 hover:text-white hover:bg-white/5 active:bg-white/10 transition-all duration-200 cursor-pointer touch-manipulation group/sub relative">
+                        <span class="sidebar-text text-sm font-medium whitespace-nowrap nav-text tracking-wide">Fund Downloaded</span>
+                    </a>
                 </div>
             </li>
 
@@ -283,6 +287,12 @@ require_once __DIR__ . '/../../config/image_helper.php';
             <div class="absolute -left-2.5 top-1/2 -translate-y-1/2 w-2.5 h-4 border-b-2 border-l-2 border-white/30 rounded-bl-lg group-hover/sublink:border-emerald-400 transition-colors"></div>
             <span class="w-1.5 h-1.5 rounded-full bg-white/50 group-hover/sublink:bg-emerald-400 group-hover/sublink:shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all"></span>
             <span>Special Program Fund</span>
+        </a>
+        <a href="../fund-downloaded/" class="nav-subitem-link relative flex items-center gap-2.5 px-3 py-2 rounded-xl text-white/70 hover:text-white hover:bg-white/10 transition-all text-xs font-semibold group/sublink">
+            <!-- Smooth curved connector -->
+            <div class="absolute -left-2.5 top-1/2 -translate-y-1/2 w-2.5 h-4 border-b-2 border-l-2 border-white/30 rounded-bl-lg group-hover/sublink:border-emerald-400 transition-colors"></div>
+            <span class="w-1.5 h-1.5 rounded-full bg-white/50 group-hover/sublink:bg-emerald-400 group-hover/sublink:shadow-[0_0_8px_rgba(52,211,153,0.8)] transition-all"></span>
+            <span>Fund Downloaded</span>
         </a>
     </div>
 </div>

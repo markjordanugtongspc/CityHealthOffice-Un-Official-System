@@ -89,38 +89,35 @@ export function initInlineEdit(cell, options = {}) {
     const initialDisplayValue = cell.textContent.trim();
     const isInitiallyEmpty = checkIfEmpty(initialDataValue !== null ? initialDataValue : initialDisplayValue, type, initialDisplayValue);
     
-    // Add visual indicator that cell is editable (only if not empty)
+    // Add visual indicator that cell is editable for both empty and non-empty cells
+    cell.classList.add('cursor-pointer', 'select-none', 'relative');
     if (!isInitiallyEmpty) {
-        cell.classList.add('cursor-pointer', 'select-none', 'relative');
-        cell.setAttribute('title', 'Hold for 2 seconds to edit');
+        cell.setAttribute('title', 'Double-click to edit');
     } else {
-        cell.classList.add('cursor-not-allowed', 'relative');
-        cell.setAttribute('title', 'Empty, add data');
+        cell.setAttribute('title', 'Double-click to add data');
     }
 
-    // Mouse/Touch down - start hold timer
-    const handleStart = (e) => {
+    // Helper: format raw string number with commas in real-time
+    const formatInputNumberWithCommas = (str) => {
+        if (!str) return '';
+        const clean = str.replace(/[^\d.]/g, '');
+        const parts = clean.split('.');
+        const integerPart = parts[0];
+        const decimalPart = parts.length > 1 ? '.' + parts.slice(1).join('') : '';
+        const formattedInteger = integerPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+        return formattedInteger + decimalPart;
+    };
+
+    // Double-click handler to activate edit mode
+    const handleDoubleClick = (e) => {
         if (isEditing) return;
         
         e.preventDefault();
         originalValue = cell.textContent.trim();
-        
-        // Check data-value attribute first (raw value), then fallback to displayed text
-        const dataValue = cell.getAttribute('data-value');
-        const isEmpty = checkIfEmpty(dataValue !== null ? dataValue : originalValue, type, originalValue);
-        
-        if (isEmpty) {
-            // Show tooltip for empty values immediately (no hold required)
-            showEmptyTooltip(cell);
-            return;
-        }
-        
-        holdTimer = setTimeout(() => {
-            activateEditMode();
-        }, HOLD_DURATION);
+        activateEditMode();
     };
     
-    // Also show tooltip on click for empty cells (no hold needed)
+    // Single click handler
     const handleClick = (e) => {
         if (isEditing) return;
         
@@ -129,18 +126,7 @@ export function initInlineEdit(cell, options = {}) {
         const isEmpty = checkIfEmpty(dataValue !== null ? dataValue : originalValue, type, originalValue);
         
         if (isEmpty) {
-            e.preventDefault();
             showEmptyTooltip(cell);
-        }
-    };
-
-    // Mouse/Touch up - cancel hold timer
-    const handleEnd = (e) => {
-        if (isEditing) return;
-        
-        if (holdTimer) {
-            clearTimeout(holdTimer);
-            holdTimer = null;
         }
     };
 
@@ -151,21 +137,41 @@ export function initInlineEdit(cell, options = {}) {
         isEditing = true;
         originalValue = cell.textContent.trim();
         
-        // Create input element
+        // Create input element (text input for currency/number to format commas dynamically)
         inputElement = document.createElement('input');
-        inputElement.type = type === 'currency' || type === 'number' ? 'number' : 'text';
-        inputElement.step = type === 'currency' ? '0.01' : '1';
-        inputElement.min = type === 'currency' || type === 'number' ? '0' : undefined;
+        inputElement.type = 'text';
+        inputElement.inputMode = type === 'currency' || type === 'number' ? 'decimal' : 'text';
         
-        // Extract numeric value if currency
+        // Extract raw numeric value if currency/number
         let inputValue = originalValue;
-        if (type === 'currency') {
-            // Remove currency symbols and commas
-            inputValue = originalValue.replace(/[₱,]/g, '').trim() || '0';
+        if (type === 'currency' || type === 'number') {
+            if (originalValue === '-' || originalValue === '') {
+                inputValue = '';
+            } else {
+                const numericClean = originalValue.replace(/[₱,]/g, '').trim();
+                const num = parseFloat(numericClean);
+                inputValue = isNaN(num) || num === 0 ? '' : formatInputNumberWithCommas(numericClean);
+            }
         }
         
         inputElement.value = inputValue;
-        inputElement.className = 'w-full px-2 py-1 text-sm border-2 border-[#224796] rounded focus:outline-none focus:ring-2 focus:ring-[#224796]';
+        inputElement.placeholder = type === 'currency' ? '0.00' : 'Enter value...';
+        inputElement.className = 'w-full px-2 py-1 text-xs sm:text-sm border-2 border-[#224796] rounded bg-white text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-[#224796] shadow-sm';
+        
+        // Live comma formatting as user types for currency and number fields
+        if (type === 'currency' || type === 'number') {
+            inputElement.addEventListener('input', (e) => {
+                const cursorPosition = inputElement.selectionStart;
+                const oldLength = inputElement.value.length;
+                
+                const formatted = formatInputNumberWithCommas(inputElement.value);
+                inputElement.value = formatted;
+                
+                const newLength = formatted.length;
+                const newCursorPos = Math.max(0, cursorPosition + (newLength - oldLength));
+                inputElement.setSelectionRange(newCursorPos, newCursorPos);
+            });
+        }
         
         // Replace cell content
         cell.innerHTML = '';
@@ -188,7 +194,6 @@ export function initInlineEdit(cell, options = {}) {
         
         // Handle blur (click outside) - save on blur
         inputElement.addEventListener('blur', () => {
-            // Small delay to allow Enter/Escape to fire first
             setTimeout(() => {
                 if (isEditing && inputElement) {
                     saveEdit();
@@ -201,8 +206,11 @@ export function initInlineEdit(cell, options = {}) {
     const saveEdit = () => {
         if (!isEditing || !inputElement) return;
         
-        const newValue = inputElement.value.trim();
-        const hasChanged = newValue !== originalValue;
+        const rawInput = inputElement.value.trim();
+        const cleanNumeric = rawInput.replace(/[₱,]/g, '').trim();
+        const newValue = type === 'currency' || type === 'number' ? cleanNumeric : rawInput;
+        const rawOriginalClean = (type === 'currency' || type === 'number') ? originalValue.replace(/[₱,]/g, '').trim() : originalValue;
+        const hasChanged = newValue !== rawOriginalClean && (newValue !== '' || rawOriginalClean !== '');
         
         // Restore cell content
         cell.innerHTML = '';
@@ -219,6 +227,7 @@ export function initInlineEdit(cell, options = {}) {
             }
             
             cell.textContent = displayValue;
+            cell.setAttribute('data-value', newValue);
             
             // Call onSave callback
             if (onSave) {
@@ -242,9 +251,9 @@ export function initInlineEdit(cell, options = {}) {
             // No change or empty - restore original
             if (type === 'currency') {
                 const numValue = parseFloat(originalValue.replace(/[₱,]/g, '')) || 0;
-                cell.textContent = formatCurrency(numValue);
+                cell.textContent = numValue > 0 ? formatCurrency(numValue) : (originalValue === '-' || originalValue === '' ? '-' : formatCurrency(0));
             } else {
-                cell.textContent = originalValue;
+                cell.textContent = originalValue || '-';
             }
             
             if (hasChanged && newValue === '') {
@@ -312,13 +321,8 @@ export function initInlineEdit(cell, options = {}) {
     };
 
     // Attach event listeners
-    cell.addEventListener('mousedown', handleStart);
-    cell.addEventListener('mouseup', handleEnd);
-    cell.addEventListener('mouseleave', handleEnd);
+    cell.addEventListener('dblclick', handleDoubleClick);
     cell.addEventListener('click', handleClick);
-    cell.addEventListener('touchstart', handleStart, { passive: false });
-    cell.addEventListener('touchend', handleEnd);
-    cell.addEventListener('touchcancel', handleEnd);
 }
 
 /**

@@ -131,38 +131,38 @@ requireAuth();
                 <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
                     <div class="overflow-x-auto">
                         <table id="itemizedTable" class="min-w-full divide-y divide-slate-200 text-sm">
-                            <thead class="bg-[#224796]">
+                            <thead class="bg-[#224796] text-xs uppercase tracking-wider text-white">
                                 <tr>
                                     <th scope="col"
-                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
+                                        class="px-4 py-3.5 text-center font-bold tracking-wider text-white whitespace-nowrap">
                                         Account Title
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
+                                        class="px-4 py-3.5 text-center font-bold tracking-wider text-white whitespace-nowrap">
                                         DV DATE
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
+                                        class="px-4 py-3.5 text-center font-bold tracking-wider text-white whitespace-nowrap">
                                         DV NO.
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
+                                        class="px-4 py-3.5 text-center font-bold tracking-wider text-white whitespace-nowrap">
                                         Payee
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
+                                        class="px-4 py-3.5 text-center font-bold tracking-wider text-white whitespace-nowrap">
                                         Check No.
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
+                                        class="px-4 py-3.5 text-center font-bold tracking-wider text-white whitespace-nowrap">
                                         Amount
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
+                                        class="px-4 py-3.5 text-center font-bold tracking-wider text-white whitespace-nowrap">
                                         Remarks
                                     </th>
                                     <th scope="col"
-                                        class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-white">
+                                        class="px-4 py-3.5 text-center font-bold tracking-wider text-white whitespace-nowrap">
                                         Actions
                                     </th>
                                 </tr>

@@ -25,238 +25,175 @@ requireAuth();
     <div id="spaContentContainer" class="main-content ml-0 w-full max-w-full lg:w-auto lg:ml-80! lg:group-[.sidebar-collapsed]/body:!ml-[4.5rem] min-h-screen transition-all duration-300 flex-1 flex flex-col overflow-hidden!">
             <!-- Content Area (Scrollable) -->
             <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-10 md:pb-12 lg:pb-16">
-                <!-- Header Section with Standard Graphics -->
-                <section class="mb-6">
-                    <div class="relative bg-linear-to-br from-[#224796] to-[#163473] rounded-2xl shadow-xl overflow-hidden">
-                        <!-- Static Background Pattern -->
-                        <div class="absolute inset-0 opacity-10">
-                            <div class="absolute top-0 left-0 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-3xl"></div>
-                            <div class="absolute bottom-0 right-0 w-96 h-96 bg-white rounded-full mix-blend-overlay filter blur-3xl"></div>
-                        </div>
-                        
-                        <!-- Content -->
-                        <div class="relative z-10 p-4 md:p-6 lg:p-8">
-                            <div class="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4 md:gap-6">
-                                <!-- Left: Title and Description -->
-                                <div class="flex-1">
-                                    <div class="flex items-center gap-3 mb-3">
-                                        <div class="p-2.5 bg-white/20 backdrop-blur-sm rounded-xl shadow-lg">
-                                            <svg class="w-7 h-7 md:w-9 md:h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
-                                            </svg>
-                                        </div>
-                                        <h2 class="text-xl md:text-2xl lg:text-3xl font-bold text-white tracking-tight text-balance">
-                                            Monthly Expenses Summary
-                                        </h2>
-                                    </div>
-                                    <p class="text-white/90 text-sm md:text-base ml-12 md:ml-14 text-balance">
-                                        Track and manage your monthly financial expenses with detailed insights
-                                    </p>
-                                </div>
-                                
-                                <!-- Right: Standard Graphics -->
-                                <div class="flex items-center gap-3 lg:gap-5">
-                                    <!-- Chart Icon -->
-                                    <div class="hidden md:flex flex-col items-center gap-2 p-3 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
-                                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 8v8m-4-5v5m-4-2v2m-2 4h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                        </svg>
-                                        <span class="text-xs text-white/80 font-medium">Analytics</span>
-                                    </div>
-                                    
-                                    <!-- Expense Icon -->
-                                    <div class="hidden md:flex flex-col items-center gap-2 p-3 bg-white/10 backdrop-blur-md rounded-2xl shadow-xl border border-white/20">
-                                        <svg class="w-9 h-9 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                        </svg>
-                                        <span class="text-xs text-white/80 font-medium">Expenses</span>
-                                    </div>
-                                    
-                                    <!-- Standard Decorative Bars -->
-                                <div class="hidden sm:flex flex-col gap-2">
-                                        <div class="flex gap-2">
-                                            <div class="w-3 h-8 bg-white/30 rounded-full"></div>
-                                            <div class="w-3 h-6 bg-white/40 rounded-full"></div>
-                                            <div class="w-3 h-10 bg-white/25 rounded-full"></div>
-                                        </div>
-                                        <div class="flex gap-2 ml-2">
-                                            <div class="w-3 h-6 bg-white/35 rounded-full"></div>
-                                            <div class="w-3 h-8 bg-white/30 rounded-full"></div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Bottom Accent Line -->
-                        <div class="absolute bottom-0 left-0 right-0 h-1 bg-linear-to-r from-transparent via-white/30 to-transparent"></div>
+            <!-- Top Header (Clean Title Only) -->
+            <section class="mb-5">
+                <div class="flex items-start gap-3">
+                    <img src="<?php echo htmlspecialchars(getImagePath('frontend/images/actualBudgets.svg')); ?>" alt="" aria-hidden="true" class="mt-0.5 h-10 w-10 shrink-0 object-contain">
+                    <div>
+                        <h1 class="text-2xl font-bold uppercase tracking-tight text-slate-900">Monthly Expenses Summary</h1>
+                        <p class="mt-1 max-w-3xl text-sm text-slate-600">Track and manage monthly expenses, account allocations, and annual trends for <span id="monthlyExpensesCurrentYear" class="font-semibold text-slate-900"></span>.</p>
                     </div>
-                </section>
+                </div>
+            </section>
 
-                <!-- Filters & Actions -->
-                <section class="mb-4">
-                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm p-4 md:p-5">
-                        <!-- Account Title Filter -->
-                        <div class="mb-4">
-                            <label class="block text-xs font-medium text-slate-500 mb-2">
-                                Account Title
-                            </label>
-                            <div id="accountTitleFilters" class="flex flex-wrap gap-2">
-                                <!-- Account title filters populated by JavaScript -->
-                            </div>
-                        </div>
-
-                        <div class="flex flex-col md:flex-row gap-4 md:items-center md:justify-between md:flex-wrap">
-                            <!-- Search -->
-                            <div class="w-full md:flex-1">
-                                <label for="monthlyExpensesSearch" class="block text-xs font-medium text-slate-500 mb-1">
-                                    Search by Account Title or G/L Code
-                                </label>
-                                <div class="relative">
-                                    <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                        <svg class="h-5 w-5 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M11 18a7 7 0 100-14 7 7 0 000 14z" />
-                                        </svg>
-                                    </span>
-                                    <input
-                                        id="monthlyExpensesSearch"
-                                        type="text"
-                                        placeholder="Search accounts..."
-                                        class="block w-full rounded-lg border border-slate-300 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796]"
-                                    />
-                                </div>
-                            </div>
-
-                            <!-- Right controls -->
-                            <div class="flex flex-col sm:flex-row gap-3 md:gap-4 md:items-center sm:flex-wrap">
-                                <div class="flex items-center gap-3">
-                                    <label for="monthlyExpensesYear" class="text-sm font-medium text-slate-700 whitespace-nowrap">
-                                        Year
-                                    </label>
-                                    <select
-                                        id="monthlyExpensesYear"
-                                        class="rounded-lg border border-slate-300 bg-white py-2.5 px-4 text-sm text-slate-900 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] cursor-pointer"
-                                    >
-                                        <!-- Options populated by JavaScript -->
-                                    </select>
-                                </div>
-                                <div class="flex items-center gap-3">
-                                    <button
-                                        id="monthlyExpensesAddBtn"
-                                        type="button"
-                                        class="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-white px-4 py-2.5 text-sm font-medium text-emerald-600 shadow-sm hover:bg-emerald-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-1 cursor-pointer transition-colors"
-                                    >
-                                        <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                                        </svg>
-                                        Add
-                                    </button>
-                                    <button
-                                        id="monthlyExpensesCalculateBtn"
-                                        type="button"
-                                        class="inline-flex items-center justify-center rounded-lg bg-[#224796] px-4 py-2.5 text-sm font-medium text-white shadow-sm hover:bg-[#163473] focus:outline-none focus:ring-2 focus:ring-[#224796] focus:ring-offset-1 cursor-pointer transition-colors"
-                                    >
-                                        <svg class="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6M9 11h6m-9 4h.01M15 15h.01M5 5h14v14H5z" />
-                                        </svg>
-                                        Calculate
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+            <!-- Flowbite Carousel of Dynamic Account Title Cards with Action Bar Below -->
+            <section class="mb-6 relative" id="monthlyAccountCarouselSection">
+                <div id="monthlyExpensesCarousel" class="relative w-full overflow-hidden" data-carousel="static">
+                    <!-- Carousel wrapper -->
+                    <div id="monthlyCarouselTrack" class="relative min-h-[190px] sm:min-h-[185px] py-1 overflow-hidden rounded-xl">
+                        <!-- Dynamic slides rendered by monthly-expenses.js -->
                     </div>
-                </section>
 
-                <!-- Table -->
-                <section>
-                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden">
-                        <div class="w-full overflow-x-auto">
-                            <table id="monthlyExpensesTable" class="min-w-full divide-y divide-slate-200 text-sm">
-                                <thead class="bg-slate-50">
-                                    <tr>
-                                        <th scope="col" class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 w-[80px] min-w-[80px]">
-                                            G/L Code
-                                        </th>
-                                        <th scope="col" class="px-3 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600 min-w-[200px]">
-                                            Account Title
-                                        </th>
-                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            January
-                                        </th>
-                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            February
-                                        </th>
-                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            March
-                                        </th>
-                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            April
-                                        </th>
-                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            May
-                                        </th>
-                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            June
-                                        </th>
-                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            July
-                                        </th>
-                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            August
-                                        </th>
-                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            September
-                                        </th>
-                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            October
-                                        </th>
-                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            November
-                                        </th>
-                                        <th scope="col" class="px-3 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
-                                            December
-                                        </th>
-                                        <th scope="col" class="px-3 py-3 text-center text-xs font-semibold uppercase tracking-wide text-slate-600 w-16">
-                                            <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                            </svg>
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody id="monthlyExpensesTableBody" class="divide-y divide-slate-100 bg-white">
-                                    <!-- Rows rendered by monthly-expenses.js -->
-                                </tbody>
-                            </table>
-                        </div>
+                    <!-- Slider Indicators (Clickable dots) -->
+                    <div id="monthlyCarouselIndicators" class="flex justify-center items-center gap-2 mt-3">
+                        <!-- Indicators populated dynamically -->
+                    </div>
+                </div>
 
-                        <!-- Pagination -->
-                        <div class="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 md:flex-row md:items-center md:justify-between">
-                            <p class="text-xs md:text-sm text-slate-600" id="monthlyExpensesPaginationSummary">
-                                Showing 0 to 0 of 0 entries
-                            </p>
-                            <div class="flex items-center justify-end gap-2">
-                                <button
-                                    id="monthlyExpensesPrevPage"
-                                    type="button"
-                                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors md:px-2 md:py-1 md:text-xs"
-                                >
-                                    Prev
+                <!-- Action Controls Row (Placed below the carousel cards) -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-4">
+                    <!-- Left: Medium-sized Year Selector with Centered Year, Keyboard Typing & Up/Down Steppers -->
+                    <div class="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 shadow-xs w-fit">
+                        <span class="text-xs font-bold uppercase tracking-wide text-slate-500 shrink-0">Year:</span>
+                        <div class="relative flex items-center">
+                            <input
+                                id="monthlyExpensesYear"
+                                type="number"
+                                min="2000"
+                                max="2099"
+                                step="1"
+                                class="w-16 text-center text-sm font-bold text-slate-900 bg-transparent border-0 focus:ring-0 p-0 font-mono tracking-wide [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none cursor-pointer focus:cursor-text"
+                                placeholder="YYYY"
+                            />
+                            <div class="flex flex-col gap-0.5 ml-1.5 border-l border-slate-200 pl-1.5">
+                                <button id="monthlyExpensesYearUp" type="button" class="text-slate-400 hover:text-slate-700 active:text-slate-900 transition-colors p-0.5 rounded cursor-pointer" title="Next Year" aria-label="Next Year">
+                                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"/></svg>
                                 </button>
-                                <div id="monthlyExpensesPageNumbers" class="flex items-center gap-1 text-sm md:text-xs">
-                                    <!-- Page buttons rendered by monthly-expenses.js -->
-                                </div>
-                                <button
-                                    id="monthlyExpensesNextPage"
-                                    type="button"
-                                    class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors md:px-2 md:py-1 md:text-xs"
-                                >
-                                    Next
+                                <button id="monthlyExpensesYearDown" type="button" class="text-slate-400 hover:text-slate-700 active:text-slate-900 transition-colors p-0.5 rounded cursor-pointer" title="Previous Year" aria-label="Previous Year">
+                                    <svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7"/></svg>
                                 </button>
                             </div>
                         </div>
                     </div>
-                </section>
-                    <?php $footerSpacingClass = 'mt-8'; require_once __DIR__ . '/../../components/components.php'; ?>
+
+                    <!-- Right: Action Buttons -->
+                    <div class="flex items-center justify-end gap-3 shrink-0">
+                        <button id="monthlyExpensesCalculateBtn" type="button" class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-orange-500 bg-transparent px-3.5 py-2.5 text-sm font-semibold text-orange-500 hover:bg-orange-500 hover:text-white active:bg-orange-600 active:text-white focus:ring-4 focus:ring-orange-200 shadow-xs transition-all duration-200">
+                            <svg class="mr-1.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M4 2H20C20.5523 2 21 2.44772 21 3V21C21 21.5523 20.5523 22 20 22H4C3.44772 22 3 21.5523 3 21V3C3 2.44772 3.44772 2 4 2ZM5 4V20H19V4H5ZM7 6H17V10H7V6ZM7 12H9V14H7V12ZM7 16H9V18H7V16ZM11 12H13V14H11V12ZM11 16H13V18H11V16ZM15 12H17V18H15V12Z"></path></svg>Calculate
+                        </button>
+                        <button id="monthlyExpensesAddBtn" type="button" class="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg bg-emerald-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-xs hover:bg-emerald-600 active:bg-emerald-700 focus:ring-4 focus:ring-emerald-200 transition-all duration-200">
+                            <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"/></svg>Add Entry
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Merged Unified Section: Search, Filters & Monthly Expenses Table -->
+            <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs mb-8">
+                <!-- Search & Filter Header -->
+                <div class="flex flex-col gap-4 border-b border-slate-200 p-4 md:p-5">
+                    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                        <div>
+                            <h2 class="text-lg font-semibold text-slate-900">Monthly Expense Entries</h2>
+                            <p class="mt-0.5 text-sm text-slate-500">Breakdown of disbursed and actual expenses per account across all 12 calendar months.</p>
+                        </div>
+                        <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
+                            <label for="monthlyExpensesSearch" class="sr-only">Search monthly expenses</label>
+                            <div class="relative min-w-0 sm:w-80">
+                                <svg class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"/>
+                                </svg>
+                                <input id="monthlyExpensesSearch" type="search" placeholder="Search by G/L code or account..." class="w-full rounded-lg border border-slate-300 bg-white py-2 pl-9 pr-3 text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796]">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Table Content -->
+                <div class="w-full overflow-x-auto">
+                    <table id="monthlyExpensesTable" class="min-w-full divide-y divide-slate-200 text-xs">
+                        <thead class="bg-[#224796] text-xs uppercase tracking-wider text-white">
+                            <tr>
+                                <th scope="col" class="px-2.5 py-3 text-left font-bold uppercase tracking-wider text-white whitespace-nowrap w-[70px] min-w-[70px]">
+                                    G/L Code
+                                </th>
+                                <th scope="col" class="px-2.5 py-3 text-left font-bold uppercase tracking-wider text-white min-w-[170px]">
+                                    Account Title
+                                </th>
+                                <th scope="col" class="px-2 py-3 text-center font-bold uppercase tracking-wider text-white whitespace-nowrap">
+                                    Jan
+                                </th>
+                                <th scope="col" class="px-2 py-3 text-center font-bold uppercase tracking-wider text-white whitespace-nowrap">
+                                    Feb
+                                </th>
+                                <th scope="col" class="px-2 py-3 text-center font-bold uppercase tracking-wider text-white whitespace-nowrap">
+                                    Mar
+                                </th>
+                                <th scope="col" class="px-2 py-3 text-center font-bold uppercase tracking-wider text-white whitespace-nowrap">
+                                    Apr
+                                </th>
+                                <th scope="col" class="px-2 py-3 text-center font-bold uppercase tracking-wider text-white whitespace-nowrap">
+                                    May
+                                </th>
+                                <th scope="col" class="px-2 py-3 text-center font-bold uppercase tracking-wider text-white whitespace-nowrap">
+                                    Jun
+                                </th>
+                                <th scope="col" class="px-2 py-3 text-center font-bold uppercase tracking-wider text-white whitespace-nowrap">
+                                    Jul
+                                </th>
+                                <th scope="col" class="px-2 py-3 text-center font-bold uppercase tracking-wider text-white whitespace-nowrap">
+                                    Aug
+                                </th>
+                                <th scope="col" class="px-2 py-3 text-center font-bold uppercase tracking-wider text-white whitespace-nowrap">
+                                    Sep
+                                </th>
+                                <th scope="col" class="px-2 py-3 text-center font-bold uppercase tracking-wider text-white whitespace-nowrap">
+                                    Oct
+                                </th>
+                                <th scope="col" class="px-2 py-3 text-center font-bold uppercase tracking-wider text-white whitespace-nowrap">
+                                    Nov
+                                </th>
+                                <th scope="col" class="px-2 py-3 text-center font-bold uppercase tracking-wider text-white whitespace-nowrap">
+                                    Dec
+                                </th>
+                                <th scope="col" class="px-2 py-3 text-center font-bold uppercase tracking-wider text-white whitespace-nowrap w-16">
+                                    Trend
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody id="monthlyExpensesTableBody" class="divide-y divide-slate-100 bg-white">
+                            <!-- Rows rendered by monthly-expenses.js -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div class="flex flex-col gap-3 border-t border-slate-200 px-4 py-3 md:flex-row md:items-center md:justify-between">
+                    <p class="text-xs md:text-sm text-slate-600" id="monthlyExpensesPaginationSummary">
+                        Showing 0 to 0 of 0 entries
+                    </p>
+                    <div class="flex items-center justify-end gap-2">
+                        <button
+                            id="monthlyExpensesPrevPage"
+                            type="button"
+                            class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors md:px-2 md:py-1 md:text-xs"
+                        >
+                            Prev
+                        </button>
+                        <div id="monthlyExpensesPageNumbers" class="flex items-center gap-1 text-sm md:text-xs">
+                            <!-- Page buttons rendered by monthly-expenses.js -->
+                        </div>
+                        <button
+                            id="monthlyExpensesNextPage"
+                            type="button"
+                            class="inline-flex items-center justify-center rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-100 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer transition-colors md:px-2 md:py-1 md:text-xs"
+                        >
+                            Next
+                        </button>
+                    </div>
+                </div>
+            </section>
+            <?php $footerSpacingClass = 'mt-8'; require_once __DIR__ . '/../../components/components.php'; ?>
         </main>
     </div>
 

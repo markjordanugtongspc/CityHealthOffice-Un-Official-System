@@ -13,14 +13,26 @@ const peso = new Intl.NumberFormat('en-PH', {
 const STORAGE_KEY = 'cho_cashflow_year';
 const SUPPLIES_VIEW_KEY = 'cho_supplies_view';
 const REMAINING_YEAR_KEY = 'cho_remaining_budget_year';
+const REMAINING_PROGRAM_KEY = 'cho_remaining_budget_program';
+const FUND_CATEGORY_KEY = 'cho_fund_category';
+const EXPENSE_CATEGORY_KEY = 'cho_expense_category';
 const SUPPLIES_YEAR_KEY = 'cho_supplies_year';
 const SUPPLIES_MONTH_KEY = 'cho_supplies_month';
 const OFFICE_YEAR_KEY = 'cho_office_financial_year';
 let suppliesView = localStorage.getItem(SUPPLIES_VIEW_KEY) === 'payment' ? 'payment' : 'category';
 let remainingBudgetYear = localStorage.getItem(REMAINING_YEAR_KEY) || '2026';
+let remainingBudgetProgram = localStorage.getItem(REMAINING_PROGRAM_KEY) || 'all';
+let fundCategory = localStorage.getItem(FUND_CATEGORY_KEY) || 'all';
+let expenseCategory = localStorage.getItem(EXPENSE_CATEGORY_KEY) || 'all';
 let suppliesYear = localStorage.getItem(SUPPLIES_YEAR_KEY) || '2026';
 let suppliesMonth = localStorage.getItem(SUPPLIES_MONTH_KEY) || 'all';
 let officeFinancialYear = localStorage.getItem(OFFICE_YEAR_KEY) || '2026';
+
+function getApiBasePath() {
+    const path = window.location.pathname || '';
+    const idx = path.indexOf('/frontend/');
+    return idx !== -1 ? path.substring(0, idx) : path.substring(0, path.lastIndexOf('/')) || '';
+}
 
 const mock = {
     stats: {
@@ -47,7 +59,7 @@ const mock = {
         },
     },
     months: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    remaining: [28500000, 24000000, 18800000, 15100000, 11900000, 9400000, 7200000, 5200000, 3500000, 2100000, 1100000, 420000],
+    remaining: [12500000, 8400000, -3200000, 6100000, 4800000, -5400000, 7900000, 3200000, -1800000, 4500000, 2100000, -950000],
     supplies: [
         { name: 'Medicines', y: 7450000, color: '#0F766E', method: 'Cheque', recordedAt: 'Sep 21, 2026 02:40 PM' },
         { name: 'Laboratory supplies', y: 4250000, color: '#2563EB', method: 'Cheque', recordedAt: 'Sep 20, 2026 11:10 AM' },
@@ -288,32 +300,94 @@ function setupCashflowDropdown() {
     });
 }
 
-function renderStats() {
+async function renderStats(year = new Date().getFullYear(), category = fundCategory, expCategory = expenseCategory) {
+    try {
+        const base = getApiBasePath();
+        const res = await fetch(`${base}/api/dashboard/stats.php?year=${year}&fund_category=${encodeURIComponent(category)}&expense_category=${encodeURIComponent(expCategory)}`);
+        const json = await res.json();
+        if (json.success) {
+            animateRollingNumber('dashboardTotalIncome', json.data.totalBudget);
+            animateRollingNumber('dashboardYearlyIncome', json.data.yearlyBudget);
+            animateRollingNumber('dashboardTotalExpenses', json.data.totalExpenses);
+            animateRollingNumber('dashboardFundDownloadedTotal', json.data.fundDownloaded);
+            return;
+        }
+    } catch (e) {
+        console.warn('Dashboard stats API failed, using mock fallback', e);
+    }
+    // Mock fallback
+    let fallbackExpenses = mock.stats.totalExpenses;
+    if (expCategory === 'mooe') fallbackExpenses = 95200000;
+    else if (expCategory === 'sp-philhealth') fallbackExpenses = 34500000;
+    else if (expCategory === 'sp-ntp') fallbackExpenses = 18200000;
+    else if (expCategory === 'sp-mcp') fallbackExpenses = 12400000;
+    else if (expCategory === 'sp-konsulta') fallbackExpenses = 13540000;
+
+    let fallbackFund = mock.stats.fundDownloaded;
+    if (category === 'mooe') fallbackFund = 120000000;
+    else if (category === 'sp-philhealth') fallbackFund = 50000000;
+    else if (category === 'sp-ntp') fallbackFund = 25000000;
+    else if (category === 'sp-mcp') fallbackFund = 20000000;
+    else if (category === 'sp-konsulta') fallbackFund = 29910000;
+
     animateRollingNumber('dashboardTotalIncome', mock.stats.totalBudget);
     animateRollingNumber('dashboardYearlyIncome', mock.stats.yearlyBudget);
-    animateRollingNumber('dashboardTotalExpenses', mock.stats.totalExpenses);
-    animateRollingNumber('dashboardFundDownloadedTotal', mock.stats.fundDownloaded);
+    animateRollingNumber('dashboardTotalExpenses', fallbackExpenses);
+    animateRollingNumber('dashboardFundDownloadedTotal', fallbackFund);
 }
 
-function renderRemainingBudget() {
-    const factor = yearFactor(remainingBudgetYear);
-    const data = scaleValues(mock.remaining, factor);
+async function renderRemainingBudget() {
+    let data;
+    try {
+        const base = getApiBasePath();
+        const res = await fetch(`${base}/api/dashboard/remaining-budget.php?year=${remainingBudgetYear}&program=${remainingBudgetProgram}`);
+        const json = await res.json();
+        if (json.success) data = json.data;
+    } catch (e) { /* use mock fallback */ }
+
+    if (!data) {
+        const factor = yearFactor(remainingBudgetYear);
+        data = {
+            months: mock.months,
+            remaining: scaleValues(mock.remaining, factor),
+            label: `Remaining budget ${remainingBudgetYear}`,
+        };
+    }
+
     const options = baseChart('bar', 320);
-    options.series = [{ name: `Remaining budget ${remainingBudgetYear}`, data }];
-    options.plotOptions = { bar: { borderRadius: 3, columnWidth: '54%', distributed: true } };
-    options.colors = ['#059669', '#10B981', '#CA8A04', '#F59E0B', '#F97316', '#EA580C', '#DC2626', '#DC2626', '#B91C1C', '#991B1B', '#7F1D1D', '#7F1D1D'];
-    options.xaxis = { categories: mock.months, labels: { style: { colors: '#0F172A', fontWeight: 700 } } };
-    options.yaxis = { labels: { style: { colors: '#0F172A', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace" }, formatter: money } };
-    options.responsive = [
-        {
-            breakpoint: 640,
-            options: {
-                chart: { height: 340 },
-                plotOptions: { pie: { customScale: 0.88, offsetX: 0 } },
-                legend: { position: 'bottom', horizontalAlign: 'center', floating: false, offsetX: 0, offsetY: 0 },
+    options.series = [{ name: data.label, data: data.remaining }];
+    options.plotOptions = {
+        bar: {
+            borderRadius: 6,
+            borderRadiusApplication: 'end',
+            columnWidth: '46%',
+            colors: {
+                ranges: [
+                    { from: -10000000000, to: -0.01, color: '#E11D48' },
+                    { from: 0, to: 10000000000, color: '#0D9488' },
+                ],
             },
         },
-    ];
+    };
+    options.colors = ['#0D9488'];
+    options.grid = {
+        ...options.grid,
+        borderColor: '#E2E8F0',
+        strokeDashArray: 4,
+        padding: { left: 14, right: 28, top: 4, bottom: 4 },
+    };
+    options.xaxis = {
+        categories: data.months,
+        labels: { style: { colors: '#334155', fontWeight: 700, fontSize: '12px' } },
+        axisBorder: { show: true, color: '#94A3B8' },
+        axisTicks: { show: true, color: '#94A3B8' },
+    };
+    options.yaxis = {
+        labels: {
+            style: { colors: '#334155', fontWeight: 700, fontFamily: "'JetBrains Mono', monospace", fontSize: '11px' },
+            formatter: compactMoney,
+        },
+    };
     options.tooltip = {
         theme: 'light',
         shared: false,
@@ -321,10 +395,21 @@ function renderRemainingBudget() {
         fixed: { enabled: true, position: 'topRight', offsetX: -12, offsetY: 8 },
         custom({ series, seriesIndex, dataPointIndex }) {
             const val = series[seriesIndex][dataPointIndex];
-            return `<div class="px-3 py-2 text-sm text-slate-900 font-sans"><div class="font-bold text-slate-800">${mock.months[dataPointIndex]} ${remainingBudgetYear}</div><div class="mt-0.5 text-xs text-slate-700">Remaining: <span class="font-money font-black text-slate-950 text-sm">${money(val)}</span></div><div class="mt-1 text-[11px] text-slate-500">Monthly program allocation balance</div></div>`;
+            const isNeg = val < 0;
+            return `<div class="p-3 bg-white rounded-lg shadow-xl border border-slate-100 font-sans min-w-[170px]">
+                <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-1.5 mb-1.5">
+                    <span class="font-bold text-slate-800 text-xs">${data.months[dataPointIndex]} ${remainingBudgetYear}</span>
+                    ${isNeg
+                        ? '<span class="inline-flex items-center rounded bg-red-100 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-red-700">Overspent</span>'
+                        : '<span class="inline-flex items-center rounded bg-emerald-100 px-1.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-emerald-700">Healthy</span>'}
+                </div>
+                <div class="text-[11px] text-slate-500 font-medium">Monthly Allocation Balance</div>
+                <div class="text-sm font-black font-money ${isNeg ? 'text-red-600' : 'text-slate-900'}">${money(val)}</div>
+            </div>`;
         },
     };
     setSelectValue('remainingBudgetYear', remainingBudgetYear);
+    setSelectValue('remainingBudgetProgram', remainingBudgetProgram);
     render('remainingBudgetChart', options);
 }
 
@@ -622,6 +707,17 @@ function setupPeriodControls() {
         });
     }
 
+    const programSelect = document.getElementById('remainingBudgetProgram');
+    if (programSelect && programSelect.dataset.ready !== 'true') {
+        programSelect.dataset.ready = 'true';
+        programSelect.value = remainingBudgetProgram;
+        programSelect.addEventListener('change', () => {
+            remainingBudgetProgram = programSelect.value;
+            localStorage.setItem(REMAINING_PROGRAM_KEY, remainingBudgetProgram);
+            renderRemainingBudget();
+        });
+    }
+
     const suppliesYearSelect = document.getElementById('suppliesExpenseYear');
     if (suppliesYearSelect && suppliesYearSelect.dataset.ready !== 'true') {
         suppliesYearSelect.dataset.ready = 'true';
@@ -655,12 +751,39 @@ function setupPeriodControls() {
         });
     }
 }
-function renderAll() {
-    renderStats();
+
+function setupFundCategorySelect() {
+    const select = document.getElementById('fundCategorySelect');
+    if (!select || select.dataset.ready === 'true') return;
+    select.dataset.ready = 'true';
+    select.value = fundCategory;
+    select.addEventListener('change', () => {
+        fundCategory = select.value;
+        localStorage.setItem(FUND_CATEGORY_KEY, fundCategory);
+        renderStats();
+    });
+}
+
+function setupExpenseCategorySelect() {
+    const select = document.getElementById('expenseCategorySelect');
+    if (!select || select.dataset.ready === 'true') return;
+    select.dataset.ready = 'true';
+    select.value = expenseCategory;
+    select.addEventListener('change', () => {
+        expenseCategory = select.value;
+        localStorage.setItem(EXPENSE_CATEGORY_KEY, expenseCategory);
+        renderStats();
+    });
+}
+
+async function renderAll() {
+    await renderStats();
     setupSuppliesSwitcher();
     setupPeriodControls();
+    setupFundCategorySelect();
+    setupExpenseCategorySelect();
     renderCashflow();
-    renderRemainingBudget();
+    await renderRemainingBudget();
     renderSupplies();
     renderOffice();
     renderPendingDvs();
@@ -671,8 +794,10 @@ export async function init() {
     await new Promise(resolve => requestAnimationFrame(resolve));
     ApexCharts = (await import('apexcharts')).default;
     setupCashflowDropdown();
+    setupFundCategorySelect();
+    setupExpenseCategorySelect();
 
-    renderAll();
+    await renderAll();
 }
 
 window.initPageCharts = () => {

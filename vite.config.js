@@ -87,7 +87,7 @@ export default defineConfig({
         phpAndTemplateFullReload(),
     ],
     server: {
-        host: true, // `npm run dev` / `--host`: LAN + localhost
+        host: '0.0.0.0', // Allows LAN access during dev mode (all network interfaces)
         port: 5173,
         strictPort: true,
         cors: true,
@@ -95,6 +95,12 @@ export default defineConfig({
             // Do not ignore PHP at project root (some setups ignore non-JS by default patterns)
             ignored: ['**/node_modules/**', '**/dist/**'],
         },
+    },
+    preview: {
+        host: '0.0.0.0', // Exposes the production build to the entire LAN
+        port: 4173,      // Production preview port
+        strictPort: true,
+        cors: true,
     },
     css: {
         devSourcemap: false, // Avoid generating large CSS maps during local HMR.

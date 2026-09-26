@@ -12,6 +12,10 @@ let budgetCalculateDrawerInstance = null;
 let budgetCalculateCachedCsv = "";
 let monthlyDrawerInstance = null;
 let monthlyDrawerOnConfirm = null;
+let fundDownloadedDrawerInstance = null;
+let fundDownloadedDrawerOnConfirm = null;
+let fundDownloadedCalculateDrawerInstance = null;
+let fundDownloadedCalculateCachedCsv = "";
 
 function hideFloatingUI() {
     const chatbotRoot = document.getElementById('ai-chatbot-root');
@@ -73,24 +77,96 @@ function ensureAdminDrawer() {
         </tr>`).join('');
 
     const drawerHTML = `
-        <div id="adminCreateUserDrawer" class="fixed top-0 right-0 z-[80] h-auto max-h-screen w-full max-w-3xl p-4 sm:p-5 lg:p-6 overflow-y-auto bg-white shadow-[-20px_0_60px_rgba(15,23,42,0.28)] border-l border-slate-200/80 transform translate-x-full transition-transform" tabindex="-1" aria-labelledby="adminCreateUserDrawerLabel">
-            <div class="flex items-start justify-between border-b border-slate-200 pb-3 mb-4">
-                <div><p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-600 mb-1">User management</p><h2 id="adminCreateUserDrawerLabel" class="text-2xl font-bold text-slate-900 leading-tight">Add User</h2><p class="mt-1 text-sm text-slate-500">Create or delete new users for this account.</p></div>
-                <button type="button" id="adminDrawerCloseBtn" aria-controls="adminCreateUserDrawer" class="inline-flex items-center justify-center w-9 h-9 rounded-full text-slate-500 hover:text-slate-900 hover:bg-slate-100 cursor-pointer transition-colors"><svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/></svg><span class="sr-only">Close panel</span></button>
+        <div id="adminCreateUserDrawer" class="fixed top-0 right-0 z-[80] h-screen w-full max-w-3xl p-4 sm:p-6 lg:p-8 overflow-y-auto bg-white shadow-[-20px_0_60px_rgba(15,23,42,0.28)] border-l border-slate-200/80 transform translate-x-full transition-transform flex flex-col justify-between" tabindex="-1" aria-labelledby="adminCreateUserDrawerLabel">
+            <div class="flex-1 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-start justify-between border-b border-slate-200 pb-4 mb-5">
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-[0.18em] text-cyan-600 mb-1">User management</p>
+                            <h2 id="adminCreateUserDrawerLabel" class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">Add User</h2>
+                            <p class="mt-1 text-sm text-slate-500">Create or delete new users for this account.</p>
+                        </div>
+                        <button type="button" id="adminDrawerCloseBtn" aria-controls="adminCreateUserDrawer" class="inline-flex items-center justify-center w-10 h-10 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer transition-colors shrink-0 ml-3">
+                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/>
+                            </svg>
+                            <span class="sr-only">Close panel</span>
+                        </button>
+                    </div>
+                    <div id="adminDrawerValidationError" class="hidden mb-4 p-3 text-xs md:text-sm text-rose-800 bg-rose-50 rounded-lg border border-rose-200"></div>
+                    <form id="adminCreateUserDrawerForm" class="flex flex-col gap-5">
+                        <section>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                ${field('admin-full-name','full-name','Name','Enter your full name','text')}
+                                ${field('admin-username','username','Username','Enter your username | e.g., maria.santos','text')}
+                                ${field('admin-email','email','Email','e.g., maria.santos@cho.gov.ph','email')}
+                                <div>
+                                    <label for="admin-role" class="block mb-1.5 text-sm font-semibold text-slate-800">Role</label>
+                                    <select id="admin-role" name="role" required class="block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 focus:border-cyan-500 focus:ring-cyan-500">
+                                        <option value="">Select role...</option>
+                                        <option>Administrator</option>
+                                        <option>CEO</option>
+                                        <option>Manager</option>
+                                        <option>Workmate</option>
+                                        <option>Staff</option>
+                                    </select>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label for="admin-password" class="flex items-center justify-between mb-1.5 text-sm font-semibold text-slate-800">
+                                        <span>Password</span>
+                                        <button type="button" id="adminClearPassword" class="text-xs font-medium text-slate-500 hover:text-slate-900 cursor-pointer">Clear</button>
+                                    </label>
+                                    <div class="relative">
+                                        <input id="admin-password" name="password" type="password" class="block w-full rounded-lg border border-slate-300 bg-white px-3.5 py-2.5 pr-11 text-sm tracking-[0.25em] text-slate-900 focus:border-cyan-500 focus:ring-cyan-500" placeholder="Default password" value="${DEFAULT_PASSWORD}" />
+                                        <button type="button" id="adminPasswordEye" aria-label="Hold to show password" class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center text-slate-500 hover:text-cyan-600 cursor-pointer">
+                                            <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7Z"/>
+                                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                        <section>
+                            <div class="border-b border-slate-200 pb-2 mb-3">
+                                <h3 class="text-base sm:text-lg font-semibold text-slate-900">User Permissions</h3>
+                                <p class="mt-0.5 text-xs sm:text-sm text-slate-500">Select what a user can see or do in the app.</p>
+                            </div>
+                            <div class="overflow-x-auto rounded-lg border border-slate-200">
+                                <table class="w-full min-w-[560px] text-sm text-left">
+                                    <thead class="bg-slate-50 text-slate-600">
+                                        <tr>
+                                            <th class="px-3 py-2.5 font-medium">Section</th>
+                                            <th class="px-3 py-2.5 font-medium">Read</th>
+                                            <th class="px-3 py-2.5 font-medium">Edit</th>
+                                            <th class="px-3 py-2.5 font-medium">Export</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>${permissionRows}</tbody>
+                                </table>
+                            </div>
+                        </section>
+                        <section>
+                            <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3.5 py-2.5">
+                                <p class="text-xs font-semibold text-emerald-900"><strong>Default password:</strong> <span>${DEFAULT_PASSWORD}</span></p>
+                                <p class="mt-0.5 text-xs text-emerald-700">The user can change this after signing in.</p>
+                            </div>
+                        </section>
+                    </form>
+                </div>
+                <div class="mt-6 border-t border-slate-200 pt-4 pb-1 bg-white sticky bottom-0 z-10">
+                    <div class="flex items-center gap-3.5">
+                        <button type="button" id="adminDrawerCancelBtn" class="inline-flex items-center justify-center rounded-xl border border-rose-600 bg-transparent w-1/2 px-4 py-3 text-sm font-semibold text-rose-600 shadow-xs hover:bg-rose-600 hover:border-rose-600 hover:text-white active:bg-rose-700 focus:outline-none focus:ring-4 focus:ring-rose-200 cursor-pointer transition-all duration-200">Discard</button>
+                        <button type="submit" form="adminCreateUserDrawerForm" class="inline-flex items-center justify-center rounded-xl bg-cyan-600 w-1/2 px-4 py-3 text-sm font-semibold text-white shadow-xs hover:bg-cyan-700 active:bg-cyan-800 focus:outline-none focus:ring-4 focus:ring-cyan-200 cursor-pointer transition-all duration-200">
+                            <svg class="mr-1.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"/>
+                            </svg>
+                            <span>Create User</span>
+                        </button>
+                    </div>
+                </div>
             </div>
-            <div id="adminDrawerValidationError" class="hidden mb-4 p-3 text-xs md:text-sm text-rose-800 bg-rose-50 rounded-lg border border-rose-200"></div>
-            <form id="adminCreateUserDrawerForm" class="flex flex-col gap-4">
-                <section><div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    ${field('admin-full-name','full-name','Name','Enter your full name','text')}
-                    ${field('admin-username','username','Username','Enter your username | e.g., maria.santos','text')}
-                    ${field('admin-email','email','Email','e.g., maria.santos@cho.gov.ph','email')}
-                    <div><label for="admin-role" class="block mb-1.5 text-sm font-semibold text-slate-800">Role</label><select id="admin-role" name="role" required class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 focus:border-cyan-500 focus:ring-cyan-500"><option value="">Select role...</option><option>Administrator</option><option>CEO</option><option>Manager</option><option>Workmate</option><option>Staff</option></select></div>
-                    <div class="md:col-span-2"><label for="admin-password" class="flex items-center justify-between mb-1.5 text-sm font-semibold text-slate-800"><span>Password</span><button type="button" id="adminClearPassword" class="text-xs font-medium text-slate-500 hover:text-slate-900">Clear</button></label><div class="relative"><input id="admin-password" name="password" type="password" class="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 pr-11 text-sm tracking-[0.25em] text-slate-900 focus:border-cyan-500 focus:ring-cyan-500" placeholder="Default password" value="${DEFAULT_PASSWORD}" /><button type="button" id="adminPasswordEye" aria-label="Hold to show password" class="absolute inset-y-0 right-0 inline-flex w-11 items-center justify-center text-slate-500 hover:text-cyan-600"><svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.065 7-9.542 7s-8.268-2.943-9.542-7Z"/><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/></svg></button></div></div>
-                </div></section>
-                <section><div class="border-b border-slate-200 pb-2"><h3 class="text-lg font-semibold text-slate-900">User Permissions</h3><p class="mt-1 text-sm text-slate-500">Select what a user can see or do in the app.</p></div><div class="mt-3 overflow-x-auto rounded-lg border border-slate-200"><table class="w-full min-w-[560px] text-sm text-left"><thead class="bg-slate-50 text-slate-600"><tr><th class="px-3 py-2 font-medium">Section</th><th class="px-3 py-2 font-medium">Read</th><th class="px-3 py-2 font-medium">Edit</th><th class="px-3 py-2 font-medium">Export</th></tr></thead><tbody>${permissionRows}</tbody></table></div></section>
-                <section><div class="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2"><p class="text-xs font-semibold text-emerald-900"><strong>Default password:</strong> <span>${DEFAULT_PASSWORD}</span></p><p class="mt-1 text-xs text-emerald-700">The user can change this after signing in.</p></div></section>
-                <div class="sticky bottom-0 z-10 mt-3 border-t border-slate-200 bg-white pt-3"><div class="flex items-center gap-3"><button type="button" id="adminDrawerCancelBtn" class="inline-flex items-center justify-center rounded-lg border border-rose-600 bg-transparent w-1/2 px-4 py-2 text-sm font-semibold text-rose-600 shadow-sm hover:bg-rose-600 hover:border-rose-600 hover:text-white focus:outline-none focus:ring-4 focus:ring-rose-200 cursor-pointer">Discard</button><button type="submit" class="inline-flex items-center justify-center rounded-lg bg-cyan-600 w-1/2 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-cyan-700 focus:outline-none focus:ring-4 focus:ring-cyan-200 cursor-pointer"><svg class="mr-1.5 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"/></svg>Create User</button></div></div>
-            </form>
         </div>`;
     document.body.insertAdjacentHTML('beforeend', drawerHTML);
     const drawerEl = document.getElementById('adminCreateUserDrawer');
@@ -943,6 +1019,651 @@ export function showMonthlyExpensesDrawer({ year, onConfirm }) {
         accountTitleInput.focus();
         accountTitleInput.select();
     }
+}
+
+function ensureFundDownloadedDrawer() {
+    if (document.getElementById('fundDownloadedDrawer')) return;
+
+    const drawerHTML = `
+        <!-- Fund Downloaded Drawer -->
+        <div id="fundDownloadedDrawer"
+             class="fixed top-0 right-0 z-[80] h-screen w-full max-w-xl sm:max-w-2xl p-6 sm:p-8 lg:p-10 overflow-y-auto bg-white shadow-[-20px_0_60px_rgba(15,23,42,0.28)] border-l border-slate-200/80 transform translate-x-full transition-transform flex flex-col justify-between"
+             tabindex="-1"
+             aria-labelledby="fundDownloadedDrawerLabel">
+            
+            <div class="flex-1 flex flex-col justify-between">
+                <div>
+                    <!-- Header -->
+                    <div class="flex items-start justify-between border-b-dashed-medium pb-5 mb-6">
+                        <div>
+                            <h2 id="fundDownloadedDrawerLabel" class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight">Add Downloaded Fund Entry</h2>
+                            <p class="mt-1.5 text-sm sm:text-base text-slate-500 leading-relaxed">Configure category, program details, and monthly allotments for the selected fiscal year.</p>
+                        </div>
+                        <button type="button"
+                                id="fundDownloadedDrawerCloseBtn"
+                                aria-controls="fundDownloadedDrawer"
+                                class="inline-flex items-center justify-center w-10 h-10 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer transition-colors shrink-0 ml-3">
+                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/>
+                            </svg>
+                            <span class="sr-only">Close panel</span>
+                        </button>
+                    </div>
+
+                    <form id="fundDownloadedDrawerForm" class="flex flex-col gap-6">
+                        <!-- Program Category Selector -->
+                        <div class="space-y-2">
+                            <label for="funddl-category" class="block text-sm sm:text-base font-semibold text-slate-800">
+                                Program Category <span class="text-rose-500">*</span>
+                            </label>
+                            <select id="funddl-category" class="w-full px-4 py-3.5 bg-white border border-slate-300 rounded-xl text-sm sm:text-base text-slate-900 focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] outline-hidden cursor-pointer transition-all shadow-xs">
+                                <option value="mooe">MOOE (Maintenance & Other Operating Expenses)</option>
+                                <option value="sp-philhealth">PhilHealth (Primary Care / Capitation)</option>
+                                <option value="sp-ntp">SPF NTP (National TB Program)</option>
+                                <option value="sp-mcp">MCP Facility (Maternal & Child Package)</option>
+                                <option value="sp-konsulta">PhilHealth Konsulta & Diagnostic Fund</option>
+                            </select>
+                        </div>
+
+                        <!-- G/L Code with Live Dropdown Search -->
+                        <div class="space-y-2 relative">
+                            <label for="funddl-glCode" class="block text-sm sm:text-base font-semibold text-slate-800">
+                                G/L Account Code <span class="text-rose-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </span>
+                                <input id="funddl-glCode" type="text" placeholder="Type G/L code or account name (e.g. 50203990-01)..." required
+                                       autocomplete="off"
+                                       class="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-base sm:text-lg font-mono text-slate-900 focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] outline-hidden transition-all shadow-xs" />
+                                <div id="funddl-glCode-suggestions"
+                                     class="absolute z-50 left-0 right-0 top-full mt-1.5 max-h-56 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-2xl hidden divide-y divide-slate-100"></div>
+                            </div>
+                        </div>
+
+                        <!-- Fund / Program Title -->
+                        <div class="space-y-2 relative">
+                            <label for="funddl-programTitle" class="block text-sm sm:text-base font-semibold text-slate-800">
+                                Fund / Program Title <span class="text-rose-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </span>
+                                <input id="funddl-programTitle" type="text" placeholder="e.g. Supplementary Nutrition & Immunization Fund" required
+                                       autocomplete="off"
+                                       class="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-300 rounded-xl text-sm sm:text-base text-slate-900 focus:ring-4 focus:ring-[#224796]/10 focus:border-[#224796] outline-hidden transition-all shadow-xs" />
+                                <div id="funddl-programTitle-suggestions"
+                                     class="absolute z-50 left-0 right-0 top-full mt-1.5 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-2xl hidden divide-y divide-slate-100"></div>
+                            </div>
+                        </div>
+
+                        <!-- Monthly Values Grid -->
+                        <div class="space-y-2">
+                            <label class="block text-sm sm:text-base font-semibold text-slate-800">
+                                Monthly Allocations (₱)
+                            </label>
+                            <div id="funddl-months-grid" class="grid max-h-[300px] grid-cols-2 gap-3 overflow-y-auto pr-1 pb-1 sm:grid-cols-3 md:grid-cols-4 rounded-xl border border-slate-200 bg-slate-50/50 p-3.5 shadow-inner">
+                                <!-- Month inputs injected by JS -->
+                            </div>
+                        </div>
+
+                        <!-- Total Summary -->
+                        <div class="rounded-xl border border-slate-200 bg-linear-to-br from-slate-50 to-slate-100 p-4 sm:p-5 flex items-center justify-between shadow-xs">
+                            <div>
+                                <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Downloaded Fund</p>
+                                <p class="text-xs text-slate-400 mt-0.5">Sum of all monthly allocations</p>
+                            </div>
+                            <p id="funddl-total-amount" class="text-xl sm:text-2xl font-bold text-[#224796] font-money tabular-nums">₱0.00</p>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Footer actions at the bottom -->
+                <div class="mt-8 border-t-dashed-medium pt-5 pb-2 bg-white sticky bottom-0">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3.5">
+                        <button type="button"
+                                id="funddlDrawerCancelBtn"
+                                class="inline-flex items-center justify-center rounded-xl border border-rose-600 bg-transparent px-6 py-3.5 text-sm sm:text-base font-semibold text-rose-600 shadow-xs hover:bg-rose-600 hover:border-rose-600 hover:text-white active:bg-rose-700 active:border-rose-700 active:text-white focus:outline-none focus:ring-4 focus:ring-rose-200 cursor-pointer w-full sm:w-[48%] transition-all duration-200">
+                            Cancel
+                        </button>
+                        <button type="submit"
+                                form="fundDownloadedDrawerForm"
+                                id="funddlDrawerSubmitBtn"
+                                class="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-6 py-3.5 text-sm sm:text-base font-semibold text-white shadow-xs hover:bg-emerald-600 active:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 cursor-pointer w-full sm:w-[48%] transition-all duration-200">
+                            <svg class="mr-2 h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"/>
+                            </svg>
+                            <span>Save Entry</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', drawerHTML);
+
+    const drawerEl = document.getElementById('fundDownloadedDrawer');
+    const cancelBtn = document.getElementById('funddlDrawerCancelBtn');
+    const closeBtn = document.getElementById('fundDownloadedDrawerCloseBtn');
+    const form = document.getElementById('fundDownloadedDrawerForm');
+    const categorySelect = document.getElementById('funddl-category');
+    const glCodeInput = document.getElementById('funddl-glCode');
+    const suggestionsEl = document.getElementById('funddl-glCode-suggestions');
+    const programTitleInput = document.getElementById('funddl-programTitle');
+    const monthsGrid = document.getElementById('funddl-months-grid');
+    const totalAmountEl = document.getElementById('funddl-total-amount');
+
+    if (!drawerEl || !monthsGrid || !totalAmountEl) return;
+
+    const monthKeys = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+    monthsGrid.innerHTML = monthKeys.map((key, index) => `
+        <div class="flex flex-col">
+            <label class="mb-1 block text-xs font-semibold text-slate-700">${monthNames[index]}</label>
+            <input
+                id="funddl-${key}"
+                type="text" inputmode="decimal"
+                placeholder="0.00"
+                class="w-full rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs sm:text-sm font-mono text-right text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796]/20 transition-all shadow-xs"
+            />
+        </div>
+    `).join('');
+
+    fundDownloadedDrawerInstance = new Drawer(drawerEl, {
+        placement: 'right',
+        backdrop: 'dynamic',
+        backdropClasses: 'bg-slate-900/40 backdrop-blur-xs fixed inset-0 z-[70]'
+    });
+
+    const formatCurrency = (val) =>
+        new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(val || 0);
+
+    const CACHE_KEY = 'fundDownloaded_drawer_draft';
+    const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+
+    const saveDraftCache = () => {
+        const months = {};
+        monthKeys.forEach((key) => {
+            const input = document.getElementById(`funddl-${key}`);
+            months[key] = input?.value || '';
+        });
+        const draft = {
+            category: categorySelect?.value || 'mooe',
+            glCode: glCodeInput?.value || '',
+            programTitle: programTitleInput?.value || '',
+            months,
+            savedAt: Date.now()
+        };
+        try {
+            localStorage.setItem(CACHE_KEY, JSON.stringify(draft));
+        } catch {}
+    };
+
+    const restoreDraftCache = () => {
+        try {
+            const raw = localStorage.getItem(CACHE_KEY);
+            if (!raw) return false;
+            const draft = JSON.parse(raw);
+            if (!draft || !draft.savedAt || Date.now() - draft.savedAt > CACHE_TTL) {
+                localStorage.removeItem(CACHE_KEY);
+                return false;
+            }
+            if (categorySelect && draft.category) categorySelect.value = draft.category;
+            if (glCodeInput && draft.glCode) glCodeInput.value = draft.glCode;
+            if (programTitleInput && draft.programTitle) programTitleInput.value = draft.programTitle;
+            if (draft.months) {
+                monthKeys.forEach((key) => {
+                    const input = document.getElementById(`funddl-${key}`);
+                    if (input && draft.months[key]) input.value = draft.months[key];
+                });
+            }
+            updateTotal();
+            return true;
+        } catch {
+            return false;
+        }
+    };
+
+    const clearDraftCache = () => {
+        try {
+            localStorage.removeItem(CACHE_KEY);
+        } catch {}
+    };
+
+    const updateTotal = () => {
+        let total = 0;
+        monthKeys.forEach((key) => {
+            const input = document.getElementById(`funddl-${key}`);
+            if (input) total += parseFormattedNumber(input.value) || 0;
+        });
+        totalAmountEl.textContent = formatCurrency(total);
+        saveDraftCache();
+    };
+
+    monthKeys.forEach((key) => {
+        const input = document.getElementById(`funddl-${key}`);
+        if (input) {
+            attachNumberFormatter(input);
+            input.addEventListener('input', updateTotal);
+        }
+    });
+
+    categorySelect?.addEventListener('change', saveDraftCache);
+    programTitleInput?.addEventListener('input', saveDraftCache);
+
+    const getApiBasePath = () => {
+        const path = window.location.pathname || '/';
+        const idx = path.indexOf('/frontend/');
+        return idx !== -1 ? path.substring(0, idx) : path.substring(0, path.lastIndexOf('/')) || '';
+    };
+
+    const programSuggestionsEl = document.getElementById('funddl-programTitle-suggestions');
+
+    // Live search suggestions for GL Code & Account Title overlapping
+    const renderSuggestionsHtml = (data, container) => {
+        const esc = (s) => String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return data.map((item) => {
+            const gl = String(item.gl_code || '');
+            const title = String(item.account_title || '');
+            return `
+                <div class="px-4 py-3 hover:bg-slate-50 cursor-pointer text-sm text-slate-800 transition-colors flex items-center justify-between gap-3 group" data-gl="${esc(gl)}" data-title="${esc(title)}">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                        <span class="font-mono font-bold text-xs bg-slate-100 text-[#224796] px-2 py-0.5 rounded group-hover:bg-[#224796] group-hover:text-white transition-colors">${esc(gl)}</span>
+                        <span class="font-medium text-slate-900 truncate">${esc(title)}</span>
+                    </div>
+                    <svg class="w-4 h-4 text-slate-400 group-hover:text-[#224796] shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+            `;
+        }).join('');
+    };
+
+    const attachSuggestionClicks = (container) => {
+        container.querySelectorAll('[data-gl]').forEach((el) => {
+            el.addEventListener('click', () => {
+                if (glCodeInput) glCodeInput.value = el.dataset.gl || '';
+                if (programTitleInput) programTitleInput.value = el.dataset.title || '';
+                suggestionsEl?.classList.add('hidden');
+                programSuggestionsEl?.classList.add('hidden');
+                saveDraftCache();
+            });
+        });
+    };
+
+    const fetchAndShowSuggestions = (q, targetContainer) => {
+        if (!targetContainer) return;
+        const apiBase = getApiBasePath();
+        fetch(`${apiBase}/api/account-titles/search.php?q=${encodeURIComponent(q || '')}&limit=50`)
+            .then((r) => r.json())
+            .then((res) => {
+                if (!res.success || !res.data || !res.data.length) {
+                    targetContainer.classList.add('hidden');
+                    return;
+                }
+                targetContainer.innerHTML = renderSuggestionsHtml(res.data, targetContainer);
+                targetContainer.classList.remove('hidden');
+                attachSuggestionClicks(targetContainer);
+            })
+            .catch(() => {
+                targetContainer.classList.add('hidden');
+            });
+    };
+
+    let glSearchTimer = null;
+    glCodeInput?.addEventListener('input', (e) => {
+        saveDraftCache();
+        clearTimeout(glSearchTimer);
+        const query = e.target.value.trim();
+        glSearchTimer = setTimeout(() => {
+            fetchAndShowSuggestions(query, suggestionsEl);
+        }, 150);
+    });
+
+    // GL Code click: show all if clicked
+    glCodeInput?.addEventListener('click', (e) => {
+        fetchAndShowSuggestions(e.target.value.trim(), suggestionsEl);
+    });
+
+    let programSearchTimer = null;
+    programTitleInput?.addEventListener('input', (e) => {
+        saveDraftCache();
+        clearTimeout(programSearchTimer);
+        const query = e.target.value.trim();
+        programSearchTimer = setTimeout(() => {
+            fetchAndShowSuggestions(query, programSuggestionsEl);
+        }, 150);
+    });
+
+    // Program title click: immediately show all so user can scroll or search
+    programTitleInput?.addEventListener('click', (e) => {
+        fetchAndShowSuggestions(e.target.value.trim(), programSuggestionsEl);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (suggestionsEl && !suggestionsEl.contains(e.target) && e.target !== glCodeInput) {
+            suggestionsEl.classList.add('hidden');
+        }
+        if (programSuggestionsEl && !programSuggestionsEl.contains(e.target) && e.target !== programTitleInput) {
+            programSuggestionsEl.classList.add('hidden');
+        }
+    });
+
+    const hideDrawer = () => {
+        saveDraftCache();
+        suggestionsEl?.classList.add('hidden');
+        programSuggestionsEl?.classList.add('hidden');
+        fundDownloadedDrawerInstance?.hide();
+        fundDownloadedDrawerOnConfirm = null;
+        showFloatingUI();
+    };
+
+    const handleCancel = () => {
+        clearDraftCache();
+        if (form) form.reset();
+        if (totalAmountEl) totalAmountEl.textContent = '₱0.00';
+        suggestionsEl?.classList.add('hidden');
+        programSuggestionsEl?.classList.add('hidden');
+        fundDownloadedDrawerInstance?.hide();
+        fundDownloadedDrawerOnConfirm = null;
+        showFloatingUI();
+    };
+
+    cancelBtn?.addEventListener('click', handleCancel);
+    closeBtn?.addEventListener('click', hideDrawer);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') hideDrawer();
+    });
+
+    form?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const category = categorySelect?.value || 'mooe';
+        const glCode = glCodeInput?.value?.trim();
+        const programTitle = programTitleInput?.value?.trim();
+        const months = {};
+        monthKeys.forEach((key) => {
+            const input = document.getElementById(`funddl-${key}`);
+            months[key] = parseFormattedNumber(input?.value);
+        });
+
+        if (!glCode || !programTitle) return;
+
+        const confirmCallback = fundDownloadedDrawerOnConfirm;
+        if (document.activeElement && typeof document.activeElement.blur === 'function') {
+            document.activeElement.blur();
+        }
+        hideDrawer();
+        if (confirmCallback) {
+            confirmCallback({ category, glCode, programTitle, months, clearCache: clearDraftCache });
+        }
+    });
+}
+
+export function showFundDownloadedDrawer({ year, onConfirm, reopenWithData = null }) {
+    ensureFundDownloadedDrawer();
+    fundDownloadedDrawerOnConfirm = onConfirm;
+
+    const label = document.getElementById('fundDownloadedDrawerLabel');
+    if (label) label.textContent = `Add Downloaded Fund Entry (${year})`;
+
+    const form = document.getElementById('fundDownloadedDrawerForm');
+    const categorySelect = document.getElementById('funddl-category');
+    const glCodeInput = document.getElementById('funddl-glCode');
+    const programTitleInput = document.getElementById('funddl-programTitle');
+    const totalAmountEl = document.getElementById('funddl-total-amount');
+    const suggestionsEl = document.getElementById('funddl-glCode-suggestions');
+    const monthKeys = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+
+    if (form) form.reset();
+    if (suggestionsEl) suggestionsEl.classList.add('hidden');
+
+    const formatCurrency = (val) =>
+        new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(val || 0);
+
+    const CACHE_KEY = 'fundDownloaded_drawer_draft';
+    const CACHE_TTL = 15 * 60 * 1000;
+
+    if (reopenWithData) {
+        if (categorySelect && reopenWithData.category) categorySelect.value = reopenWithData.category;
+        if (glCodeInput && reopenWithData.glCode) glCodeInput.value = reopenWithData.glCode;
+        if (programTitleInput && reopenWithData.programTitle) programTitleInput.value = reopenWithData.programTitle;
+        if (reopenWithData.months) {
+            let total = 0;
+            monthKeys.forEach((key) => {
+                const input = document.getElementById(`funddl-${key}`);
+                const v = reopenWithData.months[key];
+                if (input && v !== undefined && v !== null) {
+                    input.value = v ? formatWithCommas(v) : '';
+                    total += Number(v) || 0;
+                }
+            });
+            if (totalAmountEl) totalAmountEl.textContent = formatCurrency(total);
+        }
+    } else {
+        // Restore from temporary cache if valid (< 15 mins)
+        try {
+            const raw = localStorage.getItem(CACHE_KEY);
+            if (raw) {
+                const draft = JSON.parse(raw);
+                if (draft && draft.savedAt && Date.now() - draft.savedAt <= CACHE_TTL) {
+                    if (categorySelect && draft.category) categorySelect.value = draft.category;
+                    if (glCodeInput && draft.glCode) glCodeInput.value = draft.glCode;
+                    if (programTitleInput && draft.programTitle) programTitleInput.value = draft.programTitle;
+                    if (draft.months) {
+                        let total = 0;
+                        monthKeys.forEach((key) => {
+                            const input = document.getElementById(`funddl-${key}`);
+                            if (input && draft.months[key]) {
+                                input.value = draft.months[key];
+                                total += parseFormattedNumber(draft.months[key]) || 0;
+                            }
+                        });
+                        if (totalAmountEl) totalAmountEl.textContent = formatCurrency(total);
+                    }
+                } else {
+                    localStorage.removeItem(CACHE_KEY);
+                }
+            }
+        } catch {}
+    }
+
+    hideFloatingUI();
+    fundDownloadedDrawerInstance?.show();
+}
+
+function ensureFundDownloadedCalculateDrawer() {
+    if (document.getElementById('fundDownloadedCalculateDrawer')) return;
+
+    const drawerHTML = `
+        <div id="fundDownloadedCalculateDrawer"
+             class="fixed top-0 right-0 z-[80] h-screen w-full max-w-lg p-5 sm:p-6 overflow-y-auto bg-white shadow-[-20px_0_60px_rgba(15,23,42,0.28)] border-l border-slate-200/80 transform translate-x-full transition-transform flex flex-col justify-between"
+             tabindex="-1"
+             aria-labelledby="fundDownloadedCalculateDrawerLabel">
+            
+            <div class="flex-1 flex flex-col">
+                <!-- Header -->
+                <div class="flex items-start justify-between border-b-dashed-medium pb-4 mb-4">
+                    <div>
+                        <h2 id="fundDownloadedCalculateDrawerLabel" class="text-xl sm:text-2xl font-bold text-slate-900 leading-tight">Fund Downloaded Summary</h2>
+                        <p id="fundDownloadedCalculateDrawerSubtitle" class="mt-1 text-xs sm:text-sm text-slate-500 leading-normal">Full breakdown of downloaded funds, disbursements, and zero-balance progress.</p>
+                    </div>
+                    <button type="button"
+                            id="fundDownloadedCalculateDrawerCloseBtn"
+                            aria-controls="fundDownloadedCalculateDrawer"
+                            class="inline-flex items-center justify-center w-8 h-8 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer transition-colors shrink-0 ml-2">
+                        <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/>
+                        </svg>
+                        <span class="sr-only">Close panel</span>
+                    </button>
+                </div>
+
+                <!-- Financial Calculation Items -->
+                <div class="space-y-2.5 mb-5">
+                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100">
+                        <span class="text-xs sm:text-sm font-semibold text-slate-600">Total Downloaded Funds</span>
+                        <span id="funddlCalcTotalDownloaded" class="text-sm sm:text-base font-bold text-[#224796] font-money">₱0.00</span>
+                    </div>
+                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100">
+                        <span class="text-xs sm:text-sm font-semibold text-slate-600">Total Disbursed / Spent</span>
+                        <span id="funddlCalcTotalSpent" class="text-sm sm:text-base font-bold text-slate-900 font-money">₱0.00</span>
+                    </div>
+                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100">
+                        <span class="text-xs sm:text-sm font-semibold text-slate-600">Remaining Balance (Goal: ₱0.00)</span>
+                        <span id="funddlCalcTotalRemaining" class="text-sm sm:text-base font-bold text-rose-600 font-money">₱0.00</span>
+                    </div>
+                    <div class="flex items-center justify-between py-1.5 border-b border-slate-100">
+                        <span class="text-xs sm:text-sm font-semibold text-slate-600">Fund Utilization Rate</span>
+                        <span id="funddlCalcUtilizationRate" class="text-sm sm:text-base font-bold text-emerald-600 font-money">0.00%</span>
+                    </div>
+                </div>
+
+                <!-- CSV Preview Card with Copy Action -->
+                <div class="space-y-2 flex-1 flex flex-col mb-4">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs sm:text-sm font-semibold text-slate-800">
+                            CSV Data Preview
+                        </label>
+                        <button type="button"
+                                id="funddlCalcCopyCsvBtn"
+                                class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-700 hover:bg-slate-100 hover:text-slate-900 active:bg-slate-200 cursor-pointer transition-all shadow-xs">
+                            <svg id="funddlCalcCopyIcon" class="w-3.5 h-3.5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                            <span id="funddlCalcCopyText">Copy CSV</span>
+                        </button>
+                    </div>
+
+                    <div class="relative flex-1 min-h-[160px] max-h-[220px] overflow-hidden rounded-xl border border-dashed-medium border-slate-300 bg-slate-50/80 p-3 shadow-xs">
+                        <pre id="funddlCalcCsvPreview"
+                             class="h-full w-full overflow-auto text-[11px] sm:text-xs font-mono text-slate-800 leading-relaxed pr-1"></pre>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Contains all downloaded fund entries, allocations, and spent metrics.</p>
+                </div>
+
+                <!-- Footer actions -->
+                <div class="mt-auto border-t-dashed-medium pt-4 pb-1 bg-white sticky bottom-0">
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <button type="button"
+                                id="funddlCalcCloseFooterBtn"
+                                class="inline-flex items-center justify-center rounded-xl border border-rose-600 bg-transparent px-5 py-2.5 text-xs sm:text-sm font-semibold text-rose-600 shadow-xs hover:bg-rose-600 hover:border-rose-600 hover:text-white active:bg-rose-700 active:border-rose-700 active:text-white focus:outline-none focus:ring-4 focus:ring-rose-200 cursor-pointer w-full sm:w-[48%] transition-all duration-200">
+                            Close
+                        </button>
+                        <button type="button"
+                                id="funddlCalcCopyMainBtn"
+                                class="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-5 py-2.5 text-xs sm:text-sm font-semibold text-white shadow-xs hover:bg-emerald-600 active:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 cursor-pointer w-full sm:w-[48%] transition-all duration-200">
+                            <svg class="mr-1.5 h-4 w-4 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                            </svg>
+                            Copy CSV
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', drawerHTML);
+
+    const drawerEl = document.getElementById('fundDownloadedCalculateDrawer');
+    const closeBtn = document.getElementById('fundDownloadedCalculateDrawerCloseBtn');
+    const cancelBtn = document.getElementById('funddlCalcCloseFooterBtn');
+    const copySmallBtn = document.getElementById('funddlCalcCopyCsvBtn');
+    const copyMainBtn = document.getElementById('funddlCalcCopyMainBtn');
+
+    if (!drawerEl) return;
+
+    fundDownloadedCalculateDrawerInstance = new Drawer(drawerEl, {
+        placement: 'right',
+        backdrop: 'dynamic',
+        backdropClasses: 'bg-slate-900/40 backdrop-blur-sm fixed inset-0 z-[70]'
+    });
+
+    const hideDrawer = () => {
+        fundDownloadedCalculateDrawerInstance?.hide();
+        showFloatingUI();
+    };
+
+    closeBtn?.addEventListener('click', hideDrawer);
+    cancelBtn?.addEventListener('click', hideDrawer);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && fundDownloadedCalculateDrawerInstance) hideDrawer();
+    });
+
+    const handleCopy = async () => {
+        if (!fundDownloadedCalculateCachedCsv) return;
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                await navigator.clipboard.writeText(fundDownloadedCalculateCachedCsv);
+            }
+            const copyText = document.getElementById('funddlCalcCopyText');
+            const copyIcon = document.getElementById('funddlCalcCopyIcon');
+            if (copyText) copyText.textContent = 'Copied!';
+            if (copyIcon) {
+                copyIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>';
+            }
+            setTimeout(() => {
+                if (copyText) copyText.textContent = 'Copy CSV';
+                if (copyIcon) {
+                    copyIcon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/>';
+                }
+            }, 2500);
+        } catch {
+            /* ignore */
+        }
+    };
+
+    copySmallBtn?.addEventListener('click', handleCopy);
+    copyMainBtn?.addEventListener('click', handleCopy);
+}
+
+export function showFundDownloadedCalculateDrawer({ year, csvString, totals }) {
+    ensureFundDownloadedCalculateDrawer();
+    fundDownloadedCalculateCachedCsv = csvString || '';
+
+    const formatCurrency = (val) =>
+        new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP' }).format(val || 0);
+    const formatPercent = (val) =>
+        `${new Intl.NumberFormat('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(val || 0)}%`;
+
+    const subtitle = document.getElementById('fundDownloadedCalculateDrawerSubtitle');
+    if (subtitle) {
+        subtitle.textContent = `Full breakdown of downloaded funds, disbursements, and zero-balance progress for fiscal year ${year}.`;
+    }
+
+    const totalDownloadedEl = document.getElementById('funddlCalcTotalDownloaded');
+    const totalSpentEl = document.getElementById('funddlCalcTotalSpent');
+    const totalRemainingEl = document.getElementById('funddlCalcTotalRemaining');
+    const utilizationRateEl = document.getElementById('funddlCalcUtilizationRate');
+    const csvPreviewEl = document.getElementById('funddlCalcCsvPreview');
+
+    if (totalDownloadedEl) totalDownloadedEl.textContent = formatCurrency(totals?.totalDownloaded);
+    if (totalSpentEl) totalSpentEl.textContent = formatCurrency(totals?.totalSpent);
+
+    if (totalRemainingEl) {
+        const rem = Number(totals?.totalRemaining) || 0;
+        totalRemainingEl.textContent = formatCurrency(rem);
+        totalRemainingEl.className = rem <= 0
+            ? 'text-sm sm:text-base font-bold text-emerald-600 font-money'
+            : 'text-sm sm:text-base font-bold text-rose-600 font-money';
+    }
+
+    if (utilizationRateEl) {
+        const rate = Number(totals?.utilizationRate) || 0;
+        utilizationRateEl.textContent = formatPercent(rate);
+        utilizationRateEl.className = rate >= 100
+            ? 'text-sm sm:text-base font-bold text-emerald-600 font-money'
+            : 'text-sm sm:text-base font-bold text-amber-600 font-money';
+    }
+
+    if (csvPreviewEl) {
+        csvPreviewEl.textContent = csvString || '';
+    }
+
+    hideFloatingUI();
+    fundDownloadedCalculateDrawerInstance?.show();
 }
 
 function handleAdminDrawerSubmit() {

@@ -63,6 +63,23 @@ class Vite
         if ($is_dev !== null)
             return $is_dev;
 
+        $host = $_SERVER['HTTP_HOST'] ?? 'localhost';
+        $cleanHost = explode(':', $host)[0];
+        $isHttps = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+            || (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https')
+            || (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && $_SERVER['HTTP_X_FORWARDED_SSL'] === 'on');
+
+        $isRemoteTunnel = str_contains($cleanHost, 'trycloudflare.com')
+            || str_contains($cleanHost, 'localtunnel.me')
+            || str_contains($cleanHost, 'ngrok')
+            || ($cleanHost !== 'localhost' && $cleanHost !== '127.0.0.1' && !str_starts_with($cleanHost, '192.168.') && !str_starts_with($cleanHost, '10.'));
+
+        // If accessed via tunnel or HTTPS, serve compiled assets to avoid Mixed Content / unreachable port 5173
+        if ($isRemoteTunnel || $isHttps) {
+            $is_dev = false;
+            return $is_dev;
+        }
+
         // PHP check: Always check against localhost internally
         // This bypasses firewall issues when the server checks itself
         $internal_check = 'http://127.0.0.1:' . self::vitePort();

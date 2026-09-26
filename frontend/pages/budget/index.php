@@ -70,15 +70,45 @@ requireAuth();
 
                 <div class="overflow-x-auto">
                     <table id="budgetTable" class="w-full min-w-[900px] text-left text-sm text-slate-600">
-                        <thead class="border-y border-slate-200 bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                        <thead class="bg-[#224796] text-xs uppercase tracking-wider text-white">
                             <tr>
-                                <th class="px-4 py-3 font-medium">G/L Code</th>
-                                <th class="px-4 py-3 font-medium">Account Title</th>
-                                <th class="px-4 py-3 text-right font-medium">Actual</th>
-                                <th class="px-4 py-3 text-right font-medium">Budget</th>
-                                <th class="px-4 py-3 text-right font-medium">Remaining #</th>
-                                <th class="px-4 py-3 text-right font-medium">Remaining %</th>
-                                <th class="px-4 py-3 text-center font-medium">Action</th>
+                                <th class="px-4 py-3.5 font-bold tracking-wider text-white">G/L Code</th>
+                                <th class="px-4 py-3.5 font-bold tracking-wider text-white">Account Title</th>
+                                <th class="px-4 py-3.5 text-right font-bold tracking-wider text-white">
+                                    <div class="group relative inline-flex items-center gap-1 cursor-help">
+                                        <span>Actual</span>
+                                        <svg class="h-3.5 w-3.5 text-blue-200 hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20A10 10 0 0112 2z" />
+                                        </svg>
+                                        <div class="pointer-events-none absolute top-full left-1/2 z-[100] mt-2 hidden -translate-x-1/2 w-max max-w-[180px] rounded-lg bg-slate-900/95 px-3 py-2 text-xs font-semibold text-white shadow-2xl backdrop-blur-sm group-hover:block text-center normal-case tracking-normal">
+                                            Disbursed / Paid
+                                            <div class="absolute bottom-full left-1/2 h-2 w-2 -translate-x-1/2 rotate-45 bg-slate-900"></div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="px-4 py-3.5 text-right font-bold tracking-wider text-white">
+                                    <div class="group relative inline-flex items-center gap-1 cursor-help">
+                                        <span>Budget</span>
+                                        <svg class="h-3.5 w-3.5 text-blue-200 hover:text-white transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20A10 10 0 0112 2z" />
+                                        </svg>
+                                        <div class="pointer-events-none absolute top-full right-0 z-[100] mt-2 hidden w-max max-w-[230px] rounded-lg bg-slate-900/95 px-3 py-2.5 text-xs font-semibold text-white shadow-2xl backdrop-blur-sm group-hover:block text-left normal-case tracking-normal">
+                                            <div class="flex items-center gap-1.5 mb-1">
+                                                <span class="inline-flex items-center rounded bg-blue-500/30 px-1.5 py-0.5 text-[10px] font-black uppercase tracking-wider text-blue-300 ring-1 ring-blue-400/40 rotate-3">
+                                                    MOOE
+                                                </span>
+                                                <span class="text-slate-300 text-[11px] font-medium">Budget Allocation</span>
+                                            </div>
+                                            <p class="text-slate-200 text-[11px] font-normal leading-tight">Maintenance and Other Operating Expenses</p>
+                                            <div class="absolute bottom-full right-3 h-2 w-2 rotate-45 bg-slate-900"></div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="px-4 py-3.5 text-right font-bold tracking-wider text-white">Remaining #</th>
+                                <th class="px-4 py-3.5 text-right font-bold tracking-wider text-white">Remaining %</th>
+                                <th class="px-4 py-3.5 text-center font-bold tracking-wider text-white">Action</th>
                             </tr>
                         </thead>
                         <tbody id="budgetTableBody" class="divide-y divide-slate-100 bg-white">

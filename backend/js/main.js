@@ -167,6 +167,8 @@ function initializeCurrentPageModules() {
         void loadPageModule(() => import('./budget.js'));
     } else if (pagePath.includes('/specialfund/')) {
         void loadPageModule(() => import('./specialfund.js'));
+    } else if (pagePath.includes('/fund-downloaded/')) {
+        void loadPageModule(() => import('./fund-downloaded.js'));
     } else if (pagePath.includes('/monthly-expenses/')) {
         void loadPageModule(() => import('./monthly-expenses.js'));
     } else if (pagePath.includes('/itemized/')) {

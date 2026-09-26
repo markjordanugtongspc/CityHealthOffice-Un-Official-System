@@ -51,6 +51,19 @@ try {
         $yearId = $yr['id'];
     }
 
+    // Auto-increment check_no if not provided by user
+    if (empty($checkNo)) {
+        $stmt = $pdo->prepare('
+            SELECT MAX(CAST(check_no AS UNSIGNED)) AS max_no
+            FROM itemized_transactions
+            WHERE year_id = ?
+        ');
+        $stmt->execute([$yearId]);
+        $maxRow  = $stmt->fetch();
+        $maxNo   = (int)($maxRow['max_no'] ?? 0);
+        $checkNo = str_pad($maxNo + 1, 6, '0', STR_PAD_LEFT);
+    }
+
     $stmt = $pdo->prepare('
         INSERT INTO itemized_transactions (year_id, gl_code, dv_date, dv_no, requested_by, payee, check_amount,
             particulars, check_no, file_date, mooe, spf, mcp_facility, konsulta_facility, konsulta_pf, remarks)
