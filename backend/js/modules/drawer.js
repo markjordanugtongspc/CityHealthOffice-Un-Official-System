@@ -16,6 +16,10 @@ let fundDownloadedDrawerInstance = null;
 let fundDownloadedDrawerOnConfirm = null;
 let fundDownloadedCalculateDrawerInstance = null;
 let fundDownloadedCalculateCachedCsv = "";
+let accountTitlesDrawerInstance = null;
+let accountTitlesDrawerOnConfirm = null;
+let itemizedDrawerInstance = null;
+let itemizedDrawerOnConfirm = null;
 
 function hideFloatingUI() {
     const chatbotRoot = document.getElementById('ai-chatbot-root');
@@ -845,14 +849,14 @@ function ensureMonthlyDrawer() {
                 <!-- Footer actions -->
                 <div class="mt-4 border-t border-slate-200 pt-3 pb-3 bg-white md:sticky md:bottom-0 md:left-0 md:right-0">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                        <button type="submit"
-                                class="inline-flex items-center justify-center rounded-lg border border-emerald-500 bg-white px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-semibold text-emerald-600 hover:bg-emerald-500 hover:text-white focus:outline-none focus:ring-4 focus:ring-emerald-500/30 cursor-pointer w-full sm:w-[48%] md:w-[48%]">
-                            Add Entry
-                        </button>
                         <button type="button"
                                 id="monthlyDrawerCancelBtn"
-                                class="inline-flex items-center justify-center rounded-lg border border-rose-400 bg-white px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-semibold text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 focus:outline-none focus:ring-4 focus:ring-rose-400/40 cursor-pointer w-full sm:w-[48%] md:w-[48%]">
+                                class="inline-flex items-center justify-center rounded-lg border border-rose-400 bg-white px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-semibold text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 focus:outline-none focus:ring-4 focus:ring-rose-400/40 cursor-pointer w-full sm:w-[48%] md:w-[48%] transition-all">
                             Cancel
+                        </button>
+                        <button type="submit"
+                                class="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-semibold text-white hover:bg-emerald-700 hover:border-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 cursor-pointer w-full sm:w-[48%] md:w-[48%] transition-all">
+                            Add Entry
                         </button>
                     </div>
                 </div>
@@ -1739,5 +1743,805 @@ export async function showAdminEditUserDrawer(username, onConfirm) {
     hideFloatingUI();
     adminDrawerInstance?.show();
 }
+
+// START: ensureAccountTitlesDrawer - Initializes and mounts the Account Titles Flowbite off-canvas drawer
+function ensureAccountTitlesDrawer() {
+    if (document.getElementById('accountTitlesDrawer')) return;
+
+    const drawerHTML = `
+        <div id="accountTitlesDrawer"
+             class="fixed top-0 right-0 z-[80] h-screen w-full max-w-lg p-5 sm:p-6 overflow-y-auto bg-white shadow-[-20px_0_60px_rgba(15,23,42,0.28)] border-l border-slate-200/80 transform translate-x-full transition-transform flex flex-col justify-between"
+             tabindex="-1"
+             aria-labelledby="accountTitlesDrawerLabel">
+            <div class="flex-1 flex flex-col justify-between">
+                <div>
+                    <!-- Header -->
+                    <div class="flex items-start justify-between border-b border-slate-200 pb-4 mb-5">
+                        <div>
+                            <span class="inline-flex items-center rounded-md bg-blue-50 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wider text-blue-700 border border-blue-200">
+                                Chart of Accounts
+                            </span>
+                            <h2 id="accountTitlesDrawerLabel" class="text-2xl sm:text-3xl font-bold text-slate-900 leading-tight mt-1.5">
+                                Add Account Title
+                            </h2>
+                            <p id="accountTitlesDrawerSublabel" class="mt-1 text-xs sm:text-sm text-slate-500">
+                                Enter the G/L Code and descriptive title for this account entry.
+                            </p>
+                        </div>
+                        <button type="button"
+                                id="accountTitlesDrawerCloseBtn"
+                                aria-controls="accountTitlesDrawer"
+                                class="inline-flex items-center justify-center w-10 h-10 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 cursor-pointer transition-colors shrink-0 ml-3">
+                            <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18 18 6M6 6l12 12"/>
+                            </svg>
+                            <span class="sr-only">Close panel</span>
+                        </button>
+                    </div>
+
+                    <!-- Validation Error Box -->
+                    <div id="accountTitlesDrawerValidationError" class="hidden mb-4 p-3 text-xs sm:text-sm text-rose-800 bg-rose-50 rounded-xl border border-rose-200"></div>
+
+                    <!-- Form Content -->
+                    <form id="accountTitlesDrawerForm" class="flex-1 flex flex-col justify-between">
+                        <div class="space-y-4">
+                            <input type="hidden" id="at-id" value="" />
+
+                            <!-- G/L Code Field -->
+                            <div class="space-y-1.5">
+                                <label for="at-glCode" class="block text-sm font-bold text-slate-800">
+                                    G/L Code <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text"
+                                       id="at-glCode"
+                                       placeholder="e.g. 1000 or 50201010"
+                                       required
+                                       class="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm sm:text-base font-mono font-bold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs" />
+                            </div>
+
+                            <!-- Account Title Field -->
+                            <div class="space-y-1.5">
+                                <label for="at-accountTitle" class="block text-sm font-bold text-slate-800">
+                                    Account Title <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="text"
+                                       id="at-accountTitle"
+                                       placeholder="e.g. Travelling Expenses"
+                                       required
+                                       class="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm sm:text-base font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs" />
+                            </div>
+                        </div>
+
+                        <!-- Footer Actions pinned at bottom -->
+                        <div class="mt-8 pt-5 pb-1 border-t border-slate-100 bg-white sticky bottom-0">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                <button type="button"
+                                        id="accountTitlesDrawerCancelBtn"
+                                        class="inline-flex items-center justify-center rounded-lg border border-rose-400 bg-white px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-semibold text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 focus:outline-none focus:ring-4 focus:ring-rose-400/40 cursor-pointer w-full sm:w-[48%] md:w-[48%] transition-all">
+                                    Cancel
+                                </button>
+                                <button type="submit"
+                                        id="accountTitlesDrawerSubmitBtn"
+                                        class="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-semibold text-white hover:bg-emerald-700 hover:border-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 cursor-pointer w-full sm:w-[48%] md:w-[48%] transition-all">
+                                    <svg id="accountTitlesDrawerSubmitIcon" class="mr-2 h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"/>
+                                    </svg>
+                                    <span id="accountTitlesDrawerSubmitText">Add Account</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', drawerHTML);
+
+    const drawerEl = document.getElementById('accountTitlesDrawer');
+    const cancelBtn = document.getElementById('accountTitlesDrawerCancelBtn');
+    const closeBtn = document.getElementById('accountTitlesDrawerCloseBtn');
+    const form = document.getElementById('accountTitlesDrawerForm');
+    const glCodeInput = document.getElementById('at-glCode');
+    const accountTitleInput = document.getElementById('at-accountTitle');
+    const idInput = document.getElementById('at-id');
+
+    if (!drawerEl) return;
+
+    accountTitlesDrawerInstance = new Drawer(drawerEl, {
+        placement: 'right',
+        backdrop: 'dynamic',
+        backdropClasses: 'bg-slate-900/40 backdrop-blur-sm fixed inset-0 z-[70]'
+    });
+
+    const hideDrawer = () => {
+        accountTitlesDrawerInstance?.hide();
+        showFloatingUI();
+    };
+
+    cancelBtn?.addEventListener('click', hideDrawer);
+    closeBtn?.addEventListener('click', hideDrawer);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && accountTitlesDrawerInstance?.isVisible()) {
+            hideDrawer();
+        }
+    });
+
+    const getApiBasePath = () => {
+        const path = window.location.pathname || '/';
+        const idx = path.indexOf('/frontend/');
+        return idx !== -1 ? path.substring(0, idx) : path.substring(0, path.lastIndexOf('/')) || '';
+    };
+
+    const submitBtn = document.getElementById('accountTitlesDrawerSubmitBtn');
+    const errEl = document.getElementById('accountTitlesDrawerValidationError');
+    let duplicateCheckTimer = null;
+
+    const checkDuplicate = async () => {
+        const id = idInput?.value || '';
+        const glCode = glCodeInput?.value?.trim() || '';
+        const title = accountTitleInput?.value?.trim() || '';
+
+        if (!glCode && !title) {
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.title = '';
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-auto');
+            }
+            if (errEl) errEl.classList.add('hidden');
+            return;
+        }
+
+        try {
+            const apiBase = getApiBasePath();
+            const params = new URLSearchParams({
+                gl_code: glCode,
+                account_title: title,
+                exclude_id: id
+            });
+            const res = await fetch(`${apiBase}/api/account-titles/check-duplicate.php?${params.toString()}`, {
+                credentials: 'same-origin'
+            });
+            const data = await res.json();
+
+            if (data.success && (data.glExists || data.titleExists)) {
+                let errorMsg = '';
+                if (data.glExists && data.titleExists) {
+                    errorMsg = `G/L Code "${glCode}" and Account Title "${title}" already exist in database.`;
+                } else if (data.glExists) {
+                    errorMsg = `G/L Code "${glCode}" already exists (Assigned to: "${data.conflictingGlTitle || 'another account'}").`;
+                } else {
+                    errorMsg = `Account Title "${title}" already exists in database.`;
+                }
+
+                if (errEl) {
+                    errEl.textContent = errorMsg;
+                    errEl.classList.remove('hidden');
+                }
+
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.title = errorMsg;
+                    submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            } else {
+                if (errEl && !errEl.textContent.includes('is required')) {
+                    errEl.classList.add('hidden');
+                }
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.title = '';
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }
+        } catch (error) {
+            console.warn('Error checking duplicate account title:', error);
+        }
+    };
+
+    const onInputChange = () => {
+        clearTimeout(duplicateCheckTimer);
+        duplicateCheckTimer = setTimeout(checkDuplicate, 250);
+    };
+
+    glCodeInput?.addEventListener('input', onInputChange);
+    accountTitleInput?.addEventListener('input', onInputChange);
+
+    form?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = idInput?.value || null;
+        const glCode = glCodeInput?.value?.trim();
+        const accountTitle = accountTitleInput?.value?.trim();
+
+        if (!glCode) {
+            if (errEl) {
+                errEl.textContent = 'G/L Code is required.';
+                errEl.classList.remove('hidden');
+            }
+            return;
+        }
+
+        if (!accountTitle) {
+            if (errEl) {
+                errEl.textContent = 'Account Title is required.';
+                errEl.classList.remove('hidden');
+            }
+            return;
+        }
+
+        if (submitBtn && submitBtn.disabled) {
+            return;
+        }
+
+        if (errEl) errEl.classList.add('hidden');
+
+        const callback = accountTitlesDrawerOnConfirm;
+        hideDrawer();
+        if (typeof callback === 'function') {
+            callback({
+                id: id ? Number(id) : null,
+                gl_code: glCode,
+                glCode,
+                account_title: accountTitle,
+                accountTitle
+            });
+        }
+    });
+}
+// END: ensureAccountTitlesDrawer
+
+// START: showAccountTitlesCreateDrawer - Opens Flowbite drawer for adding a new account title
+export function showAccountTitlesCreateDrawer({ onConfirm }) {
+    ensureAccountTitlesDrawer();
+    accountTitlesDrawerOnConfirm = onConfirm;
+
+    const label = document.getElementById('accountTitlesDrawerLabel');
+    if (label) label.textContent = 'Add Account Title';
+
+    const sublabel = document.getElementById('accountTitlesDrawerSublabel');
+    if (sublabel) sublabel.textContent = 'Create a new G/L code and account title in the directory.';
+
+    const idInput = document.getElementById('at-id');
+    if (idInput) idInput.value = '';
+
+    const glCodeInput = document.getElementById('at-glCode');
+    if (glCodeInput) glCodeInput.value = '';
+
+    const titleInput = document.getElementById('at-accountTitle');
+    if (titleInput) titleInput.value = '';
+
+    const submitBtn = document.getElementById('accountTitlesDrawerSubmitBtn');
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.title = '';
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    const submitText = document.getElementById('accountTitlesDrawerSubmitText');
+    if (submitText) submitText.textContent = 'Add Account';
+
+    const submitIcon = document.getElementById('accountTitlesDrawerSubmitIcon');
+    if (submitIcon) {
+        submitIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"/>`;
+    }
+
+    const errEl = document.getElementById('accountTitlesDrawerValidationError');
+    if (errEl) errEl.classList.add('hidden');
+
+    hideFloatingUI();
+    accountTitlesDrawerInstance?.show();
+
+    if (glCodeInput) {
+        setTimeout(() => {
+            glCodeInput.focus();
+        }, 100);
+    }
+}
+// END: showAccountTitlesCreateDrawer
+
+// START: showAccountTitlesEditDrawer - Opens Flowbite drawer for editing an existing account title
+export function showAccountTitlesEditDrawer({ accountTitle, onConfirm }) {
+    ensureAccountTitlesDrawer();
+    accountTitlesDrawerOnConfirm = onConfirm;
+
+    const label = document.getElementById('accountTitlesDrawerLabel');
+    if (label) label.textContent = 'Edit Account Title';
+
+    const sublabel = document.getElementById('accountTitlesDrawerSublabel');
+    if (sublabel) sublabel.textContent = 'Update the G/L code or account title details.';
+
+    const idInput = document.getElementById('at-id');
+    if (idInput) idInput.value = accountTitle?.id || '';
+
+    const glCodeInput = document.getElementById('at-glCode');
+    if (glCodeInput) glCodeInput.value = accountTitle?.gl_code || '';
+
+    const titleInput = document.getElementById('at-accountTitle');
+    if (titleInput) titleInput.value = accountTitle?.account_title || '';
+
+    const submitBtn = document.getElementById('accountTitlesDrawerSubmitBtn');
+    if (submitBtn) {
+        submitBtn.disabled = false;
+        submitBtn.title = '';
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+
+    const submitText = document.getElementById('accountTitlesDrawerSubmitText');
+    if (submitText) submitText.textContent = 'Save Changes';
+
+    const submitIcon = document.getElementById('accountTitlesDrawerSubmitIcon');
+    if (submitIcon) {
+        submitIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>`;
+    }
+
+    const errEl = document.getElementById('accountTitlesDrawerValidationError');
+    if (errEl) errEl.classList.add('hidden');
+
+    hideFloatingUI();
+    accountTitlesDrawerInstance?.show();
+
+    if (glCodeInput) {
+        setTimeout(() => {
+            glCodeInput.focus();
+            glCodeInput.select();
+        }, 100);
+    }
+}
+// END: showAccountTitlesEditDrawer
+
+// START: ensureItemizedDrawer - Injects and initializes Flowbite drawer for itemized daily transactions
+function ensureItemizedDrawer() {
+    if (document.getElementById('itemizedExpensesDrawer')) return;
+
+    const drawerHTML = `
+        <div id="itemizedExpensesDrawer"
+             class="fixed top-0 right-0 z-[80] h-screen p-4 sm:p-6 overflow-y-auto transition-transform translate-x-full bg-white w-full sm:w-[540px] md:w-[600px] shadow-2xl flex flex-col justify-between"
+             tabindex="-1"
+             aria-labelledby="itemizedDrawerLabel">
+            <div>
+                <!-- Header -->
+                <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                    <div>
+                        <h5 id="itemizedDrawerLabel" class="inline-flex items-center text-lg sm:text-xl font-bold uppercase tracking-tight text-slate-900">
+                            Record Daily Expense
+                        </h5>
+                        <p id="itemizedDrawerSublabel" class="text-xs sm:text-sm text-slate-500 mt-0.5">
+                            Track daily personalized expenditure, payee info, and account allocation.
+                        </p>
+                    </div>
+                    <button type="button"
+                            id="itemizedDrawerCloseBtn"
+                            class="text-slate-400 bg-transparent hover:bg-slate-200 hover:text-slate-900 rounded-lg text-sm w-8 h-8 inline-flex items-center justify-center cursor-pointer transition-colors"
+                            aria-label="Close drawer">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 14 14" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Form Content -->
+                <div class="py-4">
+                    <div id="itemizedDrawerValidationError" class="hidden mb-4 p-3 text-xs sm:text-sm text-rose-800 bg-rose-50 rounded-xl border border-rose-200"></div>
+
+                    <form id="itemizedExpensesDrawerForm" class="space-y-4">
+                        <input type="hidden" id="itemized-drawer-id" value="" />
+
+                        <!-- Date Field -->
+                        <div class="space-y-1.5">
+                            <label for="itemized-drawer-date" class="block text-sm font-bold text-slate-800">
+                                Transaction Date <span class="text-rose-500">*</span>
+                            </label>
+                            <input type="date"
+                                   id="itemized-drawer-date"
+                                   required
+                                   class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs cursor-pointer" />
+                        </div>
+
+                        <!-- Payee Field with New Payee detection badge -->
+                        <div class="space-y-1.5">
+                            <div class="flex items-center justify-between">
+                                <label for="itemized-drawer-payee" class="block text-sm font-bold text-slate-800">
+                                    Individual / Payee <span class="text-rose-500">*</span>
+                                </label>
+                                <span id="itemizedDrawerPayeeBadge" class="hidden inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                                    New Individual (Will be added)
+                                </span>
+                            </div>
+                            <div class="relative">
+                                <input type="text"
+                                       id="itemized-drawer-payee"
+                                       list="itemized-payee-datalist"
+                                       placeholder="Type or select individual payee..."
+                                       autocomplete="off"
+                                       required
+                                       class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs" />
+                                <datalist id="itemized-payee-datalist"></datalist>
+                            </div>
+                        </div>
+
+                        <!-- Account Title / G/L Code -->
+                        <div class="space-y-1.5">
+                            <label for="itemized-drawer-account" class="block text-sm font-bold text-slate-800">
+                                Account Title & G/L Code <span class="text-rose-500">*</span>
+                            </label>
+                            <select id="itemized-drawer-account"
+                                    required
+                                    class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs cursor-pointer">
+                                <option value="" disabled selected>Select Account Allocation...</option>
+                            </select>
+                        </div>
+
+                        <!-- DV No. and Check No. in 2-column grid -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="space-y-1.5">
+                                <label for="itemized-drawer-dvNo" class="block text-sm font-bold text-slate-800">
+                                    DV No.
+                                </label>
+                                <input type="text"
+                                       id="itemized-drawer-dvNo"
+                                       placeholder="e.g. 2026-10-001 (auto)"
+                                       class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-sm font-mono font-medium text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs" />
+                            </div>
+                            <div class="space-y-1.5">
+                                <label for="itemized-drawer-checkNo" class="block text-sm font-bold text-slate-800">
+                                    Check / Ref No.
+                                </label>
+                                <input type="text"
+                                       id="itemized-drawer-checkNo"
+                                       placeholder="e.g. 000123"
+                                       class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-sm font-mono font-medium text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs" />
+                            </div>
+                        </div>
+
+                        <!-- Amount Field -->
+                        <div class="space-y-1.5">
+                            <label for="itemized-drawer-amount" class="block text-sm font-bold text-slate-800">
+                                Total Daily Amount (₱) <span class="text-rose-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-base font-bold text-slate-500">₱</span>
+                                <input type="text"
+                                       id="itemized-drawer-amount"
+                                       inputmode="decimal"
+                                       placeholder="0.00"
+                                       required
+                                       class="w-full pl-8 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-base font-mono font-bold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs tabular-nums" />
+                            </div>
+                        </div>
+
+                        <!-- Particulars / Description -->
+                        <div class="space-y-1.5">
+                            <label for="itemized-drawer-description" class="block text-sm font-bold text-slate-800">
+                                Description / Particulars
+                            </label>
+                            <textarea id="itemized-drawer-description"
+                                      rows="2"
+                                      placeholder="Daily expense details, purpose, or voucher remarks..."
+                                      class="w-full px-3.5 py-2 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs resize-none"></textarea>
+                        </div>
+
+                        <!-- Footer Actions pinned at bottom -->
+                        <div class="mt-6 pt-4 pb-2 border-t border-slate-200 bg-white sticky bottom-0">
+                            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                <button type="button"
+                                        id="itemizedDrawerCancelBtn"
+                                        class="inline-flex items-center justify-center rounded-lg border border-rose-400 bg-white px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-semibold text-rose-500 hover:bg-rose-500 hover:text-white hover:border-rose-500 focus:outline-none focus:ring-4 focus:ring-rose-400/40 cursor-pointer w-full sm:w-[48%] md:w-[48%] transition-all">
+                                    Cancel
+                                </button>
+                                <button type="submit"
+                                        id="itemizedDrawerSubmitBtn"
+                                        class="inline-flex items-center justify-center rounded-lg border border-emerald-600 bg-emerald-600 px-5 md:px-8 py-2.5 md:py-3 text-sm md:text-base font-semibold text-white hover:bg-emerald-700 hover:border-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-500/30 cursor-pointer w-full sm:w-[48%] md:w-[48%] transition-all">
+                                    <svg id="itemizedDrawerSubmitIcon" class="mr-2 h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"/>
+                                    </svg>
+                                    <span id="itemizedDrawerSubmitText">Record Expense</span>
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', drawerHTML);
+
+    const drawerEl = document.getElementById('itemizedExpensesDrawer');
+    const cancelBtn = document.getElementById('itemizedDrawerCancelBtn');
+    const closeBtn = document.getElementById('itemizedDrawerCloseBtn');
+    const form = document.getElementById('itemizedExpensesDrawerForm');
+    const payeeInput = document.getElementById('itemized-drawer-payee');
+    const payeeBadge = document.getElementById('itemizedDrawerPayeeBadge');
+    const amountInput = document.getElementById('itemized-drawer-amount');
+
+    if (!drawerEl) return;
+
+    itemizedDrawerInstance = new Drawer(drawerEl, {
+        placement: 'right',
+        backdrop: 'dynamic',
+        backdropClasses: 'bg-slate-900/40 backdrop-blur-sm fixed inset-0 z-[70]'
+    });
+
+    const hideDrawer = () => {
+        itemizedDrawerInstance?.hide();
+        itemizedDrawerOnConfirm = null;
+        showFloatingUI();
+    };
+
+    cancelBtn?.addEventListener('click', hideDrawer);
+    closeBtn?.addEventListener('click', hideDrawer);
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && itemizedDrawerInstance?.isVisible()) {
+            hideDrawer();
+        }
+    });
+
+    if (amountInput) {
+        attachNumberFormatter(amountInput);
+    }
+
+    // Dynamic payee detection against datalist options
+    if (payeeInput && payeeBadge) {
+        payeeInput.addEventListener('input', () => {
+            const val = payeeInput.value.trim().toLowerCase();
+            const datalist = document.getElementById('itemized-payee-datalist');
+            if (!val) {
+                payeeBadge.classList.add('hidden');
+                return;
+            }
+            let found = false;
+            if (datalist) {
+                for (const opt of datalist.options) {
+                    if (opt.value.trim().toLowerCase() === val) {
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            if (!found) {
+                payeeBadge.classList.remove('hidden');
+            } else {
+                payeeBadge.classList.add('hidden');
+            }
+        });
+    }
+
+    form?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = document.getElementById('itemized-drawer-id')?.value || null;
+        const date = document.getElementById('itemized-drawer-date')?.value || '';
+        const payee = payeeInput?.value?.trim() || '';
+        const accountSelect = document.getElementById('itemized-drawer-account');
+        const selectedOpt = accountSelect?.options[accountSelect.selectedIndex];
+        const accountId = selectedOpt?.value ? Number(selectedOpt.value) : null;
+        const glCode = selectedOpt?.getAttribute('data-gl') || '';
+        const accountTitle = selectedOpt?.getAttribute('data-title') || '';
+        const dvNo = document.getElementById('itemized-drawer-dvNo')?.value?.trim() || '';
+        const checkNo = document.getElementById('itemized-drawer-checkNo')?.value?.trim() || '';
+        const rawAmount = parseFormattedNumber(amountInput?.value);
+        const description = document.getElementById('itemized-drawer-description')?.value?.trim() || '';
+        const errEl = document.getElementById('itemizedDrawerValidationError');
+
+        if (!date) {
+            if (errEl) { errEl.textContent = 'Date is required.'; errEl.classList.remove('hidden'); }
+            return;
+        }
+        if (!payee) {
+            if (errEl) { errEl.textContent = 'Payee / Individual name is required.'; errEl.classList.remove('hidden'); }
+            return;
+        }
+        if (!accountId) {
+            if (errEl) { errEl.textContent = 'Please select an Account Allocation.'; errEl.classList.remove('hidden'); }
+            return;
+        }
+        if (isNaN(rawAmount) || rawAmount <= 0) {
+            if (errEl) { errEl.textContent = 'Amount must be greater than ₱0.00.'; errEl.classList.remove('hidden'); }
+            return;
+        }
+
+        if (errEl) errEl.classList.add('hidden');
+
+        const callback = itemizedDrawerOnConfirm;
+        hideDrawer();
+        if (typeof callback === 'function') {
+            callback({
+                id: id ? Number(id) : null,
+                date,
+                payee,
+                accountId,
+                account_id: accountId,
+                glCode,
+                gl_code: glCode,
+                accountTitle,
+                account_title: accountTitle,
+                dvNo,
+                dv_no: dvNo,
+                checkNo,
+                check_no: checkNo,
+                amount: rawAmount,
+                checkAmount: rawAmount,
+                check_amount: rawAmount,
+                description,
+                particulars: description
+            });
+        }
+    });
+}
+// END: ensureItemizedDrawer
+
+// START: populateItemizedDrawerAccountsAndPayees - Loads accounts and payees into itemized drawer fields
+async function populateItemizedDrawerAccountsAndPayees() {
+    ensureItemizedDrawer();
+    const accountSelect = document.getElementById('itemized-drawer-account');
+    const datalist = document.getElementById('itemized-payee-datalist');
+    const path = window.location.pathname || '';
+    const idx = path.indexOf('/frontend/');
+    const apiBase = idx !== -1 ? path.substring(0, idx) : path.substring(0, path.lastIndexOf('/')) || '';
+
+    try {
+        const [accRes, payeeRes] = await Promise.all([
+            fetch(`${apiBase}/api/account-titles/list.php`, { credentials: 'same-origin' }),
+            fetch(`${apiBase}/api/itemized/payees.php`, { credentials: 'same-origin' })
+        ]);
+        const accData = await accRes.json();
+        const payeeData = await payeeRes.json();
+
+        if (accountSelect && accData.success && Array.isArray(accData.data)) {
+            const currentVal = accountSelect.value;
+            accountSelect.innerHTML = '<option value="" disabled selected>Select Account Allocation...</option>' +
+                accData.data.map(a => `
+                    <option value="${a.id}" data-gl="${a.gl_code}" data-title="${a.account_title}">
+                        [${a.gl_code}] ${a.account_title}
+                    </option>
+                `).join('');
+            if (currentVal) accountSelect.value = currentVal;
+        }
+
+        if (datalist && payeeData.success && Array.isArray(payeeData.payees)) {
+            datalist.innerHTML = payeeData.payees.map(p => `<option value="${p}">`).join('');
+        }
+    } catch (e) {
+        console.warn('Could not load itemized drawer accounts/payees:', e);
+    }
+}
+// END: populateItemizedDrawerAccountsAndPayees
+
+// START: showItemizedCreateDrawer - Opens Flowbite drawer for recording a daily transaction
+export async function showItemizedCreateDrawer({ date, payee, onConfirm } = {}) {
+    ensureItemizedDrawer();
+    itemizedDrawerOnConfirm = onConfirm;
+
+    const label = document.getElementById('itemizedDrawerLabel');
+    if (label) label.textContent = 'Record Daily Expense';
+
+    const sublabel = document.getElementById('itemizedDrawerSublabel');
+    if (sublabel) sublabel.textContent = 'Record everyday daily expenditure by individual payee.';
+
+    const idInput = document.getElementById('itemized-drawer-id');
+    if (idInput) idInput.value = '';
+
+    const dateInput = document.getElementById('itemized-drawer-date');
+    if (dateInput) dateInput.value = date || new Date().toISOString().split('T')[0];
+
+    const payeeInput = document.getElementById('itemized-drawer-payee');
+    if (payeeInput) payeeInput.value = payee || '';
+
+    const payeeBadge = document.getElementById('itemizedDrawerPayeeBadge');
+    if (payeeBadge) payeeBadge.classList.add('hidden');
+
+    const dvInput = document.getElementById('itemized-drawer-dvNo');
+    if (dvInput) dvInput.value = '';
+
+    const checkInput = document.getElementById('itemized-drawer-checkNo');
+    if (checkInput) checkInput.value = '';
+
+    const amountInput = document.getElementById('itemized-drawer-amount');
+    if (amountInput) amountInput.value = '';
+
+    const descInput = document.getElementById('itemized-drawer-description');
+    if (descInput) descInput.value = '';
+
+    const submitText = document.getElementById('itemizedDrawerSubmitText');
+    if (submitText) submitText.textContent = 'Record Expense';
+
+    const submitIcon = document.getElementById('itemizedDrawerSubmitIcon');
+    if (submitIcon) {
+        submitIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5"/>`;
+    }
+
+    const errEl = document.getElementById('itemizedDrawerValidationError');
+    if (errEl) errEl.classList.add('hidden');
+
+    await populateItemizedDrawerAccountsAndPayees();
+
+    hideFloatingUI();
+    itemizedDrawerInstance?.show();
+
+    setTimeout(() => {
+        if (!payee) payeeInput?.focus();
+        else amountInput?.focus();
+    }, 100);
+}
+// END: showItemizedCreateDrawer
+
+// START: showItemizedEditDrawer - Opens Flowbite drawer for editing an existing daily transaction
+export async function showItemizedEditDrawer({ transaction, onConfirm } = {}) {
+    ensureItemizedDrawer();
+    itemizedDrawerOnConfirm = onConfirm;
+
+    const label = document.getElementById('itemizedDrawerLabel');
+    if (label) label.textContent = 'Edit Daily Expense';
+
+    const sublabel = document.getElementById('itemizedDrawerSublabel');
+    if (sublabel) sublabel.textContent = 'Modify daily individual transaction details.';
+
+    const idInput = document.getElementById('itemized-drawer-id');
+    if (idInput) idInput.value = transaction?.id || '';
+
+    const dateInput = document.getElementById('itemized-drawer-date');
+    if (dateInput) dateInput.value = transaction?.date || transaction?.dvDate || new Date().toISOString().split('T')[0];
+
+    const payeeInput = document.getElementById('itemized-drawer-payee');
+    if (payeeInput) payeeInput.value = transaction?.payee || '';
+
+    const payeeBadge = document.getElementById('itemizedDrawerPayeeBadge');
+    if (payeeBadge) payeeBadge.classList.add('hidden');
+
+    const dvInput = document.getElementById('itemized-drawer-dvNo');
+    if (dvInput) dvInput.value = transaction?.dvNo || transaction?.dv_no || '';
+
+    const checkInput = document.getElementById('itemized-drawer-checkNo');
+    if (checkInput) checkInput.value = transaction?.checkNo || transaction?.check_no || '';
+
+    const amountInput = document.getElementById('itemized-drawer-amount');
+    if (amountInput) {
+        const val = Number(transaction?.amount ?? transaction?.checkAmount ?? 0);
+        amountInput.value = isNaN(val) ? '' : formatWithCommas(val.toFixed(2));
+    }
+
+    const descInput = document.getElementById('itemized-drawer-description');
+    if (descInput) descInput.value = transaction?.description || transaction?.particulars || '';
+
+    const submitText = document.getElementById('itemizedDrawerSubmitText');
+    if (submitText) submitText.textContent = 'Save Changes';
+
+    const submitIcon = document.getElementById('itemizedDrawerSubmitIcon');
+    if (submitIcon) {
+        submitIcon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>`;
+    }
+
+    const errEl = document.getElementById('itemizedDrawerValidationError');
+    if (errEl) errEl.classList.add('hidden');
+
+    await populateItemizedDrawerAccountsAndPayees();
+
+    // Select matching account in dropdown
+    const accountSelect = document.getElementById('itemized-drawer-account');
+    if (accountSelect && transaction) {
+        const targetId = transaction.accountId || transaction.account_id;
+        const targetGl = transaction.glCode || transaction.gl_code;
+        if (targetId) {
+            accountSelect.value = String(targetId);
+        } else if (targetGl) {
+            for (const opt of accountSelect.options) {
+                if (opt.getAttribute('data-gl') === targetGl) {
+                    accountSelect.value = opt.value;
+                    break;
+                }
+            }
+        }
+    }
+
+    hideFloatingUI();
+    itemizedDrawerInstance?.show();
+
+    setTimeout(() => {
+        amountInput?.focus();
+    }, 100);
+}
+// END: showItemizedEditDrawer
+
+
 
 

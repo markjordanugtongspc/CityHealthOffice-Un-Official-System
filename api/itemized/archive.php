@@ -1,11 +1,12 @@
 <?php
+// START: archive.php - Deletes/archives transaction from transactions table
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../config/session.php';
 
 requireAuth(true);
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'PATCH') {
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' && $_SERVER['REQUEST_METHOD'] !== 'PATCH' && $_SERVER['REQUEST_METHOD'] !== 'DELETE') {
     http_response_code(405);
     echo json_encode(['success' => false, 'message' => 'Method not allowed']);
     exit;
@@ -19,11 +20,12 @@ try {
     $id = (int)($input['id'] ?? $_GET['id'] ?? 0);
     if (!$id) throw new Exception('Transaction ID is required');
 
-    $stmt = $pdo->prepare('UPDATE itemized_transactions SET archived = 1 WHERE id = ?');
+    $stmt = $pdo->prepare('DELETE FROM transactions WHERE id = ?');
     $stmt->execute([$id]);
 
-    echo json_encode(['success' => true, 'message' => 'Transaction archived']);
+    echo json_encode(['success' => true, 'message' => 'Transaction removed successfully.']);
 } catch (Exception $e) {
     http_response_code(400);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
+// END: archive.php

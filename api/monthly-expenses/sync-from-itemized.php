@@ -1,4 +1,5 @@
 <?php
+// START: sync-from-itemized - Synchronizes transactions table into monthly_expenses_entries
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../config/session.php';
@@ -18,15 +19,6 @@ try {
     $input = json_decode(file_get_contents('php://input'), true) ?? [];
     $year = (int)($input['year'] ?? $_GET['year'] ?? date('Y'));
 
-    $stmt = $pdo->prepare('SELECT id FROM itemized_years WHERE year = ?');
-    $stmt->execute([$year]);
-    $itYr = $stmt->fetch();
-    if (!$itYr) {
-        echo json_encode(['success' => true, 'message' => 'No itemized data for year', 'updated' => 0]);
-        exit;
-    }
-    $itemizedYearId = $itYr['id'];
-
     $stmt = $pdo->prepare('SELECT id FROM monthly_expenses_years WHERE year = ?');
     $stmt->execute([$year]);
     $meYr = $stmt->fetch();
@@ -37,60 +29,58 @@ try {
         $monthlyYearId = $meYr['id'];
     }
 
-    $monthNumToCol = [1=>'january',2=>'february',3=>'march',4=>'april',5=>'may',6=>'june',7=>'july',8=>'august',9=>'september',10=>'october',11=>'november',12=>'december'];
+    $monthNumToCol = [
+        1=>'january', 2=>'february', 3=>'march', 4=>'april',
+        5=>'may', 6=>'june', 7=>'july', 8=>'august',
+        9=>'september', 10=>'october', 11=>'november', 12=>'december'
+    ];
     $allCols = array_values($monthNumToCol);
 
+    // Query transactions for the specified year
     $stmt = $pdo->prepare('
-        SELECT gl_code, dv_no, dv_date, check_amount
-        FROM itemized_transactions
-        WHERE year_id = ? AND archived = 0
+        SELECT t.account_id, a.gl_code, a.account_title, t.date, t.amount
+        FROM transactions t
+        INNER JOIN accounts a ON t.account_id = a.id
+        WHERE t.year = ?
     ');
-    $stmt->execute([$itemizedYearId]);
+    $stmt->execute([$year]);
     $agg = [];
+    $accountTitles = [];
+
     while ($row = $stmt->fetch()) {
         $gl = $row['gl_code'];
-        $amt = (float)$row['check_amount'];
-        $dvNo = trim($row['dv_no'] ?? '');
-        $dvDate = $row['dv_date'] ?? null;
+        $amt = (float)$row['amount'];
+        $accountTitles[$gl] = $row['account_title'];
+        $month = (int)date('n', strtotime($row['date']));
+        if ($month < 1 || $month > 12) $month = 1;
 
-        $m = null;
-        if (preg_match('/(\d{4})-(\d{2})/', $dvNo, $match)) {
-            $dvYr = (int)$match[1];
-            $dvMo = (int)$match[2];
-            if ($dvYr === $year && $dvMo >= 1 && $dvMo <= 12) {
-                $m = $dvMo;
-            }
+        if (!isset($agg[$gl])) {
+            $agg[$gl] = array_fill_keys($allCols, 0);
         }
-        if ($m === null && $dvDate) {
-            $m = (int)date('n', strtotime($dvDate . ' 12:00:00'));
-        }
-        if ($m === null || $m < 1 || $m > 12) $m = (int)date('n');
-
-        if (!isset($agg[$gl])) $agg[$gl] = array_fill_keys($allCols, 0);
-        if (isset($monthNumToCol[$m])) $agg[$gl][$monthNumToCol[$m]] += $amt;
+        $col = $monthNumToCol[$month];
+        $agg[$gl][$col] += $amt;
     }
 
-    $stmtAt = $pdo->prepare('SELECT account_title FROM account_titles WHERE gl_code = ?');
     $updated = 0;
     foreach ($agg as $glCode => $months) {
-        $stmtAt->execute([$glCode]);
-        $at = $stmtAt->fetch();
-        $accountTitle = $at['account_title'] ?? $glCode;
+        $accountTitle = $accountTitles[$glCode] ?? $glCode;
+        $total = array_sum($months);
 
         $stmt = $pdo->prepare('SELECT id FROM monthly_expenses_entries WHERE year_id = ? AND gl_code = ?');
         $stmt->execute([$monthlyYearId, $glCode]);
         $existing = $stmt->fetch();
-        $total = array_sum($months);
 
         if ($existing) {
             $stmt = $pdo->prepare('
                 UPDATE monthly_expenses_entries SET
+                    account_title=?,
                     january=?, february=?, march=?, april=?, may=?, june=?,
                     july=?, august=?, september=?, october=?, november=?, december=?,
                     total=?
                 WHERE year_id=? AND gl_code=?
             ');
             $stmt->execute([
+                $accountTitle,
                 $months['january'], $months['february'], $months['march'], $months['april'], $months['may'], $months['june'],
                 $months['july'], $months['august'], $months['september'], $months['october'], $months['november'], $months['december'],
                 $total, $monthlyYearId, $glCode,
@@ -110,36 +100,13 @@ try {
         $updated++;
     }
 
-    // === AUTO-CHAIN: Push monthly totals to budget_entries.actual ===
-    $stmtBudgetYr = $pdo->prepare('SELECT id FROM budget_years WHERE year = ?');
-    $stmtBudgetYr->execute([$year]);
-    $budgetYr = $stmtBudgetYr->fetch();
-    if ($budgetYr) {
-        $budgetYearId = $budgetYr['id'];
-        $stmtMTotals = $pdo->prepare('SELECT gl_code, total FROM monthly_expenses_entries WHERE year_id = ?');
-        $stmtMTotals->execute([$monthlyYearId]);
-        $mTotals = $stmtMTotals->fetchAll(PDO::FETCH_KEY_PAIR);
-        foreach ($mTotals as $glCode => $total) {
-            $actual = (float)$total;
-            $stmtBe = $pdo->prepare('SELECT id, budget FROM budget_entries WHERE year_id = ? AND gl_code = ?');
-            $stmtBe->execute([$budgetYearId, $glCode]);
-            $be = $stmtBe->fetch();
-            if ($be) {
-                $budget = (float)$be['budget'];
-                $remaining = $budget - $actual;
-                $remainingPct = $budget != 0 ? ($remaining / $budget) * 100 : 0;
-                $pdo->prepare('
-                    UPDATE budget_entries
-                    SET actual=?, remaining_amount=?, remaining_percent=?, updated_at=NOW()
-                    WHERE id=?
-                ')->execute([$actual, $remaining, $remainingPct, $be['id']]);
-            }
-        }
-    }
-    // === END AUTO-CHAIN ===
-
-    echo json_encode(['success' => true, 'message' => 'Sync completed', 'updated' => $updated]);
+    echo json_encode([
+        'success' => true,
+        'message' => 'Monthly expenses synchronized successfully',
+        'updated' => $updated
+    ]);
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
+// END: sync-from-itemized

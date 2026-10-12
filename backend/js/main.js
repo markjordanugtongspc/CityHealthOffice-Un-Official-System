@@ -180,6 +180,8 @@ function initializeCurrentPageModules() {
         void loadPageModule(() => import('./settings.js'));
     } else if (pagePath.includes('/admin/')) {
         void loadPageModule(() => import('./admin.js'));
+    } else if (pagePath.includes('/account-titles/')) {
+        void loadPageModule(() => import('./modules/account-titles.js'));
     }
 
     void loadPageModule(() => import('./modules/scroll-to-top.js'));

@@ -216,6 +216,22 @@ require_once __DIR__ . '/../../config/image_helper.php';
                     <span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">User Management</span>
                 </a>
             </li>
+
+            <!-- Account Titles (Only for Administrator, CEO, Manager) -->
+            <li id="accountTitlesNavItem" class="hidden">
+                <a href="../account-titles/"
+                    class="nav-item nav-link flex items-center gap-3 px-4 py-2.5 rounded-xl text-white/70 hover:text-white hover:bg-white/10 active:bg-white/15 transition-all duration-300 group relative w-full cursor-pointer touch-manipulation border-b border-transparent hover:border-white/5 lg:group-[.sidebar-collapsed]/body:!justify-center lg:group-[.sidebar-collapsed]/body:!px-0! lg:group-[.sidebar-collapsed]/body:!w-13! lg:group-[.sidebar-collapsed]/body:!h-13! lg:group-[.sidebar-collapsed]/body:!mx-auto! lg:group-[.sidebar-collapsed]/body:!gap-0">
+                    <!-- Static SVG Icon -->
+                    <svg class="w-6 h-6 shrink-0 transition-all duration-300 group-hover:hidden group-active:hidden group-[.nav-item-active]:hidden lg:group-[.sidebar-collapsed]/body:!w-7 lg:group-[.sidebar-collapsed]/body:!h-7 lg:group-[.sidebar-collapsed]/body:!m-0 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 9h6m-6 3h6m-6 3h6M6.996 9h.01m-.01 3h.01m-.01 3h.01M4 5h16a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"/>
+                    </svg>
+                    <!-- Dynamic / Hover+Click SVG Icon -->
+                    <svg class="hidden w-6 h-6 shrink-0 transition-all duration-300 group-hover:block group-active:block group-[.nav-item-active]:block lg:group-[.sidebar-collapsed]/body:!w-7 lg:group-[.sidebar-collapsed]/body:!h-7 lg:group-[.sidebar-collapsed]/body:!m-0 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6Zm4.996 2a1 1 0 0 0 0 2h.01a1 1 0 1 0 0-2h-.01ZM11 8a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-6Zm-4.004 3a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2h-.01ZM11 11a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-6Zm-4.004 3a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2h-.01ZM11 14a1 1 0 1 0 0 2h6a1 1 0 1 0 0-2h-6Z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="sidebar-text text-[14px] font-bold whitespace-nowrap flex-1 text-left nav-text tracking-wide group-hover:pl-0.5 transition-all duration-300 lg:group-[.sidebar-collapsed]/body:!hidden">Account Titles</span>
+                </a>
+            </li>
         </ul>
     </nav>
 

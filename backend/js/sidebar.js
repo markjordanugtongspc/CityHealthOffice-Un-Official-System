@@ -464,6 +464,8 @@ function setActiveNavState() {
             isActive = currentPathNormalized.includes('/settings') || currentPathNormalized.endsWith('settings');
         } else if (normalizedHref.includes('admin')) {
             isActive = currentPathNormalized.includes('admin');
+        } else if (normalizedHref.includes('account-titles')) {
+            isActive = currentPathNormalized.includes('account-titles');
         } else {
             isActive = currentPathNormalized.includes(normalizedHref) || currentPath.includes(normalizedHref);
         }
@@ -584,6 +586,7 @@ async function checkAdminAccess() {
             if (data.success && data.user) {
                 const allowedRoles = ['Administrator', 'CEO', 'Manager'];
                 const adminNavItem = document.getElementById('adminNavItem');
+                const accountTitlesNavItem = document.getElementById('accountTitlesNavItem');
                 const adminSectionHeader = document.getElementById('adminSectionHeader');
                 const adminSeparator = document.getElementById('adminSeparator');
                 const isAllowed = allowedRoles.includes(data.user.role);
@@ -593,6 +596,13 @@ async function checkAdminAccess() {
                         adminNavItem.classList.remove('hidden');
                     } else {
                         adminNavItem.classList.add('hidden');
+                    }
+                }
+                if (accountTitlesNavItem) {
+                    if (isAllowed) {
+                        accountTitlesNavItem.classList.remove('hidden');
+                    } else {
+                        accountTitlesNavItem.classList.add('hidden');
                     }
                 }
                 if (adminSectionHeader) {

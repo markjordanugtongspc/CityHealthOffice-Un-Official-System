@@ -1,4 +1,5 @@
 <?php
+// START: suggestions.php - Returns suggestions for payees, gl codes, and accounts
 header('Content-Type: application/json');
 require_once __DIR__ . '/../../config/db.php';
 require_once __DIR__ . '/../../config/session.php';
@@ -9,48 +10,31 @@ try {
     $pdo = getDB();
     if (!$pdo) throw new Exception('Database connection failed');
 
-    $year = isset($_GET['year']) ? (int)$_GET['year'] : (int)date('Y');
-    if ($year < 2000 || $year > 2100) $year = (int)date('Y');
-
-    $stmt = $pdo->prepare('SELECT id FROM itemized_years WHERE year = ?');
-    $stmt->execute([$year]);
-    $yr = $stmt->fetch();
-    if (!$yr) {
-        echo json_encode(['success' => true, 'requestedBy' => [], 'payee' => [], 'glByRequestedBy' => (object)[]]);
-        exit;
-    }
-    $yearId = $yr['id'];
-
-    $stmt = $pdo->prepare('
-        SELECT DISTINCT requested_by, payee, gl_code
-        FROM itemized_transactions
-        WHERE year_id = ? AND archived = 0 AND requested_by IS NOT NULL AND requested_by != ""
-        ORDER BY dv_date DESC, id DESC
+    // Get distinct payees
+    $stmtP = $pdo->query('
+        SELECT DISTINCT payee 
+        FROM transactions 
+        WHERE payee IS NOT NULL AND TRIM(payee) != "" 
+        ORDER BY payee ASC
     ');
-    $stmt->execute([$yearId]);
-    $rows = $stmt->fetchAll();
+    $payees = $stmtP->fetchAll(PDO::FETCH_COLUMN);
 
-    $requestedBySet = [];
-    $payeeSet = [];
-    $glByRequestedBy = [];
-    foreach ($rows as $r) {
-        $rb = trim((string)($r['requested_by'] ?? ''));
-        $py = trim((string)($r['payee'] ?? ''));
-        $gl = trim((string)($r['gl_code'] ?? ''));
-        if ($rb && !in_array($rb, $requestedBySet)) $requestedBySet[] = $rb;
-        if ($py && !in_array($py, $payeeSet)) $payeeSet[] = $py;
-        if ($rb && $gl && !isset($glByRequestedBy[$rb])) $glByRequestedBy[$rb] = $gl;
-    }
-    sort($requestedBySet);
-    sort($payeeSet);
+    // Get accounts/account_titles
+    $stmtA = $pdo->query('
+        SELECT id, gl_code, account_title 
+        FROM account_titles 
+        ORDER BY display_order ASC, gl_code ASC
+    ');
+    $accounts = $stmtA->fetchAll(PDO::FETCH_ASSOC);
 
     echo json_encode([
         'success' => true,
-        'requestedBy' => $requestedBySet,
-        'payee' => $payeeSet,
-        'glByRequestedBy' => $glByRequestedBy,
+        'payee' => $payees,
+        'accounts' => $accounts,
+        'requestedBy' => $payees
     ]);
 } catch (Exception $e) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => $e->getMessage()]);
 }
+// END: suggestions.php
