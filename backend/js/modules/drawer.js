@@ -2137,7 +2137,7 @@ function ensureItemizedDrawer() {
                                    class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs cursor-pointer" />
                         </div>
 
-                        <!-- Payee Field with New Payee detection badge -->
+                        <!-- Payee Field with New Payee detection badge & Dropdown Suggestions -->
                         <div class="space-y-1.5">
                             <div class="flex items-center justify-between">
                                 <label for="itemized-drawer-payee" class="block text-sm font-bold text-slate-800">
@@ -2149,27 +2149,40 @@ function ensureItemizedDrawer() {
                                 </span>
                             </div>
                             <div class="relative">
+                                <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                </span>
                                 <input type="text"
                                        id="itemized-drawer-payee"
-                                       list="itemized-payee-datalist"
-                                       placeholder="Type or select individual payee..."
+                                       placeholder="Type to search or add payee..."
                                        autocomplete="off"
                                        required
-                                       class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs" />
-                                <datalist id="itemized-payee-datalist"></datalist>
+                                       class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs" />
+                                <div id="itemized-payee-suggestions"
+                                     class="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl hidden"></div>
                             </div>
                         </div>
 
-                        <!-- Account Title / G/L Code -->
+                        <!-- Account Title / G/L Code Searchable Dropdown -->
                         <div class="space-y-1.5">
                             <label for="itemized-drawer-account" class="block text-sm font-bold text-slate-800">
-                                Account Title & G/L Code <span class="text-rose-500">*</span>
+                                Account Title <span class="text-xs font-normal text-slate-400 ml-1">(optional)</span>
                             </label>
-                            <select id="itemized-drawer-account"
-                                    required
-                                    class="w-full px-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs cursor-pointer">
-                                <option value="" disabled selected>Select Account Allocation...</option>
-                            </select>
+                            <div class="relative">
+                                <span class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                                </span>
+                                <input type="text"
+                                       id="itemized-drawer-account"
+                                       placeholder="Type to search (e.g. Travel Expenses...)"
+                                       autocomplete="off"
+                                       class="w-full pl-10 pr-4 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs" />
+                                <input type="hidden" id="itemized-drawer-accountId" value="" />
+                                <input type="hidden" id="itemized-drawer-glCode" value="" />
+                                <input type="hidden" id="itemized-drawer-accountTitle" value="" />
+                                <div id="itemized-drawer-account-suggestions"
+                                     class="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl hidden"></div>
+                            </div>
                         </div>
 
                         <!-- DV No. and Check No. in 2-column grid -->
@@ -2253,6 +2266,12 @@ function ensureItemizedDrawer() {
     const form = document.getElementById('itemizedExpensesDrawerForm');
     const payeeInput = document.getElementById('itemized-drawer-payee');
     const payeeBadge = document.getElementById('itemizedDrawerPayeeBadge');
+    const payeeSuggestionsEl = document.getElementById('itemized-payee-suggestions');
+    const accountInput = document.getElementById('itemized-drawer-account');
+    const accountSuggestionsEl = document.getElementById('itemized-drawer-account-suggestions');
+    const accountIdHidden = document.getElementById('itemized-drawer-accountId');
+    const glCodeHidden = document.getElementById('itemized-drawer-glCode');
+    const accountTitleHidden = document.getElementById('itemized-drawer-accountTitle');
     const amountInput = document.getElementById('itemized-drawer-amount');
 
     if (!drawerEl) return;
@@ -2281,42 +2300,148 @@ function ensureItemizedDrawer() {
         attachNumberFormatter(amountInput);
     }
 
-    // Dynamic payee detection against datalist options
-    if (payeeInput && payeeBadge) {
-        payeeInput.addEventListener('input', () => {
-            const val = payeeInput.value.trim().toLowerCase();
-            const datalist = document.getElementById('itemized-payee-datalist');
-            if (!val) {
-                payeeBadge.classList.add('hidden');
-                return;
-            }
-            let found = false;
-            if (datalist) {
-                for (const opt of datalist.options) {
-                    if (opt.value.trim().toLowerCase() === val) {
-                        found = true;
-                        break;
-                    }
+    const getApiBasePath = () => {
+        const path = window.location.pathname || '/';
+        const idx = path.indexOf('/frontend/');
+        return idx !== -1 ? path.substring(0, idx) : path.substring(0, path.lastIndexOf('/')) || '';
+    };
+
+    const escapeHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    // Account title search suggestions (matches budget drawer style)
+    const showAccountSuggestions = (q) => {
+        if (!accountSuggestionsEl) return;
+        const apiBase = getApiBasePath();
+        fetch(`${apiBase}/api/account-titles/search.php?q=${encodeURIComponent(q || '')}`)
+            .then(r => r.json())
+            .then(res => {
+                if (!res.success || !res.data) return;
+                if (res.data.length === 0) {
+                    accountSuggestionsEl.innerHTML = `<div class="px-4 py-3 text-xs text-slate-400 italic">No account titles found</div>`;
+                    accountSuggestionsEl.classList.remove('hidden');
+                    return;
                 }
-            }
-            if (!found) {
-                payeeBadge.classList.remove('hidden');
-            } else {
-                payeeBadge.classList.add('hidden');
-            }
+                accountSuggestionsEl.innerHTML = res.data.map(item => {
+                    const id = String(item.id || '');
+                    const gl = String(item.gl_code || '');
+                    const title = String(item.account_title || '');
+                    return `<div class="px-4 py-3 hover:bg-slate-100 cursor-pointer text-sm sm:text-base text-slate-700 border-b border-slate-100 last:border-b-0 transition-colors flex items-center gap-2.5" data-acc-id="${escapeHtml(id)}" data-gl="${escapeHtml(gl)}" data-title="${escapeHtml(title)}">
+                                <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                                <span>${escapeHtml(gl)} - ${escapeHtml(title)}</span>
+                            </div>`;
+                }).join('');
+                accountSuggestionsEl.classList.remove('hidden');
+                accountSuggestionsEl.querySelectorAll('[data-acc-id]').forEach(el => {
+                    el.addEventListener('click', () => {
+                        if (accountIdHidden) accountIdHidden.value = el.dataset.accId || '';
+                        if (glCodeHidden) glCodeHidden.value = el.dataset.gl || '';
+                        if (accountTitleHidden) accountTitleHidden.value = el.dataset.title || '';
+                        if (accountInput) accountInput.value = `${el.dataset.gl || ''} - ${el.dataset.title || ''}`;
+                        accountSuggestionsEl.classList.add('hidden');
+                    });
+                });
+            })
+            .catch(() => {
+                if (accountSuggestionsEl) accountSuggestionsEl.classList.add('hidden');
+            });
+    };
+
+    let accountDebounceTimer;
+    if (accountInput) {
+        accountInput.addEventListener('input', () => {
+            clearTimeout(accountDebounceTimer);
+            accountDebounceTimer = setTimeout(() => showAccountSuggestions(accountInput.value.trim()), 150);
+        });
+        accountInput.addEventListener('focus', () => {
+            showAccountSuggestions(accountInput.value.trim() || '');
         });
     }
+
+    // Payee search suggestions & new badge
+    const showPayeeSuggestions = (q) => {
+        if (!payeeSuggestionsEl) return;
+        const apiBase = getApiBasePath();
+        fetch(`${apiBase}/api/itemized/payees.php`, { credentials: 'same-origin' })
+            .then(r => r.json())
+            .then(res => {
+                if (!res.success || !Array.isArray(res.payees)) return;
+                const query = (q || '').trim().toLowerCase();
+                const matched = res.payees.filter(p => !query || p.toLowerCase().includes(query));
+
+                // Check exact match for "New Individual" badge
+                const isExact = res.payees.some(p => p.toLowerCase() === query);
+                if (payeeBadge) {
+                    if (query && !isExact) payeeBadge.classList.remove('hidden');
+                    else payeeBadge.classList.add('hidden');
+                }
+
+                if (matched.length === 0) {
+                    payeeSuggestionsEl.classList.add('hidden');
+                    return;
+                }
+
+                payeeSuggestionsEl.innerHTML = matched.map(p => {
+                    return `<div class="px-4 py-2.5 hover:bg-slate-100 cursor-pointer text-sm text-slate-700 border-b border-slate-100 last:border-b-0 transition-colors flex items-center gap-2.5" data-payee-val="${escapeHtml(p)}">
+                                <svg class="w-4 h-4 text-slate-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                                <span>${escapeHtml(p)}</span>
+                            </div>`;
+                }).join('');
+                payeeSuggestionsEl.classList.remove('hidden');
+                payeeSuggestionsEl.querySelectorAll('[data-payee-val]').forEach(el => {
+                    el.addEventListener('click', () => {
+                        if (payeeInput) payeeInput.value = el.dataset.payeeVal || '';
+                        if (payeeBadge) payeeBadge.classList.add('hidden');
+                        payeeSuggestionsEl.classList.add('hidden');
+                    });
+                });
+            })
+            .catch(() => {
+                if (payeeSuggestionsEl) payeeSuggestionsEl.classList.add('hidden');
+            });
+    };
+
+    let payeeDebounceTimer;
+    if (payeeInput) {
+        payeeInput.addEventListener('input', () => {
+            clearTimeout(payeeDebounceTimer);
+            payeeDebounceTimer = setTimeout(() => showPayeeSuggestions(payeeInput.value.trim()), 150);
+        });
+        payeeInput.addEventListener('focus', () => {
+            showPayeeSuggestions(payeeInput.value.trim() || '');
+        });
+    }
+
+    // Dismiss suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        if (accountSuggestionsEl && !accountSuggestionsEl.contains(e.target) && e.target !== accountInput) {
+            accountSuggestionsEl.classList.add('hidden');
+        }
+        if (payeeSuggestionsEl && !payeeSuggestionsEl.contains(e.target) && e.target !== payeeInput) {
+            payeeSuggestionsEl.classList.add('hidden');
+        }
+    });
 
     form?.addEventListener('submit', (e) => {
         e.preventDefault();
         const id = document.getElementById('itemized-drawer-id')?.value || null;
         const date = document.getElementById('itemized-drawer-date')?.value || '';
         const payee = payeeInput?.value?.trim() || '';
-        const accountSelect = document.getElementById('itemized-drawer-account');
-        const selectedOpt = accountSelect?.options[accountSelect.selectedIndex];
-        const accountId = selectedOpt?.value ? Number(selectedOpt.value) : null;
-        const glCode = selectedOpt?.getAttribute('data-gl') || '';
-        const accountTitle = selectedOpt?.getAttribute('data-title') || '';
+        let accountId = accountIdHidden?.value ? Number(accountIdHidden.value) : null;
+        let glCode = glCodeHidden?.value?.trim() || '';
+        let accountTitle = accountTitleHidden?.value?.trim() || '';
+
+        // Fallback: parse account from input text if user typed directly
+        if (!glCode && accountInput?.value) {
+            const rawVal = accountInput.value.trim();
+            const dashIdx = rawVal.indexOf('-');
+            if (dashIdx !== -1) {
+                glCode = rawVal.substring(0, dashIdx).trim();
+                accountTitle = rawVal.substring(dashIdx + 1).trim();
+            } else {
+                accountTitle = rawVal;
+            }
+        }
+
         const dvNo = document.getElementById('itemized-drawer-dvNo')?.value?.trim() || '';
         const checkNo = document.getElementById('itemized-drawer-checkNo')?.value?.trim() || '';
         const rawAmount = parseFormattedNumber(amountInput?.value);
@@ -2329,10 +2454,6 @@ function ensureItemizedDrawer() {
         }
         if (!payee) {
             if (errEl) { errEl.textContent = 'Payee / Individual name is required.'; errEl.classList.remove('hidden'); }
-            return;
-        }
-        if (!accountId) {
-            if (errEl) { errEl.textContent = 'Please select an Account Allocation.'; errEl.classList.remove('hidden'); }
             return;
         }
         if (isNaN(rawAmount) || rawAmount <= 0) {
@@ -2370,40 +2491,9 @@ function ensureItemizedDrawer() {
 }
 // END: ensureItemizedDrawer
 
-// START: populateItemizedDrawerAccountsAndPayees - Loads accounts and payees into itemized drawer fields
+// START: populateItemizedDrawerAccountsAndPayees - Pre-caches accounts and payees for itemized drawer
 async function populateItemizedDrawerAccountsAndPayees() {
     ensureItemizedDrawer();
-    const accountSelect = document.getElementById('itemized-drawer-account');
-    const datalist = document.getElementById('itemized-payee-datalist');
-    const path = window.location.pathname || '';
-    const idx = path.indexOf('/frontend/');
-    const apiBase = idx !== -1 ? path.substring(0, idx) : path.substring(0, path.lastIndexOf('/')) || '';
-
-    try {
-        const [accRes, payeeRes] = await Promise.all([
-            fetch(`${apiBase}/api/account-titles/list.php`, { credentials: 'same-origin' }),
-            fetch(`${apiBase}/api/itemized/payees.php`, { credentials: 'same-origin' })
-        ]);
-        const accData = await accRes.json();
-        const payeeData = await payeeRes.json();
-
-        if (accountSelect && accData.success && Array.isArray(accData.data)) {
-            const currentVal = accountSelect.value;
-            accountSelect.innerHTML = '<option value="" disabled selected>Select Account Allocation...</option>' +
-                accData.data.map(a => `
-                    <option value="${a.id}" data-gl="${a.gl_code}" data-title="${a.account_title}">
-                        [${a.gl_code}] ${a.account_title}
-                    </option>
-                `).join('');
-            if (currentVal) accountSelect.value = currentVal;
-        }
-
-        if (datalist && payeeData.success && Array.isArray(payeeData.payees)) {
-            datalist.innerHTML = payeeData.payees.map(p => `<option value="${p}">`).join('');
-        }
-    } catch (e) {
-        console.warn('Could not load itemized drawer accounts/payees:', e);
-    }
 }
 // END: populateItemizedDrawerAccountsAndPayees
 
@@ -2429,6 +2519,18 @@ export async function showItemizedCreateDrawer({ date, payee, onConfirm } = {}) 
 
     const payeeBadge = document.getElementById('itemizedDrawerPayeeBadge');
     if (payeeBadge) payeeBadge.classList.add('hidden');
+
+    const accountInput = document.getElementById('itemized-drawer-account');
+    if (accountInput) accountInput.value = '';
+
+    const accountIdHidden = document.getElementById('itemized-drawer-accountId');
+    if (accountIdHidden) accountIdHidden.value = '';
+
+    const glCodeHidden = document.getElementById('itemized-drawer-glCode');
+    if (glCodeHidden) glCodeHidden.value = '';
+
+    const accountTitleHidden = document.getElementById('itemized-drawer-accountTitle');
+    if (accountTitleHidden) accountTitleHidden.value = '';
 
     const dvInput = document.getElementById('itemized-drawer-dvNo');
     if (dvInput) dvInput.value = '';
@@ -2488,6 +2590,30 @@ export async function showItemizedEditDrawer({ transaction, onConfirm } = {}) {
     const payeeBadge = document.getElementById('itemizedDrawerPayeeBadge');
     if (payeeBadge) payeeBadge.classList.add('hidden');
 
+    const accountInput = document.getElementById('itemized-drawer-account');
+    const accountIdHidden = document.getElementById('itemized-drawer-accountId');
+    const glCodeHidden = document.getElementById('itemized-drawer-glCode');
+    const accountTitleHidden = document.getElementById('itemized-drawer-accountTitle');
+
+    const accId = transaction?.accountId || transaction?.account_id || '';
+    const glCode = transaction?.glCode || transaction?.gl_code || '';
+    const accTitle = transaction?.accountTitle || transaction?.account_title || '';
+
+    if (accountIdHidden) accountIdHidden.value = accId ? String(accId) : '';
+    if (glCodeHidden) glCodeHidden.value = glCode || '';
+    if (accountTitleHidden) accountTitleHidden.value = accTitle || '';
+    if (accountInput) {
+        if (glCode && accTitle) {
+            accountInput.value = `${glCode} - ${accTitle}`;
+        } else if (accTitle) {
+            accountInput.value = accTitle;
+        } else if (glCode) {
+            accountInput.value = glCode;
+        } else {
+            accountInput.value = '';
+        }
+    }
+
     const dvInput = document.getElementById('itemized-drawer-dvNo');
     if (dvInput) dvInput.value = transaction?.dvNo || transaction?.dv_no || '';
 
@@ -2515,23 +2641,6 @@ export async function showItemizedEditDrawer({ transaction, onConfirm } = {}) {
     if (errEl) errEl.classList.add('hidden');
 
     await populateItemizedDrawerAccountsAndPayees();
-
-    // Select matching account in dropdown
-    const accountSelect = document.getElementById('itemized-drawer-account');
-    if (accountSelect && transaction) {
-        const targetId = transaction.accountId || transaction.account_id;
-        const targetGl = transaction.glCode || transaction.gl_code;
-        if (targetId) {
-            accountSelect.value = String(targetId);
-        } else if (targetGl) {
-            for (const opt of accountSelect.options) {
-                if (opt.getAttribute('data-gl') === targetGl) {
-                    accountSelect.value = opt.value;
-                    break;
-                }
-            }
-        }
-    }
 
     hideFloatingUI();
     itemizedDrawerInstance?.show();

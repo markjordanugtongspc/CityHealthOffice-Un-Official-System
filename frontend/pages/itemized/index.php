@@ -119,7 +119,7 @@ requireAuth();
 
                     <!-- Right: Action Buttons -->
                     <div class="flex items-center justify-end gap-2.5 shrink-0">
-                        <button id="itemizedAddPayeeQuickBtn" type="button" class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-blue-600 bg-white px-3.5 py-2.5 text-sm font-semibold text-blue-600 hover:bg-blue-50 active:bg-blue-100 focus:ring-4 focus:ring-blue-100 shadow-2xs transition-all duration-200">
+                        <button id="itemizedAddPayeeQuickBtn" type="button" class="inline-flex cursor-pointer items-center justify-center rounded-lg border border-blue-600 bg-white px-3.5 py-2.5 text-sm font-semibold text-blue-600 hover:bg-blue-600 hover:text-white hover:border-blue-600 active:bg-blue-700 active:text-white active:border-blue-700 focus:ring-4 focus:ring-blue-100 shadow-2xs transition-all duration-200">
                             <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>New Payee
                         </button>
                         <button id="itemizedAddBtn" type="button" class="inline-flex shrink-0 cursor-pointer items-center justify-center rounded-lg bg-emerald-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-2xs hover:bg-emerald-700 active:bg-emerald-800 focus:ring-4 focus:ring-emerald-200 transition-all duration-200">
