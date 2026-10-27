@@ -46,6 +46,15 @@ class CreateAccountTitleHandler extends BaseAccountTitlesHandler {
             $stmt->execute([$glCode, $accountTitle, $category, $displayOrder]);
             $newId = (int)$this->pdo->lastInsertId();
 
+            // Auto-populate into budget_entries for existing budget_years so it's instantly available in Budget & Monthly tables
+            $years = $this->pdo->query('SELECT id FROM budget_years')->fetchAll(PDO::FETCH_COLUMN);
+            if ($years) {
+                $insBe = $this->pdo->prepare('INSERT IGNORE INTO budget_entries (year_id, account_id, actual, budget, remaining_amount) VALUES (?, ?, 0, 0, 0)');
+                foreach ($years as $yId) {
+                    $insBe->execute([$yId, $newId]);
+                }
+            }
+
             $this->respondSuccess([
                 'message' => 'Account title added successfully',
                 'data' => [

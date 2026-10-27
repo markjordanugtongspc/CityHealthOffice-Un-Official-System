@@ -52,20 +52,11 @@ try {
 
     // Resolve account_id if gl_code given
     if (!empty($glCode)) {
-        $stmt = $pdo->prepare('SELECT id FROM accounts WHERE gl_code = ? LIMIT 1');
-        $stmt->execute([$glCode]);
-        $acc = $stmt->fetch();
-        if ($acc) {
-            $accountId = (int)$acc['id'];
-        } else {
-            $stmtAt = $pdo->prepare('SELECT id, gl_code, account_title, display_order FROM account_titles WHERE gl_code = ? LIMIT 1');
-            $stmtAt->execute([$glCode]);
-            $at = $stmtAt->fetch();
-            if ($at) {
-                $pdo->prepare('INSERT INTO accounts (id, gl_code, account_title, category, display_order) VALUES (?, ?, ?, "Expense", ?)')
-                    ->execute([$at['id'], $at['gl_code'], $at['account_title'], $at['display_order']]);
-                $accountId = (int)$at['id'];
-            }
+        $stmtAt = $pdo->prepare('SELECT id FROM account_titles WHERE gl_code = ? LIMIT 1');
+        $stmtAt->execute([$glCode]);
+        $at = $stmtAt->fetch();
+        if ($at) {
+            $accountId = (int)$at['id'];
         }
     }
 

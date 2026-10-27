@@ -63,6 +63,7 @@ class UpdateAccountTitleHandler extends BaseAccountTitlesHandler {
             ');
             $stmt->execute([$glCode, $accountTitle, $category, $displayOrder, $id]);
 
+            // Automatically cascades through foreign key relationships
             $this->respondSuccess([
                 'message' => 'Account title updated successfully',
                 'data' => [

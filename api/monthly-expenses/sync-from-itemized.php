@@ -40,17 +40,19 @@ try {
     $stmt = $pdo->prepare('
         SELECT t.account_id, a.gl_code, a.account_title, t.date, t.amount
         FROM transactions t
-        INNER JOIN accounts a ON t.account_id = a.id
+        INNER JOIN account_titles a ON t.account_id = a.id
         WHERE t.year = ?
     ');
     $stmt->execute([$year]);
     $agg = [];
     $accountTitles = [];
+    $accountIds = [];
 
     while ($row = $stmt->fetch()) {
         $gl = $row['gl_code'];
         $amt = (float)$row['amount'];
         $accountTitles[$gl] = $row['account_title'];
+        $accountIds[$gl] = (int)$row['account_id'];
         $month = (int)date('n', strtotime($row['date']));
         if ($month < 1 || $month > 12) $month = 1;
 
@@ -64,34 +66,37 @@ try {
     $updated = 0;
     foreach ($agg as $glCode => $months) {
         $accountTitle = $accountTitles[$glCode] ?? $glCode;
+        $accId = $accountIds[$glCode] ?? null;
+        if (!$accId) {
+            $accId = (int)$pdo->query("SELECT id FROM account_titles WHERE gl_code = " . $pdo->quote($glCode) . " LIMIT 1")->fetchColumn();
+        }
+        if (!$accId) continue;
         $total = array_sum($months);
 
-        $stmt = $pdo->prepare('SELECT id FROM monthly_expenses_entries WHERE year_id = ? AND gl_code = ?');
-        $stmt->execute([$monthlyYearId, $glCode]);
+        $stmt = $pdo->prepare('SELECT id FROM monthly_expenses_entries WHERE year_id = ? AND account_id = ?');
+        $stmt->execute([$monthlyYearId, $accId]);
         $existing = $stmt->fetch();
 
         if ($existing) {
             $stmt = $pdo->prepare('
                 UPDATE monthly_expenses_entries SET
-                    account_title=?,
                     january=?, february=?, march=?, april=?, may=?, june=?,
                     july=?, august=?, september=?, october=?, november=?, december=?,
                     total=?
-                WHERE year_id=? AND gl_code=?
+                WHERE id=?
             ');
             $stmt->execute([
-                $accountTitle,
                 $months['january'], $months['february'], $months['march'], $months['april'], $months['may'], $months['june'],
                 $months['july'], $months['august'], $months['september'], $months['october'], $months['november'], $months['december'],
-                $total, $monthlyYearId, $glCode,
+                $total, $existing['id'],
             ]);
         } else {
             $stmt = $pdo->prepare('
-                INSERT INTO monthly_expenses_entries (year_id, gl_code, account_title, january, february, march, april, may, june, july, august, september, october, november, december, total)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO monthly_expenses_entries (year_id, account_id, january, february, march, april, may, june, july, august, september, october, november, december, total)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ');
             $stmt->execute([
-                $monthlyYearId, $glCode, $accountTitle,
+                $monthlyYearId, $accId,
                 $months['january'], $months['february'], $months['march'], $months['april'], $months['may'], $months['june'],
                 $months['july'], $months['august'], $months['september'], $months['october'], $months['november'], $months['december'],
                 $total,

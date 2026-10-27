@@ -23,6 +23,12 @@ class DeleteAccountTitleHandler extends BaseAccountTitlesHandler {
                 $this->respondError('Account title not found', 404);
             }
 
+            // Prevent deletion if transactions exist for this account title
+            $txCount = (int)$this->pdo->query("SELECT COUNT(*) FROM transactions WHERE account_id = " . (int)$id)->fetchColumn();
+            if ($txCount > 0) {
+                $this->respondError("Cannot delete this account title because it has $txCount linked itemized transaction(s).", 400);
+            }
+
             $stmt = $this->pdo->prepare('DELETE FROM account_titles WHERE id = ?');
             $stmt->execute([$id]);
 

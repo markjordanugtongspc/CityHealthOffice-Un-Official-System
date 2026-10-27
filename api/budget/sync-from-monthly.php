@@ -34,25 +34,24 @@ try {
     }
     $meYearId = $meYear['id'];
 
-    $stmt = $pdo->prepare('SELECT gl_code, total FROM monthly_expenses_entries WHERE year_id = ?');
+    $stmt = $pdo->prepare('SELECT account_id, total FROM monthly_expenses_entries WHERE year_id = ?');
     $stmt->execute([$meYearId]);
     $monthlyTotals = $stmt->fetchAll(PDO::FETCH_KEY_PAIR);
 
     $updated = 0;
-    foreach ($monthlyTotals as $glCode => $total) {
+    foreach ($monthlyTotals as $accountId => $total) {
         $actual = (float)$total;
-        $stmt = $pdo->prepare('SELECT id, budget FROM budget_entries WHERE year_id = ? AND gl_code = ?');
-        $stmt->execute([$budgetYearId, $glCode]);
+        $stmt = $pdo->prepare('SELECT id, budget FROM budget_entries WHERE year_id = ? AND account_id = ?');
+        $stmt->execute([$budgetYearId, $accountId]);
         $entry = $stmt->fetch();
         if ($entry) {
             $budget = (float)$entry['budget'];
             $remaining = $budget - $actual;
-            $remainingPct = $budget != 0 ? ($remaining / $budget) * 100 : 0;
             $pdo->prepare('
                 UPDATE budget_entries
-                SET actual = ?, remaining_amount = ?, remaining_percent = ?, updated_at = NOW()
+                SET actual = ?, remaining_amount = ?, updated_at = NOW()
                 WHERE id = ?
-            ')->execute([$actual, $remaining, $remainingPct, $entry['id']]);
+            ')->execute([$actual, $remaining, $entry['id']]);
             $updated++;
         }
     }

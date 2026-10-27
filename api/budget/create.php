@@ -37,10 +37,16 @@ try {
     }
 
     $remainingAmount = $budget - $actual;
-    $remainingPercent = $budget != 0 ? ($remainingAmount / $budget) * 100 : 0;
+    $stmtAt = $pdo->prepare('SELECT id, gl_code, account_title FROM account_titles WHERE gl_code = ? LIMIT 1');
+    $stmtAt->execute([$glCode]);
+    $atRow = $stmtAt->fetch();
+    $accountId = $atRow ? (int)$atRow['id'] : null;
+    if (!$accountId) {
+        throw new Exception('Invalid G/L Code. Account Title does not exist in master list.');
+    }
 
-    $stmt = $pdo->prepare('INSERT INTO budget_entries (year_id, gl_code, account_title, actual, budget, remaining_amount) VALUES (?, ?, ?, ?, ?, ?)');
-    $stmt->execute([$yearId, $glCode, $accountTitle ?: $glCode, $actual, $budget, $remainingAmount]);
+    $stmt = $pdo->prepare('INSERT INTO budget_entries (year_id, account_id, actual, budget, remaining_amount) VALUES (?, ?, ?, ?, ?)');
+    $stmt->execute([$yearId, $accountId, $actual, $budget, $remainingAmount]);
     $id = $pdo->lastInsertId();
 
     echo json_encode([

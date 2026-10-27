@@ -13,11 +13,11 @@ try {
     $limit = min(50, max(5, (int)($_GET['limit'] ?? 25)));
 
     if ($q === '') {
-        $stmt = $pdo->prepare('SELECT id, gl_code, account_title, display_order FROM account_titles ORDER BY display_order ASC, gl_code ASC LIMIT :lim');
+        $stmt = $pdo->prepare('SELECT id, gl_code, account_title, category, display_order FROM account_titles ORDER BY display_order ASC, gl_code ASC LIMIT :lim');
         $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);
     } else {
         $pattern = '%' . $q . '%';
-        $stmt = $pdo->prepare('SELECT id, gl_code, account_title, display_order FROM account_titles WHERE account_title LIKE :q OR gl_code LIKE :q2 ORDER BY display_order ASC, gl_code ASC LIMIT :lim');
+        $stmt = $pdo->prepare('SELECT id, gl_code, account_title, category, display_order FROM account_titles WHERE account_title LIKE :q OR gl_code LIKE :q2 ORDER BY display_order ASC, gl_code ASC LIMIT :lim');
         $stmt->bindValue(':q', $pattern, PDO::PARAM_STR);
         $stmt->bindValue(':q2', $pattern, PDO::PARAM_STR);
         $stmt->bindValue(':lim', $limit, PDO::PARAM_INT);

@@ -118,30 +118,32 @@ try {
             $budgetYearId = (int)$bYr['id'];
         }
 
-        // Check if an existing budget entry exists for this GL code
-        $bEntryStmt = $pdo->prepare('SELECT id, actual, budget FROM budget_entries WHERE year_id = ? AND gl_code = ?');
-        $bEntryStmt->execute([$budgetYearId, $glCode]);
-        $bEntry = $bEntryStmt->fetch();
+        $atId = $pdo->query("SELECT id FROM account_titles WHERE gl_code = " . $pdo->quote($glCode) . " LIMIT 1")->fetchColumn() ?: null;
 
-        if ($bEntry) {
-            $currentActual = (float)($bEntry['actual'] ?? 0);
-            $newBudget = (float)$total; // or updated total allotment
-            $remaining = $newBudget - $currentActual;
-            $percent = $newBudget != 0 ? ($remaining / $newBudget) * 100 : 0;
+        if ($atId) {
+            $bEntryStmt = $pdo->prepare('SELECT id, actual, budget FROM budget_entries WHERE year_id = ? AND account_id = ?');
+            $bEntryStmt->execute([$budgetYearId, $atId]);
+            $bEntry = $bEntryStmt->fetch();
 
-            $upd = $pdo->prepare('
-                UPDATE budget_entries 
-                SET account_title = ?, budget = ?, remaining_amount = ? 
-                WHERE id = ?
-            ');
-            $upd->execute([$programTitle ?: $glCode, $newBudget, $remaining, $bEntry['id']]);
-        } else {
-            $remaining = (float)$total;
-            $insBudget = $pdo->prepare('
-                INSERT INTO budget_entries (year_id, gl_code, account_title, actual, budget, remaining_amount)
-                VALUES (?, ?, ?, 0, ?, ?)
-            ');
-            $insBudget->execute([$budgetYearId, $glCode, $programTitle ?: $glCode, $total, $remaining]);
+            if ($bEntry) {
+                $currentActual = (float)($bEntry['actual'] ?? 0);
+                $newBudget = (float)$total; // or updated total allotment
+                $remaining = $newBudget - $currentActual;
+
+                $upd = $pdo->prepare('
+                    UPDATE budget_entries 
+                    SET budget = ?, remaining_amount = ? 
+                    WHERE id = ?
+                ');
+                $upd->execute([$newBudget, $remaining, $bEntry['id']]);
+            } else {
+                $remaining = (float)$total;
+                $insBudget = $pdo->prepare('
+                    INSERT INTO budget_entries (year_id, account_id, actual, budget, remaining_amount)
+                    VALUES (?, ?, 0, ?, ?)
+                ');
+                $insBudget->execute([$budgetYearId, $atId, $total, $remaining]);
+            }
         }
     } catch (Exception $e) {
         // Silently continue if budget sync has minor mismatch, ensuring primary entry was stored

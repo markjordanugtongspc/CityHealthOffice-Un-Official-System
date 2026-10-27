@@ -21,7 +21,7 @@ try {
 
     // Get accounts/account_titles
     $stmtA = $pdo->query('
-        SELECT id, gl_code, account_title 
+        SELECT id, gl_code, account_title, category 
         FROM account_titles 
         ORDER BY display_order ASC, gl_code ASC
     ');

@@ -10,11 +10,6 @@ try {
     $pdo = getDB();
     if (!$pdo) throw new Exception('Database connection failed');
 
-    // Ensure accounts table is synced from account_titles
-    $pdo->exec("INSERT IGNORE INTO accounts (id, gl_code, account_title, category, display_order)
-                SELECT id, gl_code, account_title, 'Expense', display_order
-                FROM account_titles");
-
     $year = isset($_GET['year']) ? (int)$_GET['year'] : (int)date('Y');
     if ($year < 2000 || $year > 2100) $year = (int)date('Y');
 
@@ -72,7 +67,7 @@ try {
             t.created_at,
             t.updated_at
         FROM transactions t
-        LEFT JOIN accounts a ON t.account_id = a.id
+        LEFT JOIN account_titles a ON t.account_id = a.id
         WHERE ' . implode(' AND ', $where) . '
         ORDER BY t.date DESC, t.id DESC
     ';

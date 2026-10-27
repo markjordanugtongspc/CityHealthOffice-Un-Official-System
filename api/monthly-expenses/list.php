@@ -27,12 +27,12 @@ try {
     $stmt->execute([$budgetYearId]);
     $countRow = $stmt->fetch();
     if ((int)($countRow['c'] ?? 0) === 0) {
-        $titlesStmt = $pdo->query('SELECT gl_code, account_title FROM account_titles ORDER BY display_order ASC, gl_code ASC');
+        $titlesStmt = $pdo->query('SELECT id FROM account_titles ORDER BY display_order ASC, id ASC');
         $titles = $titlesStmt ? $titlesStmt->fetchAll() : [];
         if ($titles) {
-            $insert = $pdo->prepare('INSERT INTO budget_entries (year_id, gl_code, account_title, actual, budget, remaining_amount, remaining_percent) VALUES (?, ?, ?, 0, 0, 0, 0)');
+            $insert = $pdo->prepare('INSERT IGNORE INTO budget_entries (year_id, account_id, actual, budget, remaining_amount) VALUES (?, ?, 0, 0, 0)');
             foreach ($titles as $t) {
-                $insert->execute([$budgetYearId, $t['gl_code'], $t['account_title']]);
+                $insert->execute([$budgetYearId, $t['id']]);
             }
         }
     }
@@ -48,24 +48,39 @@ try {
         $monthlyYearId = $meYr['id'];
     }
 
-    // Fetch all budget_entries for year (base rows)
-    $stmt = $pdo->prepare('SELECT id AS budget_id, gl_code, account_title FROM budget_entries WHERE year_id = ? ORDER BY gl_code');
+    // Fetch all budget_entries for year (dynamically joined with master account_titles)
+    $stmt = $pdo->prepare('
+        SELECT be.id AS budget_id,
+               be.account_id,
+               at.gl_code,
+               at.account_title,
+               at.category
+        FROM budget_entries be
+        INNER JOIN account_titles at ON be.account_id = at.id
+        WHERE be.year_id = ?
+        ORDER BY at.display_order ASC, CAST(at.gl_code AS UNSIGNED) ASC, at.gl_code ASC
+    ');
     $stmt->execute([$budgetYearId]);
     $budgetRows = $stmt->fetchAll();
-    $budgetGlCodes = array_column($budgetRows, 'gl_code');
+    $budgetAccountIds = array_column($budgetRows, 'account_id');
 
     $stmt = $pdo->prepare('
-        SELECT id, gl_code, account_title, january, february, march, april, may, june,
-            july, august, september, october, november, december, total
-        FROM monthly_expenses_entries
-        WHERE year_id = ?
+        SELECT me.id,
+               me.account_id,
+               at.gl_code,
+               at.account_title,
+               me.january, me.february, me.march, me.april, me.may, me.june,
+               me.july, me.august, me.september, me.october, me.november, me.december, me.total
+        FROM monthly_expenses_entries me
+        INNER JOIN account_titles at ON me.account_id = at.id
+        WHERE me.year_id = ?
     ');
     $stmt->execute([$monthlyYearId]);
     $monthlyMap = [];
     $monthlyOnly = [];
     while ($r = $stmt->fetch()) {
-        $monthlyMap[$r['gl_code']] = $r;
-        if (!in_array($r['gl_code'], $budgetGlCodes)) {
+        $monthlyMap[$r['account_id']] = $r;
+        if (!in_array($r['account_id'], $budgetAccountIds)) {
             $monthlyOnly[] = $r;
         }
     }
@@ -73,7 +88,7 @@ try {
     $out = [];
     $monthCols = ['january','february','march','april','may','june','july','august','september','october','november','december'];
     foreach ($budgetRows as $b) {
-        $me = $monthlyMap[$b['gl_code']] ?? null;
+        $me = $monthlyMap[$b['account_id']] ?? null;
         $months = [];
         $total = 0.0;
         foreach ($monthCols as $col) {
@@ -84,6 +99,7 @@ try {
         $out[] = [
             'id' => $me ? (int)$me['id'] : null,
             'budgetEntryId' => (int)$b['budget_id'],
+            'accountId' => (int)$b['account_id'],
             'glCode' => $b['gl_code'],
             'accountTitle' => $b['account_title'],
             'months' => $months,

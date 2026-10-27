@@ -42,19 +42,30 @@ try {
         $yearId = $yr['id'];
     }
 
-    $stmt = $pdo->prepare('SELECT id FROM monthly_expenses_entries WHERE year_id = ? AND gl_code = ?');
-    $stmt->execute([$yearId, $glCode]);
+    $stmtAt = $pdo->prepare('SELECT id, gl_code, account_title FROM account_titles WHERE gl_code = ? LIMIT 1');
+    $stmtAt->execute([$glCode]);
+    $atRow = $stmtAt->fetch();
+    $accountId = $atRow ? (int)$atRow['id'] : null;
+    if ($atRow && empty($accountTitle)) {
+        $accountTitle = $atRow['account_title'];
+    }
+
+    if (!$accountId) {
+        throw new Exception('Invalid G/L Code. Account Title does not exist in master list.');
+    }
+
+    $stmt = $pdo->prepare('SELECT id FROM monthly_expenses_entries WHERE year_id = ? AND account_id = ?');
+    $stmt->execute([$yearId, $accountId]);
     $existing = $stmt->fetch();
 
     if ($existing) {
         $stmt = $pdo->prepare('
             UPDATE monthly_expenses_entries SET
-                account_title = ?, january = ?, february = ?, march = ?, april = ?, may = ?, june = ?,
+                january = ?, february = ?, march = ?, april = ?, may = ?, june = ?,
                 july = ?, august = ?, september = ?, october = ?, november = ?, december = ?, total = ?
             WHERE id = ?
         ');
         $stmt->execute([
-            $accountTitle,
             $vals['january'], $vals['february'], $vals['march'], $vals['april'], $vals['may'], $vals['june'],
             $vals['july'], $vals['august'], $vals['september'], $vals['october'], $vals['november'], $vals['december'],
             $total, $existing['id'],
@@ -62,12 +73,12 @@ try {
         $id = $existing['id'];
     } else {
         $stmt = $pdo->prepare('
-            INSERT INTO monthly_expenses_entries (year_id, gl_code, account_title, january, february, march, april, may, june,
+            INSERT INTO monthly_expenses_entries (year_id, account_id, january, february, march, april, may, june,
                 july, august, september, october, november, december, total)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ');
         $stmt->execute([
-            $yearId, $glCode, $accountTitle,
+            $yearId, $accountId,
             $vals['january'], $vals['february'], $vals['march'], $vals['april'], $vals['may'], $vals['june'],
             $vals['july'], $vals['august'], $vals['september'], $vals['october'], $vals['november'], $vals['december'],
             $total,

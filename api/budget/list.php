@@ -31,26 +31,34 @@ try {
 
     if ($existingCount === 0) {
         // Create one budget row per account title, with zero amounts.
-        $titlesStmt = $pdo->query('SELECT gl_code, account_title FROM account_titles ORDER BY display_order ASC, gl_code ASC');
+        $titlesStmt = $pdo->query('SELECT id, gl_code, account_title FROM account_titles ORDER BY display_order ASC, gl_code ASC');
         $titles = $titlesStmt ? $titlesStmt->fetchAll() : [];
 
         if ($titles) {
             $insert = $pdo->prepare('
-                INSERT IGNORE INTO budget_entries (year_id, gl_code, account_title, actual, budget, remaining_amount)
-                VALUES (?, ?, ?, 0, 0, 0)
+                INSERT IGNORE INTO budget_entries (year_id, account_id, actual, budget, remaining_amount)
+                VALUES (?, ?, 0, 0, 0)
             ');
             foreach ($titles as $t) {
-                $insert->execute([$yearId, $t['gl_code'], $t['account_title']]);
+                $insert->execute([$yearId, $t['id']]);
             }
         }
     }
 
-    // Load all budget rows for this year directly from budget_entries
+    // Load all budget rows for this year, dynamically joined with master account_titles
     $stmt = $pdo->prepare('
-        SELECT id, gl_code, account_title, actual, budget, remaining_amount
-        FROM budget_entries
-        WHERE year_id = ?
-        ORDER BY gl_code
+        SELECT be.id,
+               be.account_id,
+               at.gl_code,
+               at.account_title,
+               at.category,
+               be.actual,
+               be.budget,
+               be.remaining_amount
+        FROM budget_entries be
+        INNER JOIN account_titles at ON be.account_id = at.id
+        WHERE be.year_id = ?
+        ORDER BY at.display_order ASC, CAST(at.gl_code AS UNSIGNED) ASC, at.gl_code ASC
     ');
     $stmt->execute([$yearId]);
     $rows = $stmt->fetchAll();

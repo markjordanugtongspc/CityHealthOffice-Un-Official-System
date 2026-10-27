@@ -19,7 +19,12 @@ try {
     $id = (int)($input['id'] ?? $_GET['id'] ?? 0);
     if (!$id) throw new Exception('Entry ID is required');
 
-    $stmt = $pdo->prepare('SELECT id, gl_code, account_title, actual, budget FROM budget_entries WHERE id = ?');
+    $stmt = $pdo->prepare('
+        SELECT be.id, be.account_id, at.gl_code, at.account_title, be.actual, be.budget
+        FROM budget_entries be
+        INNER JOIN account_titles at ON be.account_id = at.id
+        WHERE be.id = ?
+    ');
     $stmt->execute([$id]);
     $row = $stmt->fetch();
     if (!$row) throw new Exception('Entry not found');
@@ -28,9 +33,19 @@ try {
         ? trim($input['glCode'] ?? $input['gl_code'] ?? '')
         : $row['gl_code'];
 
-    $accountTitle = isset($input['accountTitle']) || isset($input['account_title'])
-        ? trim($input['accountTitle'] ?? $input['account_title'] ?? '')
-        : $row['account_title'];
+    $accountId = (int)$row['account_id'];
+    $accountTitle = $row['account_title'];
+
+    if (!empty($glCode) && $glCode !== $row['gl_code']) {
+        $stmtAt = $pdo->prepare('SELECT id, gl_code, account_title FROM account_titles WHERE gl_code = ? LIMIT 1');
+        $stmtAt->execute([$glCode]);
+        $atRow = $stmtAt->fetch();
+        if ($atRow) {
+            $accountId = (int)$atRow['id'];
+            $glCode = $atRow['gl_code'];
+            $accountTitle = $atRow['account_title'];
+        }
+    }
 
     $actual = array_key_exists('actual', $input)
         ? (float)$input['actual']
@@ -40,26 +55,23 @@ try {
         ? (float)$input['budget']
         : (float)$row['budget'];
 
-    if (empty($glCode)) {
-        throw new Exception('G/L Code is required');
-    }
-
     $remainingAmount = $budget - $actual;
 
     $stmt = $pdo->prepare('
         UPDATE budget_entries
-        SET gl_code = ?, account_title = ?, actual = ?, budget = ?, remaining_amount = ?
+        SET account_id = ?, actual = ?, budget = ?, remaining_amount = ?
         WHERE id = ?
     ');
-    $stmt->execute([$glCode, $accountTitle ?: $glCode, $actual, $budget, $remainingAmount, $id]);
+    $stmt->execute([$accountId, $actual, $budget, $remainingAmount, $id]);
 
     echo json_encode([
         'success' => true,
         'message' => 'Entry updated',
         'data' => [
             'id' => $id,
+            'accountId' => $accountId,
             'glCode' => $glCode,
-            'accountTitle' => $accountTitle ?: $glCode,
+            'accountTitle' => $accountTitle,
             'actual' => $actual,
             'budget' => $budget,
             'remainingAmount' => $remainingAmount,

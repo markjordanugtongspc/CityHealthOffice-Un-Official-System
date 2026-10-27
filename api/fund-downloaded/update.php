@@ -89,14 +89,17 @@ try {
                     $bYrStmt->execute([$yearVal]);
                     $bYr = $bYrStmt->fetch();
                     if ($bYr) {
-                        $bEntryStmt = $pdo->prepare('SELECT id, actual FROM budget_entries WHERE year_id = ? AND gl_code = ?');
-                        $bEntryStmt->execute([$bYr['id'], $glCode]);
-                        $bEntry = $bEntryStmt->fetch();
-                        if ($bEntry) {
-                            $actual = (float)($bEntry['actual'] ?? 0);
-                            $rem = $total - $actual;
-                            $pdo->prepare('UPDATE budget_entries SET account_title = ?, budget = ?, remaining_amount = ? WHERE id = ?')
-                                ->execute([$programTitle ?: $glCode, $total, $rem, $bEntry['id']]);
+                        $atId = $pdo->query("SELECT id FROM account_titles WHERE gl_code = " . $pdo->quote($glCode) . " LIMIT 1")->fetchColumn() ?: null;
+                        if ($atId) {
+                            $bEntryStmt = $pdo->prepare('SELECT id, actual FROM budget_entries WHERE year_id = ? AND account_id = ?');
+                            $bEntryStmt->execute([$bYr['id'], $atId]);
+                            $bEntry = $bEntryStmt->fetch();
+                            if ($bEntry) {
+                                $actual = (float)($bEntry['actual'] ?? 0);
+                                $rem = $total - $actual;
+                                $pdo->prepare('UPDATE budget_entries SET budget = ?, remaining_amount = ? WHERE id = ?')
+                                    ->execute([$total, $rem, $bEntry['id']]);
+                            }
                         }
                     }
                 }

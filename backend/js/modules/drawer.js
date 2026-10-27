@@ -815,7 +815,7 @@ function ensureMonthlyDrawer() {
                             <span class="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
                             </span>
-                            <input id="monthly-accountTitle" type="text" placeholder="Type to search (e.g. Trave...)" autocomplete="off"
+                            <input id="monthly-accountTitle" type="text" placeholder="Type to search account title or G/L code..." autocomplete="off"
                                    class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-300 bg-white text-sm text-slate-900 placeholder-slate-400 focus:border-[#224796] focus:outline-none focus:ring-2 focus:ring-[#224796] transition-colors" />
                             <input id="monthly-glCode" type="hidden" value="">
                             <div id="monthly-accountTitle-suggestions" class="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-lg border border-slate-300 bg-white shadow-lg hidden"></div>
@@ -1810,7 +1810,7 @@ function ensureAccountTitlesDrawer() {
                                 </label>
                                 <input type="text"
                                        id="at-accountTitle"
-                                       placeholder="e.g. Travelling Expenses"
+                                       placeholder="e.g. Office Supplies Expenses"
                                        required
                                        class="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm sm:text-base font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs" />
                                 <p id="at-accountTitle-tooltip" class="hidden text-xs text-rose-600 font-medium mt-1 flex items-center gap-1">
@@ -1819,35 +1819,37 @@ function ensureAccountTitlesDrawer() {
                                 </p>
                             </div>
 
-                            <!-- Category / Fund Dropdown with Search (Flowbite searchable dropdown) -->
-                            <div class="space-y-1.5 relative">
+                            <!-- Category / Fund Dropdown with Search (Combined Search Input & Dropdown) -->
+                            <div class="space-y-1.5 relative" id="at-categoryDropdownContainer">
                                 <label for="at-categoryBtn" class="block text-sm font-bold text-slate-800">
                                     Fund Category <span class="text-rose-500">*</span>
                                 </label>
-                                <input type="hidden" id="at-category" name="category" value="mooe" />
-                                <button id="at-categoryBtn"
-                                        type="button"
-                                        data-dropdown-toggle="at-categoryDropdown"
-                                        data-dropdown-placement="bottom"
-                                        class="w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm sm:text-base font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs cursor-pointer text-left">
-                                    <span id="at-categorySelectedLabel" class="truncate">MOOE</span>
-                                    <svg class="w-4 h-4 ml-2 text-slate-400 shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
-                                </button>
-                                
-                                <!-- Searchable Dropdown Menu -->
-                                <div id="at-categoryDropdown" class="z-50 hidden bg-white divide-y divide-slate-100 rounded-xl shadow-lg border border-slate-200 w-full max-w-sm overflow-hidden">
-                                    <div class="p-3 border-b border-slate-100">
-                                        <div class="relative">
-                                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"/></svg>
-                                            </div>
-                                            <input type="text"
-                                                   id="at-categorySearchInput"
-                                                   placeholder="Search category..."
-                                                   class="w-full pl-9 pr-3 py-1.5 text-xs text-slate-900 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-hidden" />
-                                        </div>
+                                <input type="hidden" id="at-category" name="category" value="" />
+
+                                <!-- Search Text-field as Main Selector with Moved Search Icon -->
+                                <div class="relative w-full">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-400">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"></path>
+                                        </svg>
                                     </div>
-                                    <ul id="at-categoryList" class="p-2 text-sm text-slate-700 max-h-48 overflow-y-auto space-y-1" aria-labelledby="at-categoryBtn">
+                                    <input type="text"
+                                           id="at-categoryBtn"
+                                           placeholder="Search or select category..."
+                                           autocomplete="off"
+                                           class="w-full pl-10 pr-10 py-3 bg-white border border-slate-300 rounded-xl text-sm sm:text-base font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs cursor-text" />
+                                    <button type="button"
+                                            id="at-categoryDropdownArrowBtn"
+                                            class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-400 hover:text-slate-600 cursor-pointer">
+                                        <svg id="at-categoryDropdownArrow" class="w-4 h-4 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                                
+                                <!-- Dropdown Menu (Full Width, Perfectly Matches at-categoryBtn) -->
+                                <div id="at-categoryDropdown" class="z-50 hidden absolute left-0 right-0 top-full mt-1.5 w-full bg-white rounded-xl shadow-xl border border-slate-200 overflow-hidden">
+                                    <ul id="at-categoryList" class="p-2 text-sm text-slate-700 max-h-52 overflow-y-auto space-y-1">
                                         <!-- Categories dynamically rendered -->
                                     </ul>
                                 </div>
@@ -1922,15 +1924,85 @@ function ensureAccountTitlesDrawer() {
 
     // Category elements
     const categoryHiddenInput = document.getElementById('at-category');
-    const categoryBtn = document.getElementById('at-categoryBtn');
-    const categorySelectedLabel = document.getElementById('at-categorySelectedLabel');
+    const categorySearchInput = document.getElementById('at-categoryBtn');
     const categoryDropdown = document.getElementById('at-categoryDropdown');
-    const categorySearchInput = document.getElementById('at-categorySearchInput');
+    const categoryArrowBtn = document.getElementById('at-categoryDropdownArrowBtn');
+    const categoryArrow = document.getElementById('at-categoryDropdownArrow');
     const categoryList = document.getElementById('at-categoryList');
 
     let loadedCategories = [];
 
-    const loadCategoryOptions = async (selectedCode = 'mooe') => {
+    // Draft storage key & 60-second timeout configuration
+    const DRAFT_STORAGE_KEY = 'cho_account_titles_drawer_draft';
+    const DRAFT_MAX_AGE_MS = 60 * 1000; // 60 seconds timeframe
+
+    const clearDraftCache = () => {
+        try {
+            localStorage.removeItem(DRAFT_STORAGE_KEY);
+            document.cookie = `${DRAFT_STORAGE_KEY}=; path=/; max-age=0; SameSite=Lax`;
+        } catch (e) {
+            console.warn('Failed to clear draft cache:', e);
+        }
+    };
+
+    const saveDraftCache = () => {
+        // Only save draft when in create mode (no ID)
+        if (idInput?.value) return;
+
+        const draft = {
+            glCode: glCodeInput?.value || '',
+            accountTitle: accountTitleInput?.value || '',
+            category: categoryHiddenInput?.value || '',
+            categoryName: categorySearchInput?.value || '',
+            savedAt: Date.now()
+        };
+
+        // Don't save if all fields are completely empty
+        if (!draft.glCode && !draft.accountTitle && !draft.category && !draft.categoryName) {
+            clearDraftCache();
+            return;
+        }
+
+        try {
+            const serialized = JSON.stringify(draft);
+            localStorage.setItem(DRAFT_STORAGE_KEY, serialized);
+            // Also store in cookie with 60 seconds max-age
+            document.cookie = `${DRAFT_STORAGE_KEY}=${encodeURIComponent(serialized)}; path=/; max-age=60; SameSite=Lax`;
+        } catch (e) {
+            console.warn('Failed to save draft cache:', e);
+        }
+    };
+
+    const getDraftCache = () => {
+        try {
+            let dataStr = localStorage.getItem(DRAFT_STORAGE_KEY);
+            if (!dataStr) {
+                // Check cookies fallback
+                const match = document.cookie.match(new RegExp('(^|;\\s*)' + DRAFT_STORAGE_KEY + '=([^;]+)'));
+                if (match) {
+                    dataStr = decodeURIComponent(match[2]);
+                }
+            }
+
+            if (!dataStr) return null;
+
+            const draft = JSON.parse(dataStr);
+            const age = Date.now() - (draft.savedAt || 0);
+
+            if (age > DRAFT_MAX_AGE_MS) {
+                // Expired after 60 seconds, destroy it
+                clearDraftCache();
+                return null;
+            }
+
+            return draft;
+        } catch (e) {
+            clearDraftCache();
+            return null;
+        }
+    };
+
+    const loadCategoryOptions = async (selectedCode = '') => {
         try {
             if (!loadedCategories.length) {
                 const apiBase = getApiBasePath();
@@ -1954,12 +2026,22 @@ function ensureAccountTitlesDrawer() {
             ];
         }
 
-        renderCategoryList(selectedCode);
+        if (selectedCode) {
+            const selObj = loadedCategories.find(c => c.code === selectedCode);
+            if (selObj && categorySearchInput) {
+                categorySearchInput.value = selObj.name;
+            }
+            if (categoryHiddenInput) {
+                categoryHiddenInput.value = selectedCode;
+            }
+        }
+
+        renderCategoryList(selectedCode, '');
     };
 
     const renderCategoryList = (selectedCode = '', filterQuery = '') => {
         if (!categoryList) return;
-        const currentSelected = selectedCode || categoryHiddenInput?.value || 'mooe';
+        const currentSelected = selectedCode || categoryHiddenInput?.value || '';
         const q = filterQuery.trim().toLowerCase();
 
         const filtered = loadedCategories.filter(c => 
@@ -1967,12 +2049,12 @@ function ensureAccountTitlesDrawer() {
         );
 
         if (filtered.length === 0) {
-            categoryList.innerHTML = `<li class="px-3 py-2 text-xs text-slate-400 text-center">No categories found</li>`;
+            categoryList.innerHTML = `<li class="px-3 py-2 text-xs text-slate-400 text-center">No categories matching "${filterQuery}"</li>`;
             return;
         }
 
         categoryList.innerHTML = filtered.map(c => {
-            const isMatch = c.code === currentSelected;
+            const isMatch = currentSelected && c.code === currentSelected;
             return `
                 <li>
                     <button type="button"
@@ -1985,33 +2067,52 @@ function ensureAccountTitlesDrawer() {
                 </li>
             `;
         }).join('');
+    };
 
-        // Update selected display label
-        const selObj = loadedCategories.find(c => c.code === currentSelected);
-        if (selObj && categorySelectedLabel) {
-            categorySelectedLabel.textContent = selObj.name;
+    const showCategoryDropdown = () => {
+        categoryDropdown?.classList.remove('hidden');
+        if (categoryArrow) categoryArrow.classList.add('rotate-180');
+        renderCategoryList(categoryHiddenInput?.value || '', categorySearchInput?.value || '');
+    };
+
+    const hideCategoryDropdown = () => {
+        categoryDropdown?.classList.add('hidden');
+        if (categoryArrow) categoryArrow.classList.remove('rotate-180');
+        const currentCode = categoryHiddenInput?.value || '';
+        const selObj = loadedCategories.find(c => c.code === currentCode);
+        if (selObj && categorySearchInput) {
+            categorySearchInput.value = selObj.name;
         }
     };
 
-    // Toggle category dropdown
-    categoryBtn?.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isHidden = categoryDropdown?.classList.contains('hidden');
-        if (isHidden) {
-            categoryDropdown?.classList.remove('hidden');
-            if (categorySearchInput) {
-                categorySearchInput.value = '';
-                renderCategoryList(categoryHiddenInput?.value || 'mooe', '');
-                setTimeout(() => categorySearchInput.focus(), 50);
-            }
-        } else {
-            categoryDropdown?.classList.add('hidden');
-        }
+    categorySearchInput?.addEventListener('focus', () => {
+        showCategoryDropdown();
     });
 
     categorySearchInput?.addEventListener('input', (e) => {
         const val = e.target.value || '';
-        renderCategoryList(categoryHiddenInput?.value || 'mooe', val);
+        categoryDropdown?.classList.remove('hidden');
+        if (categoryArrow) categoryArrow.classList.add('rotate-180');
+        
+        // Find if typed value exactly matches a category name
+        const match = loadedCategories.find(c => c.name.toLowerCase() === val.trim().toLowerCase());
+        if (match && categoryHiddenInput) {
+            categoryHiddenInput.value = match.code;
+        }
+
+        saveDraftCache();
+        renderCategoryList(categoryHiddenInput?.value || '', val);
+    });
+
+    categoryArrowBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = categoryDropdown?.classList.contains('hidden');
+        if (isHidden) {
+            categorySearchInput?.focus();
+            showCategoryDropdown();
+        } else {
+            hideCategoryDropdown();
+        }
     });
 
     categoryList?.addEventListener('click', (e) => {
@@ -2020,16 +2121,22 @@ function ensureAccountTitlesDrawer() {
             const code = btn.dataset.code;
             const name = btn.dataset.name;
             if (categoryHiddenInput) categoryHiddenInput.value = code;
-            if (categorySelectedLabel) categorySelectedLabel.textContent = name;
-            categoryDropdown?.classList.add('hidden');
-            renderCategoryList(code);
+            if (categorySearchInput) categorySearchInput.value = name;
+            saveDraftCache();
+            hideCategoryDropdown();
         }
     });
 
     document.addEventListener('click', (e) => {
-        if (!categoryDropdown?.contains(e.target) && !categoryBtn?.contains(e.target)) {
-            categoryDropdown?.classList.add('hidden');
+        const container = document.getElementById('at-categoryDropdownContainer');
+        if (container && !container.contains(e.target)) {
+            hideCategoryDropdown();
         }
+    });
+
+    // Cancel button clears draft cache and cookies immediately
+    cancelBtn?.addEventListener('click', () => {
+        clearDraftCache();
     });
 
     let duplicateCheckTimer = null;
@@ -2156,6 +2263,8 @@ function ensureAccountTitlesDrawer() {
     };
 
     const onInputChange = () => {
+        saveDraftCache();
+
         const formatValid = validateInputs();
         if (!formatValid) return;
 
@@ -2199,6 +2308,9 @@ function ensureAccountTitlesDrawer() {
 
         if (errEl) errEl.classList.add('hidden');
 
+        // All validated - clear draft cache and cookies
+        clearDraftCache();
+
         const callback = accountTitlesDrawerOnConfirm;
         hideDrawer();
         if (typeof callback === 'function') {
@@ -2213,8 +2325,10 @@ function ensureAccountTitlesDrawer() {
         }
     });
 
-    // Attach category loader to drawer element for callers
+    // Attach category loader & draft helpers to drawer element for callers
     drawerEl._loadCategories = loadCategoryOptions;
+    drawerEl._getDraft = getDraftCache;
+    drawerEl._clearDraft = clearDraftCache;
 }
 // END: ensureAccountTitlesDrawer
 
@@ -2233,24 +2347,28 @@ export function showAccountTitlesCreateDrawer({ onConfirm }) {
     if (idInput) idInput.value = '';
 
     const glCodeInput = document.getElementById('at-glCode');
-    if (glCodeInput) glCodeInput.value = '';
-
     const titleInput = document.getElementById('at-accountTitle');
-    if (titleInput) titleInput.value = '';
+    const categoryHidden = document.getElementById('at-category');
+    const categorySearchInput = document.getElementById('at-categoryBtn');
+    const drawerEl = document.getElementById('accountTitlesDrawer');
+
+    // Check for cached draft within 60 seconds
+    const draft = typeof drawerEl?._getDraft === 'function' ? drawerEl._getDraft() : null;
+
+    if (glCodeInput) glCodeInput.value = draft ? draft.glCode : '';
+    if (titleInput) titleInput.value = draft ? draft.accountTitle : '';
+    if (categoryHidden) categoryHidden.value = draft ? draft.category : '';
+    if (categorySearchInput) categorySearchInput.value = draft ? draft.categoryName : '';
+
+    if (drawerEl && typeof drawerEl._loadCategories === 'function') {
+        drawerEl._loadCategories(draft ? draft.category : '');
+    }
 
     const glTooltip = document.getElementById('at-glCode-tooltip');
     if (glTooltip) glTooltip.classList.add('hidden');
 
     const titleTooltip = document.getElementById('at-accountTitle-tooltip');
     if (titleTooltip) titleTooltip.classList.add('hidden');
-
-    const categoryHidden = document.getElementById('at-category');
-    if (categoryHidden) categoryHidden.value = 'mooe';
-
-    const drawerEl = document.getElementById('accountTitlesDrawer');
-    if (drawerEl && typeof drawerEl._loadCategories === 'function') {
-        drawerEl._loadCategories('mooe');
-    }
 
     const submitBtn = document.getElementById('accountTitlesDrawerSubmitBtn');
     if (submitBtn) {
@@ -2286,6 +2404,12 @@ export function showAccountTitlesEditDrawer({ accountTitle, onConfirm }) {
     ensureAccountTitlesDrawer();
     accountTitlesDrawerOnConfirm = onConfirm;
 
+    // Clear any pending create-draft when opening edit drawer
+    const drawerEl = document.getElementById('accountTitlesDrawer');
+    if (drawerEl && typeof drawerEl._clearDraft === 'function') {
+        drawerEl._clearDraft();
+    }
+
     const label = document.getElementById('accountTitlesDrawerLabel');
     if (label) label.textContent = 'Edit Account Title';
 
@@ -2301,11 +2425,10 @@ export function showAccountTitlesEditDrawer({ accountTitle, onConfirm }) {
     const titleInput = document.getElementById('at-accountTitle');
     if (titleInput) titleInput.value = accountTitle?.account_title || '';
 
-    const catCode = accountTitle?.category || 'mooe';
+    const catCode = accountTitle?.category || '';
     const categoryHidden = document.getElementById('at-category');
     if (categoryHidden) categoryHidden.value = catCode;
 
-    const drawerEl = document.getElementById('accountTitlesDrawer');
     if (drawerEl && typeof drawerEl._loadCategories === 'function') {
         drawerEl._loadCategories(catCode);
     }

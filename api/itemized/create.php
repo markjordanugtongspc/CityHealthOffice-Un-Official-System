@@ -16,11 +16,6 @@ try {
     $pdo = getDB();
     if (!$pdo) throw new Exception('Database connection failed');
 
-    // Ensure accounts table is synced
-    $pdo->exec("INSERT IGNORE INTO accounts (id, gl_code, account_title, category, display_order)
-                SELECT id, gl_code, account_title, 'Expense', display_order
-                FROM account_titles");
-
     $input = json_decode(file_get_contents('php://input'), true) ?? [];
 
     $date = trim($input['date'] ?? $input['dvDate'] ?? $input['dv_date'] ?? date('Y-m-d'));
@@ -44,29 +39,19 @@ try {
         throw new Exception('Amount must be greater than 0.');
     }
 
-    // Resolve account_id
+    // Resolve account_id directly from master account_titles
     if ($accountId <= 0 && !empty($glCode)) {
-        $stmt = $pdo->prepare('SELECT id FROM accounts WHERE gl_code = ? LIMIT 1');
-        $stmt->execute([$glCode]);
-        $acc = $stmt->fetch();
-        if ($acc) {
-            $accountId = (int)$acc['id'];
-        } else {
-            // Check account_titles
-            $stmtAt = $pdo->prepare('SELECT id, gl_code, account_title, display_order FROM account_titles WHERE gl_code = ? LIMIT 1');
-            $stmtAt->execute([$glCode]);
-            $at = $stmtAt->fetch();
-            if ($at) {
-                $pdo->prepare('INSERT INTO accounts (id, gl_code, account_title, category, display_order) VALUES (?, ?, ?, "Expense", ?)')
-                    ->execute([$at['id'], $at['gl_code'], $at['account_title'], $at['display_order']]);
-                $accountId = (int)$at['id'];
-            }
+        $stmtAt = $pdo->prepare('SELECT id, gl_code, account_title FROM account_titles WHERE gl_code = ? LIMIT 1');
+        $stmtAt->execute([$glCode]);
+        $at = $stmtAt->fetch();
+        if ($at) {
+            $accountId = (int)$at['id'];
         }
     }
 
-    // If still no account_id, pick the first expense account as default
+    // If still no account_id, pick the first account_titles entry
     if ($accountId <= 0) {
-        $stmt = $pdo->query('SELECT id FROM accounts LIMIT 1');
+        $stmt = $pdo->query('SELECT id FROM account_titles ORDER BY display_order ASC, id ASC LIMIT 1');
         $acc = $stmt->fetch();
         if ($acc) {
             $accountId = (int)$acc['id'];
@@ -146,17 +131,19 @@ function syncToMonthlyExpenses($pdo, $year) {
     $stmt = $pdo->prepare('
         SELECT t.account_id, a.gl_code, a.account_title, t.date, t.amount
         FROM transactions t
-        INNER JOIN accounts a ON t.account_id = a.id
+        INNER JOIN account_titles a ON t.account_id = a.id
         WHERE t.year = ?
     ');
     $stmt->execute([$year]);
     $agg = [];
     $accountTitles = [];
+    $accountIds = [];
 
     while ($row = $stmt->fetch()) {
         $gl = $row['gl_code'];
         $amt = (float)$row['amount'];
         $accountTitles[$gl] = $row['account_title'];
+        $accountIds[$gl] = (int)$row['account_id'];
         $m = (int)date('n', strtotime($row['date']));
         if ($m < 1 || $m > 12) $m = 1;
 
@@ -168,33 +155,35 @@ function syncToMonthlyExpenses($pdo, $year) {
     }
 
     foreach ($agg as $glCode => $months) {
-        $accountTitle = $accountTitles[$glCode] ?? $glCode;
+        $accId = $accountIds[$glCode] ?? null;
+        if (!$accId) {
+            $accId = (int)$pdo->query("SELECT id FROM account_titles WHERE gl_code = " . $pdo->quote($glCode) . " LIMIT 1")->fetchColumn();
+        }
+        if (!$accId) continue;
         $total = array_sum($months);
 
-        $stmt = $pdo->prepare('SELECT id FROM monthly_expenses_entries WHERE year_id = ? AND gl_code = ?');
-        $stmt->execute([$monthlyYearId, $glCode]);
+        $stmt = $pdo->prepare('SELECT id FROM monthly_expenses_entries WHERE year_id = ? AND account_id = ?');
+        $stmt->execute([$monthlyYearId, $accId]);
         $existing = $stmt->fetch();
 
         if ($existing) {
             $pdo->prepare('
                 UPDATE monthly_expenses_entries SET
-                    account_title=?,
                     january=?, february=?, march=?, april=?, may=?, june=?,
                     july=?, august=?, september=?, october=?, november=?, december=?,
                     total=?
-                WHERE year_id=? AND gl_code=?
+                WHERE id=?
             ')->execute([
-                $accountTitle,
                 $months['january'], $months['february'], $months['march'], $months['april'], $months['may'], $months['june'],
                 $months['july'], $months['august'], $months['september'], $months['october'], $months['november'], $months['december'],
-                $total, $monthlyYearId, $glCode,
+                $total, $existing['id'],
             ]);
         } else {
             $pdo->prepare('
-                INSERT INTO monthly_expenses_entries (year_id, gl_code, account_title, january, february, march, april, may, june, july, august, september, october, november, december, total)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO monthly_expenses_entries (year_id, account_id, january, february, march, april, may, june, july, august, september, october, november, december, total)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ')->execute([
-                $monthlyYearId, $glCode, $accountTitle,
+                $monthlyYearId, $accId,
                 $months['january'], $months['february'], $months['march'], $months['april'], $months['may'], $months['june'],
                 $months['july'], $months['august'], $months['september'], $months['october'], $months['november'], $months['december'],
                 $total,
