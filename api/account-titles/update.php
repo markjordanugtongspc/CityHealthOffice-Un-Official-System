@@ -31,6 +31,13 @@ class UpdateAccountTitleHandler extends BaseAccountTitlesHandler {
                 ? trim($input['accountTitle'] ?? $input['account_title'] ?? '')
                 : $existing['account_title'];
 
+            $category = isset($input['category'])
+                ? trim($input['category'])
+                : ($existing['category'] ?? 'mooe');
+            if ($category === '') {
+                $category = 'mooe';
+            }
+
             $displayOrder = isset($input['displayOrder']) || isset($input['display_order'])
                 ? (int)($input['displayOrder'] ?? $input['display_order'])
                 : (int)$existing['display_order'];
@@ -51,10 +58,10 @@ class UpdateAccountTitleHandler extends BaseAccountTitlesHandler {
 
             $stmt = $this->pdo->prepare('
                 UPDATE account_titles
-                SET gl_code = ?, account_title = ?, display_order = ?
+                SET gl_code = ?, account_title = ?, category = ?, display_order = ?
                 WHERE id = ?
             ');
-            $stmt->execute([$glCode, $accountTitle, $displayOrder, $id]);
+            $stmt->execute([$glCode, $accountTitle, $category, $displayOrder, $id]);
 
             $this->respondSuccess([
                 'message' => 'Account title updated successfully',
@@ -62,6 +69,7 @@ class UpdateAccountTitleHandler extends BaseAccountTitlesHandler {
                     'id' => $id,
                     'gl_code' => $glCode,
                     'account_title' => $accountTitle,
+                    'category' => $category,
                     'display_order' => $displayOrder
                 ]
             ]);

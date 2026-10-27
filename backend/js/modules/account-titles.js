@@ -32,8 +32,55 @@ export class AccountTitlesService {
         }
         return result.data || [];
     }
+
+    /**
+     * Fetch list of fund categories from database
+     */
+    static async fetchCategories() {
+        const apiBase = this.getApiBasePath();
+        const response = await fetch(`${apiBase}/api/account-titles/categories.php`, {
+            credentials: 'same-origin'
+        });
+        const result = await response.json();
+        if (!response.ok || !result.success) {
+            throw new Error(result.message || 'Failed to fetch categories');
+        }
+        return result.data || [];
+    }
 }
 // END: AccountTitlesService
+
+// START: AccountTitleValidator - Subchild helper for G/L code and Account Title input validation
+export class AccountTitleValidator {
+    /**
+     * G/L Code must be numbers only (0-9)
+     */
+    static validateGlCode(glCode) {
+        if (!glCode || !String(glCode).trim()) {
+            return { valid: false, message: 'G/L Code is required' };
+        }
+        const isNumeric = /^\d+$/.test(String(glCode).trim());
+        return {
+            valid: isNumeric,
+            message: isNumeric ? '' : 'G/L Code must be numbers only (no text or letters allowed).'
+        };
+    }
+
+    /**
+     * Account Title must be letters and text only (no numbers allowed)
+     */
+    static validateAccountTitle(title) {
+        if (!title || !String(title).trim()) {
+            return { valid: false, message: 'Account Title is required' };
+        }
+        const hasNumber = /\d/.test(String(title));
+        return {
+            valid: !hasNumber,
+            message: hasNumber ? 'Account Title must contain letters only (numbers are not allowed).' : ''
+        };
+    }
+}
+// END: AccountTitleValidator
 
 // START: AccountTitlesManager - Subchild class extending AccountTitlesService for CRUD operations
 export class AccountTitlesManager extends AccountTitlesService {
@@ -99,21 +146,43 @@ export class AccountTitlesManager extends AccountTitlesService {
 
 // State
 let accountTitles = [];
+let categoriesList = [];
+let selectedCategoryFilter = 'all'; // 'all' or category code
+let categoryPillSearchTerm = '';
 let currentPage = 1;
 let rowsPerPage = 10;
 let searchTerm = '';
 let sortDirection = 'asc'; // 'asc' or 'desc'
+
+// Category badges style helper
+const CATEGORY_COLORS = {
+    'mooe': 'bg-blue-50 text-blue-700 border-blue-200',
+    'sp-philhealth': 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    'sp-ntp': 'bg-amber-50 text-amber-700 border-amber-200',
+    'sp-mcp': 'bg-purple-50 text-purple-700 border-purple-200',
+    'sp-konsulta': 'bg-rose-50 text-rose-700 border-rose-200'
+};
 
 // START: getFilteredAndSortedRows - Filter and sort account titles rows
 function getFilteredAndSortedRows() {
     const term = searchTerm.trim().toLowerCase();
     let filtered = accountTitles;
 
+    // Filter by Category Pill
+    if (selectedCategoryFilter && selectedCategoryFilter !== 'all') {
+        filtered = filtered.filter((item) => {
+            const cat = (item.category || 'mooe').toLowerCase();
+            return cat === selectedCategoryFilter.toLowerCase();
+        });
+    }
+
+    // Filter by Search Input
     if (term) {
-        filtered = accountTitles.filter((item) => {
+        filtered = filtered.filter((item) => {
             const gl = String(item.gl_code || '').toLowerCase();
             const title = String(item.account_title || '').toLowerCase();
-            return gl.includes(term) || title.includes(term);
+            const cat = String(item.category || '').toLowerCase();
+            return gl.includes(term) || title.includes(term) || cat.includes(term);
         });
     }
 
@@ -126,6 +195,58 @@ function getFilteredAndSortedRows() {
     });
 }
 // END: getFilteredAndSortedRows
+
+// START: renderCategoryPills - Renders horizontal clickable text buttons for category filtering
+function renderCategoryPills() {
+    const container = document.getElementById('accountTitlesCategoryPillsContainer');
+    if (!container) return;
+
+    const term = categoryPillSearchTerm.trim().toLowerCase();
+
+    // Start with "All Funds"
+    const allOptions = [
+        { code: 'all', name: 'All Funds' },
+        ...categoriesList
+    ];
+
+    const filtered = allOptions.filter(cat => 
+        cat.name.toLowerCase().includes(term) || cat.code.toLowerCase().includes(term)
+    );
+
+    if (filtered.length === 0) {
+        container.innerHTML = `<span class="text-xs text-slate-400 py-1">No matching category pills</span>`;
+        return;
+    }
+
+    container.innerHTML = filtered.map(cat => {
+        const isSelected = selectedCategoryFilter === cat.code;
+        return `
+            <button type="button"
+                    data-category-code="${cat.code}"
+                    class="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer transition-all ${
+                        isSelected 
+                            ? 'bg-[#224796] text-white shadow-xs font-bold ring-2 ring-[#224796]/30' 
+                            : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 hover:border-slate-300'
+                    }">
+                <span>${cat.name}</span>
+                ${isSelected ? '<svg class="w-3.5 h-3.5 text-blue-200" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>' : ''}
+            </button>
+        `;
+    }).join('');
+
+    // Update active badge in toggle button
+    const badge = document.getElementById('accountTitlesCategoryActiveBadge');
+    if (badge) {
+        if (selectedCategoryFilter && selectedCategoryFilter !== 'all') {
+            badge.classList.remove('hidden');
+            const found = categoriesList.find(c => c.code === selectedCategoryFilter);
+            badge.textContent = found ? found.name : '1';
+        } else {
+            badge.classList.add('hidden');
+        }
+    }
+}
+// END: renderCategoryPills
 
 // START: renderSkeletonTable - Render Flowbite skeleton pulse rows while loading
 function renderSkeletonTable(count = 5) {
@@ -142,6 +263,9 @@ function renderSkeletonTable(count = 5) {
             </td>
             <td class="px-4 py-3">
                 <div class="h-2.5 bg-slate-200 rounded-full w-64 md:w-96 mb-1.5"></div>
+            </td>
+            <td class="whitespace-nowrap px-4 py-3">
+                <div class="h-5 bg-slate-200 rounded-full w-20"></div>
             </td>
             <td class="whitespace-nowrap px-4 py-3 text-center">
                 <div class="h-7 w-7 bg-slate-200 rounded-lg mx-auto"></div>
@@ -225,7 +349,7 @@ function renderTable() {
     if (visibleRows.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="4" class="px-4 py-8 text-center text-sm text-slate-500">
+                <td colspan="5" class="px-4 py-8 text-center text-sm text-slate-500">
                     No account titles found. Click "Add Account" to create one.
                 </td>
             </tr>
@@ -234,6 +358,10 @@ function renderTable() {
         tbody.innerHTML = visibleRows.map((row, index) => {
             const isStriped = index % 2 === 1;
             const rowNumber = startIndex + index + 1;
+            const catCode = row.category || 'mooe';
+            const catObj = categoriesList.find(c => c.code === catCode);
+            const catName = catObj ? catObj.name : (catCode === 'mooe' ? 'MOOE' : catCode);
+            const colorClass = CATEGORY_COLORS[catCode] || 'bg-slate-100 text-slate-700 border-slate-200';
 
             return `
                 <tr class="${isStriped ? 'bg-slate-50' : 'bg-white'} hover:bg-slate-100 transition-colors" data-row-id="${row.id}">
@@ -245,6 +373,11 @@ function renderTable() {
                     </td>
                     <td class="px-4 py-3 text-xs md:text-sm font-semibold text-slate-800">
                         ${row.account_title}
+                    </td>
+                    <td class="whitespace-nowrap px-4 py-3">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-semibold border ${colorClass}">
+                            ${catName}
+                        </span>
                     </td>
                     <td class="whitespace-nowrap px-4 py-3 text-center">
                         <div class="inline-flex items-center gap-1.5">
@@ -317,11 +450,27 @@ function renderTable() {
 }
 // END: renderTable
 
-// START: loadAccountTitlesData - Fetch account titles from API and refresh table
+// START: loadAccountTitlesData - Fetch account titles & categories from API and refresh table
 export async function loadAccountTitlesData() {
     renderSkeletonTable();
     try {
-        accountTitles = await AccountTitlesManager.fetchAll();
+        const [titles, categories] = await Promise.all([
+            AccountTitlesManager.fetchAll(),
+            AccountTitlesService.fetchCategories().catch((e) => {
+                console.warn('Failed to fetch categories, falling back:', e);
+                return [
+                    { code: 'mooe', name: 'MOOE' },
+                    { code: 'sp-philhealth', name: 'PhilHealth' },
+                    { code: 'sp-ntp', name: 'SPF NTP' },
+                    { code: 'sp-mcp', name: 'MCP Facility' },
+                    { code: 'sp-konsulta', name: 'Konsulta' }
+                ];
+            })
+        ]);
+
+        accountTitles = titles;
+        categoriesList = categories;
+        renderCategoryPills();
         renderTable();
     } catch (error) {
         console.error('Error loading account titles:', error);
@@ -330,7 +479,7 @@ export async function loadAccountTitlesData() {
         if (tbody) {
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="4" class="px-4 py-8 text-center text-sm text-rose-500">
+                    <td colspan="5" class="px-4 py-8 text-center text-sm text-rose-500">
                         Failed to load data. Please refresh the page.
                     </td>
                 </tr>
@@ -430,6 +579,51 @@ function bindEvents() {
     const prevBtn = document.getElementById('accountTitlesPrevPage');
     const nextBtn = document.getElementById('accountTitlesNextPage');
     const tbody = document.getElementById('accountTitlesTableBody');
+
+    // Category filter elements
+    const filterToggleBtn = document.getElementById('accountTitlesCategoryFilterToggleBtn');
+    const filterPanel = document.getElementById('accountTitlesCategoryFilterPanel');
+    const filterIcon = document.getElementById('accountTitlesCategoryFilterIcon');
+    const pillsContainer = document.getElementById('accountTitlesCategoryPillsContainer');
+    const categorySearchInput = document.getElementById('accountTitlesCategorySearchInput');
+
+    if (filterToggleBtn && filterPanel) {
+        filterToggleBtn.addEventListener('click', () => {
+            const isHidden = filterPanel.classList.contains('hidden');
+            if (isHidden) {
+                filterPanel.classList.remove('hidden');
+                filterToggleBtn.setAttribute('aria-expanded', 'true');
+                filterToggleBtn.classList.add('bg-blue-50', 'border-blue-300', 'text-blue-700');
+                if (filterIcon) filterIcon.classList.add('rotate-180', 'text-blue-600');
+                setTimeout(() => categorySearchInput?.focus(), 50);
+            } else {
+                filterPanel.classList.add('hidden');
+                filterToggleBtn.setAttribute('aria-expanded', 'false');
+                filterToggleBtn.classList.remove('bg-blue-50', 'border-blue-300', 'text-blue-700');
+                if (filterIcon) filterIcon.classList.remove('rotate-180', 'text-blue-600');
+            }
+        });
+    }
+
+    if (pillsContainer) {
+        pillsContainer.addEventListener('click', (e) => {
+            const pillBtn = e.target.closest('button[data-category-code]');
+            if (pillBtn) {
+                const code = pillBtn.dataset.categoryCode;
+                selectedCategoryFilter = code;
+                renderCategoryPills();
+                currentPage = 1;
+                renderTable();
+            }
+        });
+    }
+
+    if (categorySearchInput) {
+        categorySearchInput.addEventListener('input', (e) => {
+            categoryPillSearchTerm = e.target.value || '';
+            renderCategoryPills();
+        });
+    }
 
     if (searchInput) {
         searchInput.addEventListener('input', (e) => {

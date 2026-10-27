@@ -6,7 +6,7 @@ class ListAccountTitlesHandler extends BaseAccountTitlesHandler {
     public function handle(): void {
         try {
             $stmt = $this->pdo->query('
-                SELECT id, gl_code, account_title, created_at, updated_at
+                SELECT id, gl_code, account_title, category, created_at, updated_at
                 FROM account_titles
                 ORDER BY CAST(gl_code AS UNSIGNED) ASC, gl_code ASC
             ');

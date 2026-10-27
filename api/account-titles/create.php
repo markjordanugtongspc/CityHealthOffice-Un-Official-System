@@ -12,6 +12,10 @@ class CreateAccountTitleHandler extends BaseAccountTitlesHandler {
             $input = $this->getJsonInput();
             $glCode = trim($input['glCode'] ?? $input['gl_code'] ?? '');
             $accountTitle = trim($input['accountTitle'] ?? $input['account_title'] ?? '');
+            $category = trim($input['category'] ?? 'mooe');
+            if ($category === '') {
+                $category = 'mooe';
+            }
             $displayOrder = isset($input['displayOrder']) || isset($input['display_order'])
                 ? (int)($input['displayOrder'] ?? $input['display_order'])
                 : null;
@@ -36,10 +40,10 @@ class CreateAccountTitleHandler extends BaseAccountTitlesHandler {
             }
 
             $stmt = $this->pdo->prepare('
-                INSERT INTO account_titles (gl_code, account_title, display_order)
-                VALUES (?, ?, ?)
+                INSERT INTO account_titles (gl_code, account_title, category, display_order)
+                VALUES (?, ?, ?, ?)
             ');
-            $stmt->execute([$glCode, $accountTitle, $displayOrder]);
+            $stmt->execute([$glCode, $accountTitle, $category, $displayOrder]);
             $newId = (int)$this->pdo->lastInsertId();
 
             $this->respondSuccess([
@@ -48,6 +52,7 @@ class CreateAccountTitleHandler extends BaseAccountTitlesHandler {
                     'id' => $newId,
                     'gl_code' => $glCode,
                     'account_title' => $accountTitle,
+                    'category' => $category,
                     'display_order' => $displayOrder
                 ]
             ], 201);

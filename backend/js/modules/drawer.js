@@ -1797,6 +1797,10 @@ function ensureAccountTitlesDrawer() {
                                        placeholder="e.g. 1000 or 50201010"
                                        required
                                        class="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm sm:text-base font-mono font-bold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs" />
+                                <p id="at-glCode-tooltip" class="hidden text-xs text-rose-600 font-medium mt-1 flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                    <span>G/L Code must be numbers only (no letters or text allowed).</span>
+                                </p>
                             </div>
 
                             <!-- Account Title Field -->
@@ -1809,6 +1813,44 @@ function ensureAccountTitlesDrawer() {
                                        placeholder="e.g. Travelling Expenses"
                                        required
                                        class="w-full px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm sm:text-base font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs" />
+                                <p id="at-accountTitle-tooltip" class="hidden text-xs text-rose-600 font-medium mt-1 flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+                                    <span>Account Title must contain letters only (no numbers allowed).</span>
+                                </p>
+                            </div>
+
+                            <!-- Category / Fund Dropdown with Search (Flowbite searchable dropdown) -->
+                            <div class="space-y-1.5 relative">
+                                <label for="at-categoryBtn" class="block text-sm font-bold text-slate-800">
+                                    Fund Category <span class="text-rose-500">*</span>
+                                </label>
+                                <input type="hidden" id="at-category" name="category" value="mooe" />
+                                <button id="at-categoryBtn"
+                                        type="button"
+                                        data-dropdown-toggle="at-categoryDropdown"
+                                        data-dropdown-placement="bottom"
+                                        class="w-full flex items-center justify-between px-4 py-3 bg-white border border-slate-300 rounded-xl text-sm sm:text-base font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-blue-600 outline-hidden transition-all shadow-xs cursor-pointer text-left">
+                                    <span id="at-categorySelectedLabel" class="truncate">MOOE</span>
+                                    <svg class="w-4 h-4 ml-2 text-slate-400 shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                </button>
+                                
+                                <!-- Searchable Dropdown Menu -->
+                                <div id="at-categoryDropdown" class="z-50 hidden bg-white divide-y divide-slate-100 rounded-xl shadow-lg border border-slate-200 w-full max-w-sm overflow-hidden">
+                                    <div class="p-3 border-b border-slate-100">
+                                        <div class="relative">
+                                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-400">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m21 21-4.35-4.35M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z"/></svg>
+                                            </div>
+                                            <input type="text"
+                                                   id="at-categorySearchInput"
+                                                   placeholder="Search category..."
+                                                   class="w-full pl-9 pr-3 py-1.5 text-xs text-slate-900 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-hidden" />
+                                        </div>
+                                    </div>
+                                    <ul id="at-categoryList" class="p-2 text-sm text-slate-700 max-h-48 overflow-y-auto space-y-1" aria-labelledby="at-categoryBtn">
+                                        <!-- Categories dynamically rendered -->
+                                    </ul>
+                                </div>
                             </div>
                         </div>
 
@@ -1875,12 +1917,183 @@ function ensureAccountTitlesDrawer() {
 
     const submitBtn = document.getElementById('accountTitlesDrawerSubmitBtn');
     const errEl = document.getElementById('accountTitlesDrawerValidationError');
+    const glTooltip = document.getElementById('at-glCode-tooltip');
+    const titleTooltip = document.getElementById('at-accountTitle-tooltip');
+
+    // Category elements
+    const categoryHiddenInput = document.getElementById('at-category');
+    const categoryBtn = document.getElementById('at-categoryBtn');
+    const categorySelectedLabel = document.getElementById('at-categorySelectedLabel');
+    const categoryDropdown = document.getElementById('at-categoryDropdown');
+    const categorySearchInput = document.getElementById('at-categorySearchInput');
+    const categoryList = document.getElementById('at-categoryList');
+
+    let loadedCategories = [];
+
+    const loadCategoryOptions = async (selectedCode = 'mooe') => {
+        try {
+            if (!loadedCategories.length) {
+                const apiBase = getApiBasePath();
+                const res = await fetch(`${apiBase}/api/account-titles/categories.php`, { credentials: 'same-origin' });
+                const json = await res.json();
+                if (json.success && Array.isArray(json.data)) {
+                    loadedCategories = json.data;
+                }
+            }
+        } catch (err) {
+            console.warn('Failed to load categories:', err);
+        }
+
+        if (!loadedCategories.length) {
+            loadedCategories = [
+                { code: 'mooe', name: 'MOOE' },
+                { code: 'sp-philhealth', name: 'PhilHealth' },
+                { code: 'sp-ntp', name: 'SPF NTP' },
+                { code: 'sp-mcp', name: 'MCP Facility' },
+                { code: 'sp-konsulta', name: 'Konsulta' }
+            ];
+        }
+
+        renderCategoryList(selectedCode);
+    };
+
+    const renderCategoryList = (selectedCode = '', filterQuery = '') => {
+        if (!categoryList) return;
+        const currentSelected = selectedCode || categoryHiddenInput?.value || 'mooe';
+        const q = filterQuery.trim().toLowerCase();
+
+        const filtered = loadedCategories.filter(c => 
+            c.name.toLowerCase().includes(q) || c.code.toLowerCase().includes(q)
+        );
+
+        if (filtered.length === 0) {
+            categoryList.innerHTML = `<li class="px-3 py-2 text-xs text-slate-400 text-center">No categories found</li>`;
+            return;
+        }
+
+        categoryList.innerHTML = filtered.map(c => {
+            const isMatch = c.code === currentSelected;
+            return `
+                <li>
+                    <button type="button"
+                            data-code="${c.code}"
+                            data-name="${c.name}"
+                            class="w-full flex items-center justify-between px-3 py-2 text-xs md:text-sm font-semibold rounded-lg transition-colors cursor-pointer text-left ${isMatch ? 'bg-blue-50 text-blue-700 font-bold' : 'text-slate-700 hover:bg-slate-100'}">
+                        <span>${c.name}</span>
+                        ${isMatch ? '<svg class="w-4 h-4 text-blue-600 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg>' : ''}
+                    </button>
+                </li>
+            `;
+        }).join('');
+
+        // Update selected display label
+        const selObj = loadedCategories.find(c => c.code === currentSelected);
+        if (selObj && categorySelectedLabel) {
+            categorySelectedLabel.textContent = selObj.name;
+        }
+    };
+
+    // Toggle category dropdown
+    categoryBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isHidden = categoryDropdown?.classList.contains('hidden');
+        if (isHidden) {
+            categoryDropdown?.classList.remove('hidden');
+            if (categorySearchInput) {
+                categorySearchInput.value = '';
+                renderCategoryList(categoryHiddenInput?.value || 'mooe', '');
+                setTimeout(() => categorySearchInput.focus(), 50);
+            }
+        } else {
+            categoryDropdown?.classList.add('hidden');
+        }
+    });
+
+    categorySearchInput?.addEventListener('input', (e) => {
+        const val = e.target.value || '';
+        renderCategoryList(categoryHiddenInput?.value || 'mooe', val);
+    });
+
+    categoryList?.addEventListener('click', (e) => {
+        const btn = e.target.closest('button[data-code]');
+        if (btn) {
+            const code = btn.dataset.code;
+            const name = btn.dataset.name;
+            if (categoryHiddenInput) categoryHiddenInput.value = code;
+            if (categorySelectedLabel) categorySelectedLabel.textContent = name;
+            categoryDropdown?.classList.add('hidden');
+            renderCategoryList(code);
+        }
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!categoryDropdown?.contains(e.target) && !categoryBtn?.contains(e.target)) {
+            categoryDropdown?.classList.add('hidden');
+        }
+    });
+
     let duplicateCheckTimer = null;
+
+    // Strict validation: GL Code = numbers only (0-9), Account Title = letters, spaces, hyphens, periods only (no numbers)
+    const validateInputs = () => {
+        const glVal = glCodeInput?.value || '';
+        const titleVal = accountTitleInput?.value || '';
+
+        let isValid = true;
+        let glHasError = false;
+        let titleHasError = false;
+
+        // Check GL Code: If non-digits exist
+        if (glVal && !/^\d+$/.test(glVal.trim())) {
+            glHasError = true;
+            isValid = false;
+        }
+
+        // Check Account Title: If any number exists
+        if (titleVal && /\d/.test(titleVal)) {
+            titleHasError = true;
+            isValid = false;
+        }
+
+        // Show/hide tooltips
+        if (glTooltip) {
+            if (glHasError) {
+                glTooltip.classList.remove('hidden');
+                glCodeInput?.classList.add('border-rose-400', 'focus:border-rose-500', 'focus:ring-rose-200');
+            } else {
+                glTooltip.classList.add('hidden');
+                glCodeInput?.classList.remove('border-rose-400', 'focus:border-rose-500', 'focus:ring-rose-200');
+            }
+        }
+
+        if (titleTooltip) {
+            if (titleHasError) {
+                titleTooltip.classList.remove('hidden');
+                accountTitleInput?.classList.add('border-rose-400', 'focus:border-rose-500', 'focus:ring-rose-200');
+            } else {
+                titleTooltip.classList.add('hidden');
+                accountTitleInput?.classList.remove('border-rose-400', 'focus:border-rose-500', 'focus:ring-rose-200');
+            }
+        }
+
+        if (!isValid) {
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.title = glHasError ? 'G/L Code must be numbers only.' : 'Account Title cannot contain numbers.';
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            }
+        }
+
+        return isValid;
+    };
 
     const checkDuplicate = async () => {
         const id = idInput?.value || '';
         const glCode = glCodeInput?.value?.trim() || '';
         const title = accountTitleInput?.value?.trim() || '';
+
+        const formatValid = validateInputs();
+        if (!formatValid) return;
 
         if (!glCode && !title) {
             if (submitBtn) {
@@ -1903,6 +2116,9 @@ function ensureAccountTitlesDrawer() {
                 credentials: 'same-origin'
             });
             const data = await res.json();
+
+            // Re-check format validity before enabling
+            if (!validateInputs()) return;
 
             if (data.success && (data.glExists || data.titleExists)) {
                 let errorMsg = '';
@@ -1940,6 +2156,9 @@ function ensureAccountTitlesDrawer() {
     };
 
     const onInputChange = () => {
+        const formatValid = validateInputs();
+        if (!formatValid) return;
+
         clearTimeout(duplicateCheckTimer);
         duplicateCheckTimer = setTimeout(checkDuplicate, 250);
     };
@@ -1952,6 +2171,11 @@ function ensureAccountTitlesDrawer() {
         const id = idInput?.value || null;
         const glCode = glCodeInput?.value?.trim();
         const accountTitle = accountTitleInput?.value?.trim();
+        const category = categoryHiddenInput?.value?.trim() || 'mooe';
+
+        if (!validateInputs()) {
+            return;
+        }
 
         if (!glCode) {
             if (errEl) {
@@ -1983,10 +2207,14 @@ function ensureAccountTitlesDrawer() {
                 gl_code: glCode,
                 glCode,
                 account_title: accountTitle,
-                accountTitle
+                accountTitle,
+                category
             });
         }
     });
+
+    // Attach category loader to drawer element for callers
+    drawerEl._loadCategories = loadCategoryOptions;
 }
 // END: ensureAccountTitlesDrawer
 
@@ -2009,6 +2237,20 @@ export function showAccountTitlesCreateDrawer({ onConfirm }) {
 
     const titleInput = document.getElementById('at-accountTitle');
     if (titleInput) titleInput.value = '';
+
+    const glTooltip = document.getElementById('at-glCode-tooltip');
+    if (glTooltip) glTooltip.classList.add('hidden');
+
+    const titleTooltip = document.getElementById('at-accountTitle-tooltip');
+    if (titleTooltip) titleTooltip.classList.add('hidden');
+
+    const categoryHidden = document.getElementById('at-category');
+    if (categoryHidden) categoryHidden.value = 'mooe';
+
+    const drawerEl = document.getElementById('accountTitlesDrawer');
+    if (drawerEl && typeof drawerEl._loadCategories === 'function') {
+        drawerEl._loadCategories('mooe');
+    }
 
     const submitBtn = document.getElementById('accountTitlesDrawerSubmitBtn');
     if (submitBtn) {
@@ -2058,6 +2300,21 @@ export function showAccountTitlesEditDrawer({ accountTitle, onConfirm }) {
 
     const titleInput = document.getElementById('at-accountTitle');
     if (titleInput) titleInput.value = accountTitle?.account_title || '';
+
+    const catCode = accountTitle?.category || 'mooe';
+    const categoryHidden = document.getElementById('at-category');
+    if (categoryHidden) categoryHidden.value = catCode;
+
+    const drawerEl = document.getElementById('accountTitlesDrawer');
+    if (drawerEl && typeof drawerEl._loadCategories === 'function') {
+        drawerEl._loadCategories(catCode);
+    }
+
+    const glTooltip = document.getElementById('at-glCode-tooltip');
+    if (glTooltip) glTooltip.classList.add('hidden');
+
+    const titleTooltip = document.getElementById('at-accountTitle-tooltip');
+    if (titleTooltip) titleTooltip.classList.add('hidden');
 
     const submitBtn = document.getElementById('accountTitlesDrawerSubmitBtn');
     if (submitBtn) {
