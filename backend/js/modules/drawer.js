@@ -20,6 +20,8 @@ let accountTitlesDrawerInstance = null;
 let accountTitlesDrawerOnConfirm = null;
 let itemizedDrawerInstance = null;
 let itemizedDrawerOnConfirm = null;
+let exportConfigDrawerInstance = null;
+let exportConfigDrawerOnApply = null;
 
 function hideFloatingUI() {
     const chatbotRoot = document.getElementById('ai-chatbot-root');
@@ -3029,7 +3031,531 @@ export async function showItemizedEditDrawer({ transaction, onConfirm } = {}) {
         amountInput?.focus();
     }, 100);
 }
-// END: showItemizedEditDrawer
+// START: Export Configuration Drawer
+function ensureExportConfigDrawer() {
+    if (document.getElementById('exportConfigDrawer')) return;
+
+    const drawerHTML = `
+        <div id="exportConfigDrawer"
+             class="fixed top-0 right-0 z-[80] h-screen p-4 sm:p-6 overflow-y-auto transition-transform translate-x-full bg-white w-full sm:w-[540px] md:w-[620px] shadow-2xl flex flex-col justify-between"
+             tabindex="-1"
+             aria-labelledby="exportDrawerLabel">
+            <div>
+                <!-- Header -->
+                <div class="flex items-center justify-between pb-4 border-b border-slate-200">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider bg-blue-100 text-[#224796]">Report Settings</span>
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-100 text-emerald-800">Auto Orientation (<= 5 cols: Portrait, > 5 cols: Landscape)</span>
+                        </div>
+                        <h5 id="exportDrawerLabel" class="inline-flex items-center text-lg sm:text-xl font-black uppercase tracking-tight text-slate-900 mt-1">
+                            Export Configuration
+                        </h5>
+                        <p id="exportDrawerSublabel" class="text-xs sm:text-sm text-slate-500 mt-0.5">
+                            Customize report parameters, filters, search criteria, and visible columns.
+                        </p>
+                    </div>
+                    <button type="button"
+                            id="exportDrawerCloseBtn"
+                            class="text-slate-400 bg-transparent hover:bg-slate-200 hover:text-slate-900 rounded-lg text-sm w-8 h-8 inline-flex items-center justify-center cursor-pointer transition-colors"
+                            aria-label="Close drawer">
+                        <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 14 14" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Form Content -->
+                <div class="py-5 space-y-5">
+                    <!-- Data Source & Year Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label for="export-drawer-source" class="block text-xs font-black uppercase tracking-wider text-slate-700">
+                                Data Source <span class="text-rose-500">*</span>
+                            </label>
+                            <select id="export-drawer-source"
+                                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-[#224796] focus:ring-4 focus:ring-blue-500/10 focus:border-[#224796] outline-hidden transition-all shadow-xs cursor-pointer">
+                            </select>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label for="export-drawer-year" class="block text-xs font-black uppercase tracking-wider text-slate-700">
+                                Fiscal Year <span class="text-rose-500">*</span>
+                            </label>
+                            <select id="export-drawer-year"
+                                    class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-bold text-emerald-700 focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-600 outline-hidden transition-all shadow-xs cursor-pointer">
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Category Filter (Budget, Fund Downloaded, Account Titles) -->
+                    <div id="export-drawer-category-wrap" class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label for="export-drawer-category" class="block text-xs font-black uppercase tracking-wider text-slate-700">
+                                Category Selection
+                            </label>
+                            <span id="export-category-hint" class="text-[11px] font-semibold text-slate-400">Default: ALL</span>
+                        </div>
+                        <select id="export-drawer-category"
+                                class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-800 focus:ring-4 focus:ring-blue-500/10 focus:border-[#224796] outline-hidden transition-all shadow-xs cursor-pointer">
+                            <option value="all">ALL CATEGORIES</option>
+                        </select>
+                    </div>
+
+                    <!-- GL Code Filter with Dropdown Search -->
+                    <div id="export-drawer-gl-wrap" class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label for="export-drawer-gl" class="block text-xs font-black uppercase tracking-wider text-slate-700">
+                                G/L Code Selection
+                            </label>
+                            <span class="text-[11px] font-semibold text-slate-400">Dropdown Search</span>
+                        </div>
+                        <div class="relative">
+                            <input type="text"
+                                   id="export-drawer-gl"
+                                   placeholder="Type or select G/L code (e.g. 50201010-00 or leave for ALL)..."
+                                   autocomplete="off"
+                                   class="w-full pl-9 pr-8 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-mono font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-[#224796] outline-hidden transition-all shadow-xs" />
+                            <svg class="w-4 h-4 absolute left-3 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                            </svg>
+                            <button type="button" id="export-clear-gl" class="hidden absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                            <!-- GL Dropdown Suggestions -->
+                            <div id="export-gl-suggestions"
+                                 class="hidden absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl divide-y divide-slate-100 text-xs">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Account Title / Program Title Filter with Dropdown Search -->
+                    <div id="export-drawer-title-wrap" class="space-y-1.5">
+                        <div class="flex items-center justify-between">
+                            <label for="export-drawer-title" id="export-drawer-title-label" class="block text-xs font-black uppercase tracking-wider text-slate-700">
+                                Account Title / Program
+                            </label>
+                            <span class="text-[11px] font-semibold text-slate-400">Dropdown Search</span>
+                        </div>
+                        <div class="relative">
+                            <input type="text"
+                                   id="export-drawer-title"
+                                   placeholder="Search and select title (or leave empty for ALL)..."
+                                   autocomplete="off"
+                                   class="w-full pl-9 pr-8 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-[#224796] outline-hidden transition-all shadow-xs" />
+                            <svg class="w-4 h-4 absolute left-3 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                            </svg>
+                            <button type="button" id="export-clear-title" class="hidden absolute right-2.5 top-2.5 text-slate-400 hover:text-slate-600">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                            <!-- Title Dropdown Suggestions -->
+                            <div id="export-title-suggestions"
+                                 class="hidden absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-white border border-slate-200 rounded-xl shadow-xl divide-y divide-slate-100 text-xs">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Month Filter (Used by Fund Downloaded & Itemized) -->
+                    <div id="export-drawer-month-wrap" class="space-y-1.5">
+                        <label for="export-drawer-month" class="block text-xs font-black uppercase tracking-wider text-slate-700">
+                            Month Filter
+                        </label>
+                        <select id="export-drawer-month"
+                                class="w-full px-3.5 py-2.5 bg-white border border-slate-300 rounded-xl text-sm font-semibold text-slate-800 focus:ring-4 focus:ring-blue-500/10 focus:border-[#224796] outline-hidden transition-all shadow-xs cursor-pointer">
+                            <option value="all">ALL MONTHS (JANUARY - DECEMBER)</option>
+                            <option value="january">January</option>
+                            <option value="february">February</option>
+                            <option value="march">March</option>
+                            <option value="april">April</option>
+                            <option value="may">May</option>
+                            <option value="june">June</option>
+                            <option value="july">July</option>
+                            <option value="august">August</option>
+                            <option value="september">September</option>
+                            <option value="october">October</option>
+                            <option value="november">November</option>
+                            <option value="december">December</option>
+                        </select>
+                    </div>
+
+                    <!-- General Keyword Search & Sort Order -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div class="sm:col-span-2 space-y-1.5">
+                            <label for="export-drawer-search" class="block text-xs font-black uppercase tracking-wider text-slate-700">
+                                Keywords Search
+                            </label>
+                            <div class="relative">
+                                <input type="text"
+                                       id="export-drawer-search"
+                                       placeholder="Filter any text or numbers..."
+                                       class="w-full pl-9 pr-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-medium text-slate-900 focus:ring-4 focus:ring-blue-500/10 focus:border-[#224796] outline-hidden transition-all shadow-xs" />
+                                <svg class="w-4 h-4 absolute left-3 top-3 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </div>
+                        </div>
+                        <div class="space-y-1.5">
+                            <label for="export-drawer-sort" class="block text-xs font-black uppercase tracking-wider text-slate-700">
+                                Sort Order
+                            </label>
+                            <select id="export-drawer-sort"
+                                    class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-sm font-semibold text-slate-800 focus:ring-4 focus:ring-blue-500/10 focus:border-[#224796] outline-hidden transition-all shadow-xs cursor-pointer">
+                                <option value="none">Default Order</option>
+                                <option value="name">Name / Title (A-Z)</option>
+                                <option value="id">G/L Code / ID</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Column Toggles Container -->
+                    <div class="space-y-2 pt-2 border-t border-slate-200">
+                        <div class="flex items-center justify-between">
+                            <label class="block text-xs font-black uppercase tracking-wider text-slate-700">
+                                Visible Columns
+                            </label>
+                            <div class="flex items-center gap-2">
+                                <button type="button" id="export-drawer-select-all-cols" class="text-[11px] font-bold text-[#224796] hover:underline uppercase cursor-pointer">Select All</button>
+                                <span class="text-slate-300">|</span>
+                                <button type="button" id="export-drawer-clear-cols" class="text-[11px] font-bold text-slate-500 hover:underline uppercase cursor-pointer">Clear</button>
+                            </div>
+                        </div>
+                        <div id="export-drawer-columns-list" class="grid grid-cols-2 gap-2 max-h-44 overflow-y-auto p-1 bg-slate-50 rounded-xl border border-slate-200">
+                            <!-- Injected dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Drawer Footer Buttons -->
+            <div class="pt-4 border-t border-slate-200 flex items-center justify-between gap-3 bg-white mt-auto">
+                <button type="button"
+                        id="exportDrawerCancelBtn"
+                        class="px-5 py-2.5 rounded-xl border border-slate-300 text-sm font-bold text-slate-700 bg-white hover:bg-slate-100 transition-colors cursor-pointer">
+                    Cancel
+                </button>
+                <button type="button"
+                        id="exportDrawerApplyBtn"
+                        class="px-6 py-2.5 rounded-xl bg-[#224796] hover:bg-[#1a3875] text-white text-sm font-bold shadow-md hover:shadow-lg transition-all duration-200 flex items-center gap-2 cursor-pointer">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    <span>Apply & Refresh Preview</span>
+                </button>
+            </div>
+        </div>
+    `;
+
+    document.body.insertAdjacentHTML('beforeend', drawerHTML);
+
+    const drawerEl = document.getElementById('exportConfigDrawer');
+    const closeBtn = document.getElementById('exportDrawerCloseBtn');
+    const cancelBtn = document.getElementById('exportDrawerCancelBtn');
+
+    if (drawerEl) {
+        exportConfigDrawerInstance = new Drawer(drawerEl, {
+            placement: 'right',
+            backdrop: 'dynamic',
+            backdropClasses: 'bg-slate-900/40 backdrop-blur-sm fixed inset-0 z-[70]'
+        });
+
+        const hideDrawer = () => {
+            exportConfigDrawerInstance?.hide();
+            showFloatingUI();
+        };
+
+        closeBtn?.addEventListener('click', hideDrawer);
+        cancelBtn?.addEventListener('click', hideDrawer);
+    }
+}
+
+export function showExportConfigDrawer({ currentFilters, columns, sources, optionsData = {}, onApply, onSourceChange }) {
+    ensureExportConfigDrawer();
+    exportConfigDrawerOnApply = onApply;
+
+    const sourceSelect = document.getElementById('export-drawer-source');
+    const yearSelect = document.getElementById('export-drawer-year');
+    const categorySelect = document.getElementById('export-drawer-category');
+    const categoryWrap = document.getElementById('export-drawer-category-wrap');
+    const glInput = document.getElementById('export-drawer-gl');
+    const glWrap = document.getElementById('export-drawer-gl-wrap');
+    const titleInput = document.getElementById('export-drawer-title');
+    const titleWrap = document.getElementById('export-drawer-title-wrap');
+    const titleLabel = document.getElementById('export-drawer-title-label');
+    const monthSelect = document.getElementById('export-drawer-month');
+    const monthWrap = document.getElementById('export-drawer-month-wrap');
+    const searchInput = document.getElementById('export-drawer-search');
+    const sortSelect = document.getElementById('export-drawer-sort');
+    const columnsList = document.getElementById('export-drawer-columns-list');
+    const selectAllBtn = document.getElementById('export-drawer-select-all-cols');
+    const clearColsBtn = document.getElementById('export-drawer-clear-cols');
+    const applyBtn = document.getElementById('exportDrawerApplyBtn');
+
+    const glSuggestions = document.getElementById('export-gl-suggestions');
+    const titleSuggestions = document.getElementById('export-title-suggestions');
+    const clearGlBtn = document.getElementById('export-clear-gl');
+    const clearTitleBtn = document.getElementById('export-clear-title');
+
+    // Function to update field visibility dynamically based on source without modal
+    const updateFieldsForSource = (selectedSource) => {
+        if (selectedSource === 'dashboard') {
+            categoryWrap?.classList.add('hidden');
+            glWrap?.classList.add('hidden');
+            titleWrap?.classList.add('hidden');
+            monthWrap?.classList.add('hidden');
+        } else if (selectedSource === 'budget') {
+            categoryWrap?.classList.remove('hidden');
+            glWrap?.classList.remove('hidden');
+            titleWrap?.classList.remove('hidden');
+            if (titleLabel) titleLabel.textContent = 'Account Title';
+            monthWrap?.classList.add('hidden');
+        } else if (selectedSource === 'specialFund' || selectedSource === 'fundDownloaded') {
+            categoryWrap?.classList.remove('hidden');
+            glWrap?.classList.remove('hidden');
+            titleWrap?.classList.remove('hidden');
+            if (titleLabel) titleLabel.textContent = 'Program / Fund Title';
+            monthWrap?.classList.remove('hidden');
+        } else if (selectedSource === 'accountTitles') {
+            categoryWrap?.classList.remove('hidden');
+            glWrap?.classList.remove('hidden');
+            titleWrap?.classList.remove('hidden');
+            if (titleLabel) titleLabel.textContent = 'Account Title';
+            monthWrap?.classList.add('hidden');
+        } else if (selectedSource === 'itemized') {
+            categoryWrap?.classList.add('hidden');
+            glWrap?.classList.remove('hidden');
+            titleWrap?.classList.remove('hidden');
+            if (titleLabel) titleLabel.textContent = 'Payee / Particulars';
+            monthWrap?.classList.remove('hidden');
+        } else {
+            categoryWrap?.classList.add('hidden');
+            glWrap?.classList.add('hidden');
+            titleWrap?.classList.add('hidden');
+            monthWrap?.classList.add('hidden');
+        }
+    };
+
+    // Populate Sources
+    if (sourceSelect) {
+        sourceSelect.innerHTML = sources.map(s => `<option value="${s.value}" ${currentFilters.source === s.value ? 'selected' : ''}>${s.label}</option>`).join('');
+        sourceSelect.onchange = () => {
+            updateFieldsForSource(sourceSelect.value);
+            if (onSourceChange) {
+                onSourceChange(sourceSelect.value);
+            }
+        };
+    }
+
+    // Populate Years
+    if (yearSelect) {
+        const currentYear = new Date().getFullYear();
+        const years = [];
+        for (let y = currentYear + 1; y >= 2018; y--) years.push(y);
+        yearSelect.innerHTML = years.map(y => `<option value="${y}" ${Number(currentFilters.year) === y ? 'selected' : ''}>${y}</option>`).join('');
+    }
+
+    // Adapt Controls initially based on current source
+    updateFieldsForSource(currentFilters.source || 'budget');
+
+    // Populate Categories if provided
+    if (categorySelect && optionsData.categories) {
+        let catOptions = `<option value="all">ALL CATEGORIES</option>`;
+        optionsData.categories.forEach(c => {
+            const code = c.code || c.category || c.id;
+            const name = c.name || c.category_name || code;
+            const sel = (currentFilters.category === code) ? 'selected' : '';
+            catOptions += `<option value="${code}" ${sel}>${name.toUpperCase()}</option>`;
+        });
+        categorySelect.innerHTML = catOptions;
+    } else if (categorySelect) {
+        categorySelect.value = currentFilters.category || 'all';
+    }
+
+    // Populate GL Code & Title
+    if (glInput) {
+        glInput.value = currentFilters.glCode || '';
+        clearGlBtn?.classList.toggle('hidden', !glInput.value);
+    }
+    if (titleInput) {
+        titleInput.value = currentFilters.accountTitle || currentFilters.programTitle || '';
+        clearTitleBtn?.classList.toggle('hidden', !titleInput.value);
+    }
+
+    // Setup GL Suggestions
+    const glList = optionsData.glCodes || [];
+    const renderGlSuggestions = (filterText = '') => {
+        if (!glSuggestions) return;
+        const q = filterText.trim().toLowerCase();
+        const matches = glList.filter(item => {
+            const gl = (item.glCode || item.gl_code || '').toLowerCase();
+            const title = (item.accountTitle || item.account_title || item.program_title || '').toLowerCase();
+            return !q || gl.includes(q) || title.includes(q);
+        }).slice(0, 25);
+
+        if (matches.length === 0) {
+            glSuggestions.innerHTML = `<div class="px-3 py-2 text-slate-400 italic">No matching G/L code found</div>`;
+        } else {
+            glSuggestions.innerHTML = matches.map(m => `
+                <div class="px-3 py-2 hover:bg-blue-50 cursor-pointer gl-suggestion-item flex items-center justify-between"
+                     data-gl="${m.glCode || m.gl_code}" data-title="${m.accountTitle || m.account_title || m.program_title || ''}">
+                    <span class="font-mono font-bold text-[#224796]">${m.glCode || m.gl_code}</span>
+                    <span class="text-slate-600 truncate max-w-[200px] ml-2 text-right">${m.accountTitle || m.account_title || m.program_title || ''}</span>
+                </div>
+            `).join('');
+
+            glSuggestions.querySelectorAll('.gl-suggestion-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    if (glInput) glInput.value = el.dataset.gl;
+                    if (titleInput && el.dataset.title && !titleInput.value) {
+                        titleInput.value = el.dataset.title;
+                        clearTitleBtn?.classList.remove('hidden');
+                    }
+                    clearGlBtn?.classList.remove('hidden');
+                    glSuggestions.classList.add('hidden');
+                });
+            });
+        }
+        glSuggestions.classList.remove('hidden');
+    };
+
+    if (glInput) {
+        glInput.onfocus = () => renderGlSuggestions(glInput.value);
+        glInput.oninput = () => {
+            clearGlBtn?.classList.toggle('hidden', !glInput.value);
+            renderGlSuggestions(glInput.value);
+        };
+    }
+    clearGlBtn?.addEventListener('click', () => {
+        if (glInput) glInput.value = '';
+        clearGlBtn.classList.add('hidden');
+        glSuggestions?.classList.add('hidden');
+    });
+
+    // Setup Title Suggestions
+    const titlesList = optionsData.titles || [];
+    const renderTitleSuggestions = (filterText = '') => {
+        if (!titleSuggestions) return;
+        const q = filterText.trim().toLowerCase();
+        const matches = titlesList.filter(item => {
+            const t = (item.title || item.account_title || item.program_title || item.accountTitle || '').toLowerCase();
+            return !q || t.includes(q);
+        }).slice(0, 25);
+
+        if (matches.length === 0) {
+            titleSuggestions.innerHTML = `<div class="px-3 py-2 text-slate-400 italic">No matching title found</div>`;
+        } else {
+            titleSuggestions.innerHTML = matches.map(m => `
+                <div class="px-3 py-2 hover:bg-blue-50 cursor-pointer title-suggestion-item flex items-center justify-between"
+                     data-title="${m.title || m.account_title || m.program_title || m.accountTitle}"
+                     data-gl="${m.glCode || m.gl_code || ''}">
+                    <span class="font-semibold text-slate-800">${m.title || m.account_title || m.program_title || m.accountTitle}</span>
+                    ${m.glCode || m.gl_code ? `<span class="font-mono text-slate-400 ml-2 text-xs">${m.glCode || m.gl_code}</span>` : ''}
+                </div>
+            `).join('');
+
+            titleSuggestions.querySelectorAll('.title-suggestion-item').forEach(el => {
+                el.addEventListener('click', () => {
+                    if (titleInput) titleInput.value = el.dataset.title;
+                    if (glInput && el.dataset.gl && !glInput.value) {
+                        glInput.value = el.dataset.gl;
+                        clearGlBtn?.classList.remove('hidden');
+                    }
+                    clearTitleBtn?.classList.remove('hidden');
+                    titleSuggestions.classList.add('hidden');
+                });
+            });
+        }
+        titleSuggestions.classList.remove('hidden');
+    };
+
+    if (titleInput) {
+        titleInput.onfocus = () => renderTitleSuggestions(titleInput.value);
+        titleInput.oninput = () => {
+            clearTitleBtn?.classList.toggle('hidden', !titleInput.value);
+            renderTitleSuggestions(titleInput.value);
+        };
+    }
+    clearTitleBtn?.addEventListener('click', () => {
+        if (titleInput) titleInput.value = '';
+        clearTitleBtn.classList.add('hidden');
+        titleSuggestions?.classList.add('hidden');
+    });
+
+    // Close suggestions when clicking outside
+    document.addEventListener('click', (e) => {
+        if (glWrap && !glWrap.contains(e.target)) glSuggestions?.classList.add('hidden');
+        if (titleWrap && !titleWrap.contains(e.target)) titleSuggestions?.classList.add('hidden');
+    });
+
+    // Month & Search & Sort
+    if (monthSelect) monthSelect.value = currentFilters.month || 'all';
+    if (searchInput) searchInput.value = currentFilters.search || '';
+    if (sortSelect) sortSelect.value = currentFilters.sortBy || 'none';
+
+    // Columns Toggles update helper
+    const updateColumnsUI = (cols, activeSelected = []) => {
+        if (!columnsList) return;
+        if (!cols || cols.length === 0) {
+            columnsList.innerHTML = `<div class="col-span-2 p-3 text-center text-xs text-slate-400 italic">No customizable columns for this source</div>`;
+            return;
+        }
+        columnsList.innerHTML = cols.map(c => `
+            <label class="flex items-center p-2 rounded-lg bg-white border border-slate-200 cursor-pointer hover:bg-slate-100 transition-colors">
+                <input type="checkbox" value="${c.id}" class="w-4 h-4 text-[#224796] rounded border-slate-300 focus:ring-[#224796] cursor-pointer export-col-toggle"
+                       ${activeSelected.length === 0 || activeSelected.includes(c.id) ? 'checked' : ''}>
+                <span class="ml-2 text-xs font-semibold text-slate-800 truncate" title="${c.label}">${c.label}</span>
+            </label>
+        `).join('');
+    };
+
+    updateColumnsUI(columns, currentFilters.columns);
+
+    // Save drawer instance update helper on element so export.js can refresh columns without reopening
+    const drawerRoot = document.getElementById('exportConfigDrawer');
+    if (drawerRoot) {
+        drawerRoot._updateColumns = updateColumnsUI;
+    }
+
+    selectAllBtn?.addEventListener('click', () => {
+        columnsList?.querySelectorAll('.export-col-toggle').forEach(box => box.checked = true);
+    });
+
+    clearColsBtn?.addEventListener('click', () => {
+        columnsList?.querySelectorAll('.export-col-toggle').forEach(box => box.checked = false);
+    });
+
+    // Apply Button Handler
+    if (applyBtn) {
+        applyBtn.onclick = () => {
+            const activeCols = [];
+            columnsList?.querySelectorAll('.export-col-toggle:checked').forEach(cb => activeCols.push(cb.value));
+
+            const newFilters = {
+                source: sourceSelect?.value || 'budget',
+                year: Number(yearSelect?.value) || new Date().getFullYear(),
+                category: categorySelect?.value || 'all',
+                glCode: (glInput?.value || '').trim(),
+                accountTitle: (titleInput?.value || '').trim(),
+                programTitle: (titleInput?.value || '').trim(),
+                month: monthSelect?.value || 'all',
+                search: (searchInput?.value || '').trim(),
+                sortBy: sortSelect?.value || 'none',
+                columns: activeCols.length > 0 ? activeCols : columns.map(c => c.id)
+            };
+
+            if (exportConfigDrawerOnApply) {
+                exportConfigDrawerOnApply(newFilters);
+            }
+
+            exportConfigDrawerInstance?.hide();
+            showFloatingUI();
+        };
+    }
+
+    hideFloatingUI();
+    exportConfigDrawerInstance?.show();
+}
+// END: Export Configuration Drawer
+
 
 
 

@@ -28,6 +28,25 @@ requireAuth();
         class="main-content ml-0 w-full max-w-full lg:w-auto lg:ml-80! lg:group-[.sidebar-collapsed]/body:!ml-[4.5rem] min-h-screen transition-all duration-300 flex-1 flex flex-col overflow-hidden!">
         <!-- Content Area (Scrollable) -->
         <main class="flex-1 min-h-0 overflow-y-auto overflow-x-hidden p-4 md:p-6 pb-10 md:pb-12 lg:pb-16">
+            <!-- Dashboard Action Bar (Print / Export live dashboard) -->
+            <div class="mb-5 flex items-center justify-between gap-4 invisible-on-print dashboard-non-printable">
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">Executive Dashboard</h1>
+                    <p class="text-xs sm:text-sm text-slate-500">Live healthcare finances, budget allocations & analytics overview</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="dashboardPrintBtn" type="button"
+                        class="inline-flex items-center gap-2 px-3.5 py-2 bg-[#224796] hover:bg-[#1a3875] text-white text-xs sm:text-sm font-bold rounded-xl shadow-sm transition-all duration-200 cursor-pointer active:scale-95">
+                        <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z">
+                            </path>
+                        </svg>
+                        <span>Print Dashboard</span>
+                    </button>
+                </div>
+            </div>
+
             <!-- Stats Cards Grid (Rectangular Box Design with Watermark SVG Icons) -->
             <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 md:gap-5">
                 <!-- Stats Card 1: TOTAL BUDGET (Blue) -->

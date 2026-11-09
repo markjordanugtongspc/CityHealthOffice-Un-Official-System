@@ -456,8 +456,23 @@ body.app-shell {
 
     /* DEFAULT PAGE SETTINGS */
     @page {
-        size: auto;
+        size: portrait;
         margin: 10mm;
+    }
+
+    /* Force landscape when table has more than 5 columns */
+    @page landscape-print-page {
+        size: landscape;
+        margin: 8mm;
+    }
+
+    body.print-force-landscape {
+        page: landscape-print-page !important;
+    }
+
+    body.print-force-landscape #export-template {
+        width: 100% !important;
+        max-width: 100% !important;
     }
 
     /* Reset body for clean print */
@@ -469,9 +484,9 @@ body.app-shell {
         print-color-adjust: exact !important;
     }
 
-    /* High-Level Isolation: Hide everything except the report templates */
-    body:not(.page-voucher):not(.voucher-print-window) main,
-    body:not(.page-voucher):not(.voucher-print-window) #spaContentContainer,
+    /* High-Level Isolation: Hide everything except the report templates & dashboard print view */
+    body:not(.page-voucher):not(.voucher-print-window):not(.printing-dashboard) main,
+    body:not(.page-voucher):not(.voucher-print-window):not(.printing-dashboard) #spaContentContainer,
     #sidebar,
     header,
     nav,
@@ -482,12 +497,47 @@ body.app-shell {
         display: none !important;
     }
 
+    /* Print styles when printing the Live Dashboard */
+    body.printing-dashboard #export-template {
+        display: none !important;
+    }
+
+    body.printing-dashboard #spaContentContainer,
+    body.printing-dashboard main {
+        display: block !important;
+        margin-left: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+    }
+
+    body.printing-dashboard .dashboard-non-printable {
+        display: none !important;
+    }
+
+    body.printing-dashboard .chart-page {
+        display: grid !important;
+        break-inside: avoid;
+        page-break-inside: avoid;
+    }
+
+    body.printing-dashboard .apexcharts-canvas {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+    }
+
     /* Force show Report Area if on print */
     #export-template,
     #voucher-print-area {
         display: block !important;
         visibility: visible !important;
         opacity: 1 !important;
+    }
+
+    /* Keep ApexCharts high-fidelity and exact colors during print */
+    #printChartsContainer .apexcharts-canvas,
+    #exportDashboardPreviewContainer .apexcharts-canvas {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
     /* SPECIFIC RULES BY CONTEXT */

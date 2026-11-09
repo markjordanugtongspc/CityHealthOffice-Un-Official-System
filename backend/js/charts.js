@@ -803,8 +803,27 @@ export async function init() {
     setupCashflowDropdown();
     setupFundCategorySelect();
     setupExpenseCategorySelect();
+    setupDashboardPrintButton();
 
     await renderAll();
+}
+
+function setupDashboardPrintButton() {
+    const btn = document.getElementById('dashboardPrintBtn');
+    if (!btn || btn.dataset.bound === 'true') return;
+    btn.dataset.bound = 'true';
+    btn.addEventListener('click', () => {
+        document.body.classList.add('printing-dashboard');
+        const restore = () => {
+            document.body.classList.remove('printing-dashboard');
+            window.removeEventListener('afterprint', restore);
+        };
+        window.addEventListener('afterprint', restore);
+        // Small delay so ApexCharts SVG renders completely before print preview dialog opens
+        setTimeout(() => {
+            window.print();
+        }, 150);
+    });
 }
 
 window.initPageCharts = () => {

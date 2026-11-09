@@ -53,11 +53,16 @@
             </div>
 
             <!-- The Table -->
-            <div class="rounded-lg border border-slate-400 overflow-hidden shadow-sm bg-white">
+            <div id="printTableContainer" class="rounded-lg border border-slate-400 overflow-hidden shadow-sm bg-white">
                 <table class="w-full text-xs leading-tight border-collapse [print-color-adjust:exact]">
                     <thead id="printTableHeader" class="bg-slate-50 [print-color-adjust:exact]"></thead>
                     <tbody id="printTableBody"></tbody>
                 </table>
+            </div>
+
+            <!-- Print Charts Container (For Dashboard charts in print mode) -->
+            <div id="printChartsContainer" class="hidden space-y-6">
+                <!-- Injected chart snapshots/elements when source is dashboard -->
             </div>
         </div>
 

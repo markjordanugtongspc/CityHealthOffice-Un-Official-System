@@ -113,13 +113,68 @@ requireAuth();
                             class="text-xs font-medium px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700">0
                             Records</span>
                     </div>
-                    <div class="overflow-x-auto">
+
+                    <!-- Dashboard Visual Chart Preview Container (Shown when Data Source is Dashboard Charts) -->
+                    <div id="exportDashboardPreviewContainer" class="hidden p-4 sm:p-6 bg-[#f8fafc] border-b border-slate-200">
+                        <div class="mb-4">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-100 text-[#224796]">
+                                Live Dashboard Charts Preview
+                            </span>
+                            <h4 class="text-lg font-black text-slate-900 mt-1">Cashflow & Financial Allocations</h4>
+                            <p class="text-xs text-slate-500">Exact live visual representations with high-fidelity graphics, legend data, and color schemes.</p>
+                        </div>
+
+                        <!-- Charts Grid -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-4">
+                            <!-- Chart 1: Cash in Bank & Expenses -->
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6 lg:col-span-2">
+                                <div class="mb-3 flex items-start justify-between gap-3">
+                                    <div>
+                                        <h5 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight">CASH IN BANK & EXPENSES</h5>
+                                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Monthly bank deposits and actual expenses</p>
+                                    </div>
+                                    <span class="text-xs font-bold text-slate-500 bg-slate-100 px-2.5 py-1 rounded" id="exportCashflowYearLabel">FY 2026</span>
+                                </div>
+                                <div id="moneyCashflowChart" class="cashflow-chart-surface rounded-lg min-h-[18rem] w-full"></div>
+                            </div>
+
+                            <!-- Chart 2: Remaining Budget -->
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6">
+                                <div class="mb-3">
+                                    <h5 class="text-lg font-black text-slate-900 tracking-tight">REMAINING BUDGET</h5>
+                                    <p class="text-xs text-slate-500">Monthly balance monitoring by program</p>
+                                </div>
+                                <div id="remainingBudgetChart" class="min-h-[18rem] w-full"></div>
+                            </div>
+
+                            <!-- Chart 3: Supplies Expense -->
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6">
+                                <div class="mb-3">
+                                    <h5 class="text-lg font-black text-slate-900 tracking-tight">SUPPLIES EXPENSE</h5>
+                                    <p class="text-xs text-slate-500">Product categories and payment method mix</p>
+                                </div>
+                                <div id="suppliesExpenseChart" class="min-h-[18rem] w-full"></div>
+                            </div>
+
+                            <!-- Chart 4: Office Financial -->
+                            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 sm:p-6 lg:col-span-2">
+                                <div class="mb-3">
+                                    <h5 class="text-lg font-black text-slate-900 tracking-tight">OFFICE INCOME AND EXPENSES</h5>
+                                    <p class="text-xs text-slate-600">City Health Office - Marawi City (BTSD) and PhilHealth programs</p>
+                                </div>
+                                <div id="officeFinancialChart" class="min-h-[18rem] w-full"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tabular Data Table (Shown for tabular data sources) -->
+                    <div id="exportTableContainer" class="overflow-x-auto">
                         <table id="webTable" class="min-w-full divide-y divide-slate-200">
                             <thead id="webTableHeader"></thead>
                             <tbody id="webTableBody" class="bg-white divide-y divide-slate-100">
                                 <tr>
                                     <td colspan="100%" class="px-6 py-12 text-center text-slate-500 italic">
-                                        Select a data source to begin previewing...
+                                        Select a data source and click "Apply & Refresh Preview" to begin previewing...
                                     </td>
                                 </tr>
                             </tbody>
