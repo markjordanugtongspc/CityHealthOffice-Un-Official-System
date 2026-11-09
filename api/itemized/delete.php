@@ -22,8 +22,18 @@ try {
         throw new Exception('Transaction ID is required.');
     }
 
+    $stmt = $pdo->prepare('SELECT year FROM transactions WHERE id = ?');
+    $stmt->execute([$id]);
+    $row = $stmt->fetch();
+    $year = $row ? (int)$row['year'] : (int)date('Y');
+
     $stmt = $pdo->prepare('DELETE FROM transactions WHERE id = ?');
     $stmt->execute([$id]);
+
+    try {
+        require_once __DIR__ . '/../common/sync_ledger.php';
+        syncAllFinancialLedgers($pdo, $year);
+    } catch (Exception $e) { /* ignore */ }
 
     echo json_encode(['success' => true, 'message' => 'Daily expense transaction deleted successfully.']);
 } catch (Exception $e) {

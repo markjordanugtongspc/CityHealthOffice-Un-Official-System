@@ -86,9 +86,10 @@ try {
     ]);
     $id = (int)$pdo->lastInsertId();
 
-    // Trigger sync to monthly_expenses_entries
+    // Trigger centralized synchronization
     try {
-        syncToMonthlyExpenses($pdo, $year);
+        require_once __DIR__ . '/../common/sync_ledger.php';
+        syncAllFinancialLedgers($pdo, $year);
     } catch (Exception $syncErr) {
         error_log('Sync error: ' . $syncErr->getMessage());
     }
@@ -181,7 +182,7 @@ function syncToMonthlyExpenses($pdo, $year) {
         } else {
             $pdo->prepare('
                 INSERT INTO monthly_expenses_entries (year_id, account_id, january, february, march, april, may, june, july, august, september, october, november, december, total)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ')->execute([
                 $monthlyYearId, $accId,
                 $months['january'], $months['february'], $months['march'], $months['april'], $months['may'], $months['june'],
@@ -192,4 +193,67 @@ function syncToMonthlyExpenses($pdo, $year) {
     }
 }
 // END: syncToMonthlyExpenses
+
+// START: syncToBudgetAndFund - Synchronizes budget actual/remaining and fund downloaded spent amounts
+function syncToBudgetAndFund($pdo, $year) {
+    // 1. Sync Budget entries (actual and remaining_amount)
+    $bYrStmt = $pdo->prepare('SELECT id FROM budget_years WHERE year = ?');
+    $bYrStmt->execute([$year]);
+    $bYr = $bYrStmt->fetch();
+    if ($bYr) {
+        $budgetYearId = (int)$bYr['id'];
+        $mYrStmt = $pdo->prepare('SELECT id FROM monthly_expenses_years WHERE year = ?');
+        $mYrStmt->execute([$year]);
+        $mYr = $mYrStmt->fetch();
+        if ($mYr) {
+            $mYearId = (int)$mYr['id'];
+            $totalsStmt = $pdo->prepare('SELECT account_id, total FROM monthly_expenses_entries WHERE year_id = ?');
+            $totalsStmt->execute([$mYearId]);
+            $entries = $totalsStmt->fetchAll(PDO::FETCH_KEY_PAIR);
+
+            foreach ($entries as $accId => $totalSpent) {
+                $actual = (float)$totalSpent;
+                $stmt = $pdo->prepare('SELECT id, budget FROM budget_entries WHERE year_id = ? AND account_id = ?');
+                $stmt->execute([$budgetYearId, $accId]);
+                $bRow = $stmt->fetch();
+                if ($bRow) {
+                    $bAmt = (float)$bRow['budget'];
+                    $rem = $bAmt - $actual;
+                    $pdo->prepare('
+                        UPDATE budget_entries 
+                        SET actual = ?, remaining_amount = ?, updated_at = NOW()
+                        WHERE id = ?
+                    ')->execute([$actual, $rem, $bRow['id']]);
+                }
+            }
+        }
+    }
+
+    // 2. Sync Fund Downloaded entries spent amounts
+    $fdYrStmt = $pdo->prepare('SELECT id FROM fund_downloaded_years WHERE year = ?');
+    $fdYrStmt->execute([$year]);
+    $fdYr = $fdYrStmt->fetch();
+    if ($fdYr) {
+        $fdYearId = (int)$fdYr['id'];
+        $fdEntriesStmt = $pdo->prepare('SELECT id, gl_code FROM fund_downloaded_entries WHERE year_id = ?');
+        $fdEntriesStmt->execute([$fdYearId]);
+        $fdEntries = $fdEntriesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+        foreach ($fdEntries as $fde) {
+            $gl = $fde['gl_code'];
+            // Sum transactions for this GL code
+            $txSumStmt = $pdo->prepare('
+                SELECT COALESCE(SUM(t.amount), 0) AS total_spent
+                FROM transactions t
+                INNER JOIN account_titles a ON t.account_id = a.id
+                WHERE t.year = ? AND a.gl_code = ?
+            ');
+            $txSumStmt->execute([$year, $gl]);
+            $spent = (float)$txSumStmt->fetchColumn();
+
+            $pdo->prepare('UPDATE fund_downloaded_entries SET spent = ? WHERE id = ?')->execute([$spent, $fde['id']]);
+        }
+    }
+}
+// END: syncToBudgetAndFund
 // END: create.php

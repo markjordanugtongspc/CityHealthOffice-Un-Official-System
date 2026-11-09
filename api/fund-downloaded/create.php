@@ -82,6 +82,15 @@ try {
         exit;
     }
 
+    // Resolve category_id from fund_categories
+    $catStmt = $pdo->prepare('SELECT id, code FROM fund_categories WHERE code = ? OR name = ? LIMIT 1');
+    $catStmt->execute([$category, $category]);
+    $catRow = $catStmt->fetch();
+    $categoryId = $catRow ? (int)$catRow['id'] : null;
+    if ($catRow) {
+        $category = $catRow['code'];
+    }
+
     $monthCols = ['january','february','march','april','may','june','july','august','september','october','november','december'];
     $vals = [];
     $total = 0.0;
@@ -100,10 +109,10 @@ try {
 
     $stmt = $pdo->prepare('
         INSERT INTO fund_downloaded_entries 
-        (year_id, category, gl_code, program_title, january, february, march, april, may, june, july, august, september, october, november, december, total, spent)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
+        (year_id, category_id, category, gl_code, program_title, january, february, march, april, may, june, july, august, september, october, november, december, total, spent)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
     ');
-    $stmt->execute(array_merge([$yearId, $category, $glCode, $programTitle], $vals, [$total]));
+    $stmt->execute(array_merge([$yearId, $categoryId, $category, $glCode, $programTitle], $vals, [$total]));
     $newEntryId = (int)$pdo->lastInsertId();
 
     // Automatically sync / update Budget in budget_entries for this fiscal year and GL code

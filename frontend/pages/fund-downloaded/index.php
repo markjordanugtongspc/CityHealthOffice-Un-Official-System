@@ -70,7 +70,7 @@ requireAuth();
 
                 <!-- Action Controls Row -->
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-4">
-                    <!-- Left: Year Stepper -->
+                    <!-- Left: Year Stepper & Month Filter -->
                     <div class="flex flex-wrap items-center gap-3">
                         <!-- Medium-sized Year Selector with Centered Year, Keyboard Typing & Up/Down Steppers -->
                         <div class="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 shadow-xs w-fit">
@@ -94,6 +94,26 @@ requireAuth();
                                     </button>
                                 </div>
                             </div>
+                        </div>
+
+                        <!-- Month Filter Dropdown -->
+                        <div class="flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 shadow-xs w-fit">
+                            <span class="text-xs font-bold uppercase tracking-wide text-slate-500 shrink-0">Month:</span>
+                            <select id="fundDownloadedMonthFilter" class="cursor-pointer border-0 bg-transparent py-0 pl-1 pr-7 text-sm font-bold text-slate-900 focus:ring-0">
+                                <option value="all">All Months</option>
+                                <option value="january">January</option>
+                                <option value="february">February</option>
+                                <option value="march">March</option>
+                                <option value="april">April</option>
+                                <option value="may">May</option>
+                                <option value="june">June</option>
+                                <option value="july">July</option>
+                                <option value="august">August</option>
+                                <option value="september">September</option>
+                                <option value="october">October</option>
+                                <option value="november">November</option>
+                                <option value="december">December</option>
+                            </select>
                         </div>
                     </div>
 

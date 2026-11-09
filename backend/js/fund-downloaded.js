@@ -11,6 +11,7 @@ let currentPage = 1;
 const rowsPerPage = 12;
 let searchTerm = '';
 let selectedCategory = 'all';
+let selectedMonth = 'all';
 let selectedYear = new Date().getFullYear();
 
 // Month names and keys
@@ -103,6 +104,10 @@ function getFilteredRows() {
 
     if (selectedCategory && selectedCategory !== 'all') {
         filtered = filtered.filter((row) => row.category === selectedCategory);
+    }
+
+    if (selectedMonth && selectedMonth !== 'all') {
+        filtered = filtered.filter((row) => (Number(row.months?.[selectedMonth]) || 0) > 0);
     }
 
     return filtered;
@@ -742,6 +747,7 @@ function setupYearControls() {
 function setupFiltersAndActions() {
     const searchInput = document.getElementById('fundDownloadedSearch');
     const categoryFilter = document.getElementById('fundDownloadedCategoryFilter');
+    const monthFilter = document.getElementById('fundDownloadedMonthFilter');
     const addBtn = document.getElementById('fundDownloadedAddBtn');
     const calculateBtn = document.getElementById('fundDownloadedCalculateBtn');
 
@@ -757,6 +763,15 @@ function setupFiltersAndActions() {
     if (categoryFilter) {
         categoryFilter.addEventListener('change', () => {
             selectedCategory = categoryFilter.value;
+            currentPage = 1;
+            renderCarousel();
+            renderTable();
+        });
+    }
+
+    if (monthFilter) {
+        monthFilter.addEventListener('change', () => {
+            selectedMonth = monthFilter.value;
             currentPage = 1;
             renderCarousel();
             renderTable();

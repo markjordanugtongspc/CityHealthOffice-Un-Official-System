@@ -37,19 +37,19 @@ try {
     $fundYearId = $fyr['id'] ?? null;
 
     $categoryFundTotals = [
-        'mooe' => $totalBudget > 0 ? $totalBudget : 120000000.0,
-        'sp-philhealth' => 54000000.0,
-        'sp-ntp' => 30000000.0,
-        'sp-mcp' => 24000000.0,
-        'sp-konsulta' => 36000000.0,
+        'mooe' => (float)$totalBudget,
+        'sp-philhealth' => 0.0,
+        'sp-ntp' => 0.0,
+        'sp-mcp' => 0.0,
+        'sp-konsulta' => 0.0,
     ];
 
     $categoryExpenseTotals = [
-        'mooe' => $totalMooeActual > 0 ? $totalMooeActual : 95200000.0,
-        'sp-philhealth' => 34500000.0,
-        'sp-ntp' => 18200000.0,
-        'sp-mcp' => 12400000.0,
-        'sp-konsulta' => 13540000.0,
+        'mooe' => (float)$totalMooeActual,
+        'sp-philhealth' => 0.0,
+        'sp-ntp' => 0.0,
+        'sp-mcp' => 0.0,
+        'sp-konsulta' => 0.0,
     ];
 
     if ($fundYearId) {
@@ -76,30 +76,29 @@ try {
         $totalExpenses = $totalMooeActual;
     }
 
-    // Calculate Fund Downloaded (Remaining balance target towards 0) based on fundCategory selection
+    // Calculate Fund Downloaded (Raw total downloaded allotments received) based on fundCategory selection
     $fundDownloadedTotal = 0.0;
     if ($fundCategory === 'all') {
-        $allAllocated = array_sum($categoryFundTotals);
-        $allSpent = array_sum($categoryExpenseTotals);
-        $fundDownloadedTotal = max(0.0, $allAllocated - $allSpent);
+        $fundDownloadedTotal = array_sum($categoryFundTotals);
     } elseif (isset($categoryFundTotals[$fundCategory])) {
-        $allocated = $categoryFundTotals[$fundCategory];
-        $spent = $categoryExpenseTotals[$fundCategory] ?? 0.0;
-        $fundDownloadedTotal = max(0.0, $allocated - $spent);
+        $fundDownloadedTotal = $categoryFundTotals[$fundCategory];
     } else {
-        $fundDownloadedTotal = max(0.0, $totalBudget - $totalMooeActual);
+        $fundDownloadedTotal = $totalBudget;
     }
 
     // Grand total budget (All funds combined)
     $grandTotalBudget = array_sum($categoryFundTotals);
 
+    // Actual Budget (Remaining balance: Total Budget minus Disbursed Expenses)
+    $actualRemainingBudget = max(0.0, $grandTotalBudget - $totalExpenses);
+
     echo json_encode([
         'success' => true,
         'data' => [
             'totalBudget'    => $grandTotalBudget,      // Card 1: TOTAL BUDGET ALLOCATION
-            'yearlyBudget'   => $totalBudget > 0 ? $totalBudget : $grandTotalBudget, // Card 2: YEARLY BUDGET
+            'yearlyBudget'   => $actualRemainingBudget, // Card 2: ACTUAL BUDGET (Remaining after deductions)
             'totalExpenses'  => $totalExpenses,         // Card 3: TOTAL EXPENSES (DISBURSED)
-            'fundDownloaded' => $fundDownloadedTotal,    // Card 4: FUND DOWNLOADED (COUNTDOWN TO 0 BY DEC)
+            'fundDownloaded' => $fundDownloadedTotal,    // Card 4: FUND DOWNLOADED (Total Allotments Received)
             'year'           => $year,
         ]
     ]);

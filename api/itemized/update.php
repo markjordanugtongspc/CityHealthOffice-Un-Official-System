@@ -84,9 +84,10 @@ try {
         $id
     ]);
 
-    // Resync monthly expenses
+    // Resync all ledgers
     try {
-        require_once __DIR__ . '/../monthly-expenses/sync-from-itemized.php';
+        require_once __DIR__ . '/../common/sync_ledger.php';
+        syncAllFinancialLedgers($pdo, $year);
     } catch (Exception $e) { /* ignore */ }
 
     echo json_encode([

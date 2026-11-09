@@ -208,7 +208,8 @@ function baseChart(type, height = 320) {
 
 function activeCashflowYear() {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return mock.cashflow[stored] ? stored : Object.keys(mock.cashflow).sort((a, b) => Number(b) - Number(a))[0];
+    if (stored && /^\d{4}$/.test(stored)) return stored;
+    return String(new Date().getFullYear());
 }
 
 function updateYearButtonState(year) {
@@ -221,12 +222,30 @@ function updateYearButtonState(year) {
     });
 }
 
-function renderCashflow(year = activeCashflowYear()) {
-    const record = mock.cashflow[year] || mock.cashflow[activeCashflowYear()];
+async function renderCashflow(year = activeCashflowYear()) {
+    let incomeData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    let expenseData = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    let statusText = 'Live Database Sync';
+
+    try {
+        const base = getApiBasePath();
+        const res = await fetch(`${base}/api/dashboard/cashflow.php?year=${year}`, {
+            credentials: 'same-origin',
+            headers: { 'Accept': 'application/json' }
+        });
+        const json = await res.json();
+        if (json.success) {
+            incomeData = (json.income || []).map(Number);
+            expenseData = (json.expenses || []).map(Number);
+        }
+    } catch (e) {
+        console.warn('Failed to fetch cashflow data from database', e);
+    }
+
     const options = baseChart('area', 330);
     options.series = [
-        { name: 'Cash In Bank (Deposits)', data: record.cashInBank },
-        { name: 'Expenses (Disbursements)', data: record.expenses },
+        { name: 'Cash In Bank (Deposits)', data: incomeData },
+        { name: 'Expenses (Disbursements)', data: expenseData },
     ];
     options.colors = ['#075985', '#BE123C'];
     options.legend = {
@@ -270,12 +289,12 @@ function renderCashflow(year = activeCashflowYear()) {
         y: { formatter: (value, { seriesIndex, dataPointIndex }) => `${money(value)} ${seriesIndex === 0 ? 'deposit balance' : 'expense recorded'} on ${mock.months[dataPointIndex]} ${year}` },
         custom({ series, seriesIndex, dataPointIndex, w }) {
             const name = w.globals.seriesNames[seriesIndex];
-            return `<div class="px-3 py-2 text-sm text-slate-900 font-sans"><div class="font-bold text-slate-800">${mock.months[dataPointIndex]} ${year}</div><div class="mt-0.5 text-xs text-slate-700">${name}: <span class="font-money font-black text-slate-950 text-sm">${money(series[seriesIndex][dataPointIndex])}</span></div><div class="mt-1 text-[11px] text-slate-500">${record.recordedAt}</div></div>`;
+            return `<div class="px-3 py-2 text-sm text-slate-900 font-sans"><div class="font-bold text-slate-800">${mock.months[dataPointIndex]} ${year}</div><div class="mt-0.5 text-xs text-slate-700">${name}: <span class="font-money font-black text-slate-950 text-sm">${money(series[seriesIndex][dataPointIndex])}</span></div><div class="mt-1 text-[11px] text-slate-500">${statusText}</div></div>`;
         },
     };
     setText('cashflowDataStatusLabel', year);
-    animateRollingNumber('cashflowIncomeTotal', sum(record.cashInBank));
-    animateRollingNumber('cashflowExpenseTotal', sum(record.expenses));
+    animateRollingNumber('cashflowIncomeTotal', sum(incomeData));
+    animateRollingNumber('cashflowExpenseTotal', sum(expenseData));
     updateYearButtonState(year);
     render('moneyCashflowChart', options);
 }
@@ -315,32 +334,20 @@ async function renderStats(year = new Date().getFullYear(), category = fundCateg
     } catch (e) {
         console.warn('Dashboard stats API failed, using mock fallback', e);
     }
-    // Mock fallback
-    let fallbackExpenses = mock.stats.totalExpenses;
-    if (expCategory === 'mooe') fallbackExpenses = 95200000;
-    else if (expCategory === 'sp-philhealth') fallbackExpenses = 34500000;
-    else if (expCategory === 'sp-ntp') fallbackExpenses = 18200000;
-    else if (expCategory === 'sp-mcp') fallbackExpenses = 12400000;
-    else if (expCategory === 'sp-konsulta') fallbackExpenses = 13540000;
-
-    let fallbackFund = mock.stats.fundDownloaded;
-    if (category === 'mooe') fallbackFund = 120000000;
-    else if (category === 'sp-philhealth') fallbackFund = 50000000;
-    else if (category === 'sp-ntp') fallbackFund = 25000000;
-    else if (category === 'sp-mcp') fallbackFund = 20000000;
-    else if (category === 'sp-konsulta') fallbackFund = 29910000;
-
-    animateRollingNumber('dashboardTotalIncome', mock.stats.totalBudget);
-    animateRollingNumber('dashboardYearlyIncome', mock.stats.yearlyBudget);
-    animateRollingNumber('dashboardTotalExpenses', fallbackExpenses);
-    animateRollingNumber('dashboardFundDownloadedTotal', fallbackFund);
+    // Fallback if network or server fails: default to 0
+    animateRollingNumber('dashboardTotalIncome', 0);
+    animateRollingNumber('dashboardYearlyIncome', 0);
+    animateRollingNumber('dashboardTotalExpenses', 0);
+    animateRollingNumber('dashboardFundDownloadedTotal', 0);
 }
 
 async function renderRemainingBudget() {
     let data;
     try {
         const base = getApiBasePath();
-        const res = await fetch(`${base}/api/dashboard/remaining-budget.php?year=${remainingBudgetYear}&program=${remainingBudgetProgram}`);
+        const res = await fetch(`${base}/api/dashboard/remaining-budget.php?year=${remainingBudgetYear}&program=${remainingBudgetProgram}`, {
+            credentials: 'same-origin'
+        });
         const json = await res.json();
         if (json.success) data = json.data;
     } catch (e) { /* use mock fallback */ }
@@ -782,7 +789,7 @@ async function renderAll() {
     setupPeriodControls();
     setupFundCategorySelect();
     setupExpenseCategorySelect();
-    renderCashflow();
+    await renderCashflow();
     await renderRemainingBudget();
     renderSupplies();
     renderOffice();

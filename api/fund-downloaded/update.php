@@ -64,15 +64,24 @@ try {
             $total += $v;
         }
 
+        // Resolve category_id from fund_categories
+        $catStmt = $pdo->prepare('SELECT id, code FROM fund_categories WHERE code = ? OR name = ? LIMIT 1');
+        $catStmt->execute([$category, $category]);
+        $catRow = $catStmt->fetch();
+        $categoryId = $catRow ? (int)$catRow['id'] : null;
+        if ($catRow) {
+            $category = $catRow['code'];
+        }
+
         $stmt = $pdo->prepare('
             UPDATE fund_downloaded_entries
-            SET category = ?, gl_code = ?, program_title = ?,
+            SET category_id = ?, category = ?, gl_code = ?, program_title = ?,
                 january = ?, february = ?, march = ?, april = ?, may = ?, june = ?,
                 july = ?, august = ?, september = ?, october = ?, november = ?, december = ?,
                 total = ?
             WHERE id = ?
         ');
-        $stmt->execute(array_merge([$category, $glCode, $programTitle], $vals, [$total, $id]));
+        $stmt->execute(array_merge([$categoryId, $category, $glCode, $programTitle], $vals, [$total, $id]));
 
         // Sync with budget_entries
         try {

@@ -24,17 +24,34 @@ try {
         foreach ($months as $index => $month) $expenses[$index] = (float) ($row[$month] ?? 0);
     }
 
-    // The budget ledger is the application's available-income/allocation source.
-    $budgetYear = $pdo->prepare('SELECT id FROM budget_years WHERE year = ?');
-    $budgetYear->execute([$year]);
-    $budgetYearId = $budgetYear->fetchColumn();
+    // Fetch Monthly Downloaded Program Funds / Deposits from fund_downloaded_entries
+    $fundYear = $pdo->prepare('SELECT id FROM fund_downloaded_years WHERE year = ?');
+    $fundYear->execute([$year]);
+    $fundYearId = $fundYear->fetchColumn();
+    $income = array_fill(0, 12, 0.0);
     $annualIncome = 0.0;
-    if ($budgetYearId) {
-        $statement = $pdo->prepare('SELECT COALESCE(SUM(budget), 0) FROM budget_entries WHERE year_id = ?');
-        $statement->execute([$budgetYearId]);
-        $annualIncome = (float) $statement->fetchColumn();
+    if ($fundYearId) {
+        $fundCols = implode(', ', array_map(fn($m) => "COALESCE(SUM($m), 0) AS $m", $months));
+        $fStmt = $pdo->prepare("SELECT $fundCols FROM fund_downloaded_entries WHERE year_id = ?");
+        $fStmt->execute([$fundYearId]);
+        $fRow = $fStmt->fetch() ?: [];
+        foreach ($months as $index => $month) {
+            $income[$index] = (float)($fRow[$month] ?? 0);
+        }
+    } else {
+        // Fallback: Check if budget entries has total budget allocation
+        $budgetYear = $pdo->prepare('SELECT id FROM budget_years WHERE year = ?');
+        $budgetYear->execute([$year]);
+        $budgetYearId = $budgetYear->fetchColumn();
+        if ($budgetYearId) {
+            $statement = $pdo->prepare('SELECT COALESCE(SUM(budget), 0) FROM budget_entries WHERE year_id = ?');
+            $statement->execute([$budgetYearId]);
+            $annualIncome = (float)$statement->fetchColumn();
+            if ($annualIncome > 0) {
+                $income = array_fill(0, 12, $annualIncome / 12);
+            }
+        }
     }
-    $income = array_fill(0, 12, $annualIncome / 12);
     // Keep the API shape ready for future live bank-feed integration.
     $dataSources = [
         'income' => $annualIncome > 0 ? 'database' : 'placeholder',

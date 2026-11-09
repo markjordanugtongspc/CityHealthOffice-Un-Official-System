@@ -58,53 +58,32 @@ try {
         $yearId = (int)$yr['id'];
     }
 
-    // Check if initial template rows exist for this year, if not seed default categories
-    $stmt = $pdo->prepare('SELECT COUNT(*) AS c FROM fund_downloaded_entries WHERE year_id = ?');
-    $stmt->execute([$yearId]);
-    $countRow = $stmt->fetch();
-    if ((int)($countRow['c'] ?? 0) === 0) {
-        $seedEntries = [
-            ['mooe', '50203010-00', 'BTSD MOOE Regular Allotment', 10000000, 10000000, 10000000, 10000000, 10000000, 10000000, 10000000, 10000000, 10000000, 10000000, 10000000, 10000000],
-            ['sp-philhealth', '50203990-PH', 'PhilHealth Primary Care & Capitation', 4500000, 4500000, 4500000, 4500000, 4500000, 4500000, 4500000, 4500000, 4500000, 4500000, 4500000, 4500000],
-            ['sp-ntp', '50203990-TB', 'SPF National Tuberculosis Program (NTP)', 2500000, 2500000, 2500000, 2500000, 2500000, 2500000, 2500000, 2500000, 2500000, 2500000, 2500000, 2500000],
-            ['sp-mcp', '50203990-MC', 'Maternal & Child Care Package Facility Fund', 2000000, 2000000, 2000000, 2000000, 2000000, 2000000, 2000000, 2000000, 2000000, 2000000, 2000000, 2000000],
-            ['sp-konsulta', '50203990-KO', 'PhilHealth Konsulta & Diagnostic Fund', 3000000, 3000000, 3000000, 3000000, 3000000, 3000000, 3000000, 3000000, 3000000, 3000000, 3000000, 3000000],
-        ];
-
-        $ins = $pdo->prepare('
-            INSERT INTO fund_downloaded_entries 
-            (year_id, category, gl_code, program_title, january, february, march, april, may, june, july, august, september, october, november, december, total, spent)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0)
-        ');
-        foreach ($seedEntries as $se) {
-            $cat = $se[0];
-            $gl = $se[1];
-            $title = $se[2];
-            $monthlyVals = array_slice($se, 3, 12); // exactly 12 months
-            $totalVal = array_sum($monthlyVals);
-            $params = array_merge([$yearId, $cat, $gl, $title], $monthlyVals, [$totalVal]);
-            $ins->execute($params);
-        }
-    }
-
     $category = $_GET['category'] ?? 'all';
     $monthCols = ['january','february','march','april','may','june','july','august','september','october','november','december'];
 
+    $sql = '
+        SELECT 
+            fde.id,
+            fde.category_id,
+            COALESCE(fc.code, fde.category, "mooe") AS category,
+            fc.name AS category_name,
+            fde.gl_code,
+            fde.program_title,
+            fde.january, fde.february, fde.march, fde.april, fde.may, fde.june,
+            fde.july, fde.august, fde.september, fde.october, fde.november, fde.december,
+            fde.total, fde.spent
+        FROM fund_downloaded_entries fde
+        LEFT JOIN fund_categories fc ON fde.category_id = fc.id
+        WHERE fde.year_id = ?
+    ';
+
     if ($category !== 'all') {
-        $stmt = $pdo->prepare('
-            SELECT id, category, gl_code, program_title, january, february, march, april, may, june, july, august, september, october, november, december, total, spent
-            FROM fund_downloaded_entries
-            WHERE year_id = ? AND category = ?
-            ORDER BY id ASC
-        ');
-        $stmt->execute([$yearId, $category]);
+        $sql .= ' AND (fde.category = ? OR fc.code = ?) ORDER BY fde.id ASC';
+        $stmt = $pdo->prepare($sql);
+        $stmt->execute([$yearId, $category, $category]);
     } else {
-        $stmt = $pdo->prepare('
-            SELECT id, category, gl_code, program_title, january, february, march, april, may, june, july, august, september, october, november, december, total, spent
-            FROM fund_downloaded_entries
-            WHERE year_id = ?
-            ORDER BY id ASC
-        ');
+        $sql .= ' ORDER BY fde.id ASC';
+        $stmt = $pdo->prepare($sql);
         $stmt->execute([$yearId]);
     }
 

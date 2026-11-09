@@ -67,56 +67,7 @@ requireAuth();
                     </div>
                 </div>
 
-                <!-- Stats Card 2: YEARLY BUDGET (Teal/Dark Emerald) -->
-                <div class="relative overflow-hidden bg-teal-700 text-white p-4 pt-3.5 sm:p-5 sm:pt-4 shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between">
-                    <!-- Background Watermark Icon: Stocks & Trend with Philippine Peso -->
-                    <div class="absolute -right-6 -bottom-6 w-36 h-36 opacity-15 pointer-events-none transform -rotate-12 select-none">
-                        <svg class="w-full h-full text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <!-- Trend line & bars -->
-                            <path d="M4 15v4m3-6v6M6 8.5 10.5 5 14 7.5 18 4m0 0h-3.5M18 4v3" />
-                            <!-- Circular coin badge -->
-                            <circle cx="15" cy="15" r="5" />
-                                <!-- Philippine Peso center glyph -->
-                            <path d="M13.2 12.8h2.3a1.5 1.5 0 0 1 0 3h-2.3v2.2" stroke-width="1.6" />
-                            <line x1="12.2" y1="14.1" x2="16.6" y2="14.1" stroke-width="1.4" />
-                            <line x1="12.2" y1="15.4" x2="16.6" y2="15.4" stroke-width="1.4" />
-                        </svg>
-                    </div>
-
-                    <!-- Top Row: Card Index -->
-                    <div class="flex items-center justify-end relative z-10 mb-0.5">
-                        <span class="text-xs sm:text-sm font-black tracking-widest text-white/70 font-mono">02</span>
-                    </div>
-
-                    <!-- Card Body: Label & Value -->
-                    <div class="relative z-10 -mt-2.5 mb-2.5">
-                        <p class="text-xs font-extrabold uppercase tracking-wider text-teal-100">YEARLY BUDGET</p>
-                        <h3 class="financial-amount financial-amount-hover text-2xl sm:text-3xl font-bold group-hover:font-black text-white mt-0.5 block origin-left truncate tabular-nums transition-[font-weight,transform,opacity] duration-200" id="dashboardYearlyIncome">PHP 0</h3>
-                    </div>
-
-                    <!-- Footer Row -->
-                    <div class="relative z-10 flex items-center justify-between text-[11px] font-bold text-white/80 pt-2 border-t border-white/15">
-                        <span class="text-emerald-300">Annual allocation</span>
-                        <div class="flex items-center gap-1">
-                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
-                            </svg>
-                            <div class="group relative inline-flex items-center gap-0.5 cursor-help">
-                                <span>Disbursed</span>
-                                <svg class="h-2.5 w-2.5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20A10 10 0 0112 2z" />
-                                </svg>
-                                <div class="pointer-events-none absolute bottom-full right-0 z-50 mb-2 hidden w-max max-w-[140px] rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg group-hover:block text-center normal-case">
-                                    MOOE Allocation
-                                    <div class="absolute right-2 top-full h-2 w-2 rotate-45 bg-slate-900"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Stats Card 3: TOTAL EXPENSES (Warm Amber/Orange) -->
+                <!-- Stats Card 2: ACTUAL EXPENSES (Warm Amber/Orange) -->
                 <div class="relative overflow-hidden bg-amber-600 text-white p-4 pt-3.5 sm:p-5 sm:pt-4 shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between">
                     <!-- Background Watermark Icon: Expenses with Philippine Peso -->
                     <div class="absolute -right-6 -bottom-6 w-36 h-36 opacity-15 pointer-events-none transform -rotate-12 select-none">
@@ -135,13 +86,13 @@ requireAuth();
 
                     <!-- Top Row: Card Index -->
                     <div class="flex items-center justify-end relative z-10 mb-0.5">
-                        <span class="text-xs sm:text-sm font-black tracking-widest text-white/70 font-mono">03</span>
+                        <span class="text-xs sm:text-sm font-black tracking-widest text-white/70 font-mono">02</span>
                     </div>
 
                     <!-- Card Body: Label & Value -->
                     <div class="relative z-10 -mt-2.5 mb-2.5">
                         <p class="text-xs font-extrabold uppercase tracking-wider text-amber-100">
-                            TOTAL EXPENSES
+                            ACTUAL EXPENSES
                             <span class="text-[9px] font-semibold normal-case tracking-normal text-amber-300">(DISBURSED)</span>
                         </p>
                         <h3 class="financial-amount financial-amount-hover text-2xl sm:text-3xl font-bold group-hover:font-black text-white mt-0.5 block origin-left truncate tabular-nums transition-[font-weight,transform,opacity] duration-200" id="dashboardTotalExpenses">PHP 0</h3>
@@ -160,6 +111,55 @@ requireAuth();
                             <option value="sp-mcp" class="bg-white text-slate-900">MCP Facility</option>
                             <option value="sp-konsulta" class="bg-white text-slate-900">Konsulta</option>
                         </select>
+                    </div>
+                </div>
+
+                <!-- Stats Card 3: REMAINING BUDGET (Teal/Dark Emerald) -->
+                <div class="relative overflow-hidden bg-teal-700 text-white p-4 pt-3.5 sm:p-5 sm:pt-4 shadow-md hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 group flex flex-col justify-between">
+                    <!-- Background Watermark Icon: Stocks & Trend with Philippine Peso -->
+                    <div class="absolute -right-6 -bottom-6 w-36 h-36 opacity-15 pointer-events-none transform -rotate-12 select-none">
+                        <svg class="w-full h-full text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <!-- Trend line & bars -->
+                            <path d="M4 15v4m3-6v6M6 8.5 10.5 5 14 7.5 18 4m0 0h-3.5M18 4v3" />
+                            <!-- Circular coin badge -->
+                            <circle cx="15" cy="15" r="5" />
+                                <!-- Philippine Peso center glyph -->
+                            <path d="M13.2 12.8h2.3a1.5 1.5 0 0 1 0 3h-2.3v2.2" stroke-width="1.6" />
+                            <line x1="12.2" y1="14.1" x2="16.6" y2="14.1" stroke-width="1.4" />
+                            <line x1="12.2" y1="15.4" x2="16.6" y2="15.4" stroke-width="1.4" />
+                        </svg>
+                    </div>
+
+                    <!-- Top Row: Card Index -->
+                    <div class="flex items-center justify-end relative z-10 mb-0.5">
+                        <span class="text-xs sm:text-sm font-black tracking-widest text-white/70 font-mono">03</span>
+                    </div>
+
+                    <!-- Card Body: Label & Value -->
+                    <div class="relative z-10 -mt-2.5 mb-2.5">
+                        <p class="text-xs font-extrabold uppercase tracking-wider text-teal-100">REMAINING</p>
+                        <h3 class="financial-amount financial-amount-hover text-2xl sm:text-3xl font-bold group-hover:font-black text-white mt-0.5 block origin-left truncate tabular-nums transition-[font-weight,transform,opacity] duration-200" id="dashboardYearlyIncome">PHP 0</h3>
+                    </div>
+
+                    <!-- Footer Row -->
+                    <div class="relative z-10 flex items-center justify-between text-[11px] font-bold text-white/80 pt-2 border-t border-white/15">
+                        <span class="text-emerald-300">Net allocation</span>
+                        <div class="flex items-center gap-1">
+                            <svg class="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <div class="group relative inline-flex items-center gap-0.5 cursor-help">
+                                <span>Remaining</span>
+                                <svg class="h-2.5 w-2.5 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20A10 10 0 0112 2z" />
+                                </svg>
+                                <div class="pointer-events-none absolute bottom-full right-0 z-50 mb-2 hidden w-max max-w-[140px] rounded-lg bg-slate-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-lg group-hover:block text-center normal-case">
+                                    Total Budget minus Disbursed
+                                    <div class="absolute right-2 top-full h-2 w-2 rotate-45 bg-slate-900"></div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
